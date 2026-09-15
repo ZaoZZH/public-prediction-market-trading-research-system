@@ -1,0 +1,13 @@
+cell,route,episodes,fixtures,single_print_pct,median_reprice_s,p90_reprice_s,censored_pct
+Premier League 2025/26 | post_0_to_105m  F=60s,maker/taker,37206,339,29.8,13.0,87.0,0.2
+Premier League 2025/26 | post_0_to_105m  F=60s,taker/maker,43787,339,27.3,13.0,74.0,0.3
+Premier League 2025/26 | post_0_to_105m  F=60s,taker/taker,8736,337,36.1,7.0,36.0,0.1
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,maker/taker,21195,189,27.7,12.0,95.7,0.4
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,taker/maker,22339,189,26.8,12.0,80.0,0.5
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,taker/taker,4892,187,33.7,8.0,43.0,0.5
+World Cup 2026/27 | post_0_to_105m  F=5s,maker/taker,15337,104,22.3,4.0,29.0,0.2
+World Cup 2026/27 | post_0_to_105m  F=5s,taker/maker,21703,104,19.5,5.0,45.4,0.3
+World Cup 2026/27 | post_0_to_105m  F=5s,taker/taker,3615,104,30.9,3.0,7.0,0.2
+World Cup 2026/27 | pre_last_hour  F=10s,maker/taker,152,58,8.6,127.0,921.9,0.0
+World Cup 2026/27 | pre_last_hour  F=10s,taker/maker,215,67,3.3,118.0,1143.2,0.0
+World Cup 2026/27 | pre_last_hour  F=10s,taker/taker,7,2,0.0,27.0,253.8,0.0

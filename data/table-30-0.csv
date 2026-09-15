@@ -1,0 +1,13 @@
+cell,route,n,pos_per_fixture_hour,open_pct_of_fresh,open_pct_of_clock
+Premier League 2025/26 | post_0_to_105m  F=60s,maker/taker,1366217.0,311.57,14.32,8.14
+Premier League 2025/26 | post_0_to_105m  F=60s,taker/maker,1366217.0,425.35,17.57,9.98
+Premier League 2025/26 | post_0_to_105m  F=60s,taker/taker,1299032.0,51.75,1.72,0.93
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,maker/taker,801169.0,357.45,17.76,8.95
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,taker/maker,801169.0,452.44,19.33,9.73
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,taker/taker,768173.0,57.67,2.29,1.09
+World Cup 2026/27 | post_0_to_105m  F=5s,maker/taker,2006486.0,768.71,6.83,3.97
+World Cup 2026/27 | post_0_to_105m  F=5s,taker/maker,2006486.0,1889.29,17.46,10.15
+World Cup 2026/27 | post_0_to_105m  F=5s,taker/taker,1838197.0,76.06,0.7,0.38
+World Cup 2026/27 | pre_last_hour  F=10s,maker/taker,828904.0,208.72,3.5,1.8
+World Cup 2026/27 | pre_last_hour  F=10s,taker/maker,828904.0,841.27,9.37,4.81
+World Cup 2026/27 | pre_last_hour  F=10s,taker/taker,594744.0,3.33,0.05,0.02

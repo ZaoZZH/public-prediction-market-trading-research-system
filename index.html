@@ -1,0 +1,9914 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Zehao Zhou">
+<meta name="dcterms.date" content="2026-09-15">
+<meta name="description" content="An interactive study of soccer 1X2 trade activity, cross-venue price gaps, fees, and how long last-trade differences persist.">
+
+<title>When Do Soccer Prices Disagree on Kalshi and Polymarket? – Zehao Zhou · Prediction Market Research</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-3b2ae87abde68bf8479df86e998508eb.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="When Do Soccer Prices Disagree on Kalshi and Polymarket? – Zehao Zhou · Prediction Market Research">
+<meta property="og:description" content="An interactive study of soccer 1X2 trade activity, cross-venue price gaps, fees, and how long last-trade differences persist.">
+<meta property="og:site_name" content="Zehao Zhou · Prediction Market Research">
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-search-results"></div>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">In this article</h2>
+   
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link active" data-scroll-target="#summary">Summary</a></li>
+  <li><a href="#data-and-the-comparison-being-made" id="toc-data-and-the-comparison-being-made" class="nav-link" data-scroll-target="#data-and-the-comparison-being-made">Data and the comparison being made</a></li>
+  <li><a href="#are-both-venues-trading-recently-enough-to-compare" id="toc-are-both-venues-trading-recently-enough-to-compare" class="nav-link" data-scroll-target="#are-both-venues-trading-recently-enough-to-compare">1. Are both venues trading recently enough to compare?</a></li>
+  <li><a href="#how-large-are-the-gapsand-which-venue-is-cheaper" id="toc-how-large-are-the-gapsand-which-venue-is-cheaper" class="nav-link" data-scroll-target="#how-large-are-the-gapsand-which-venue-is-cheaper">2. How large are the gaps—and which venue is cheaper?</a></li>
+  <li><a href="#what-survives-assumed-fees" id="toc-what-survives-assumed-fees" class="nav-link" data-scroll-target="#what-survives-assumed-fees">3. What survives assumed fees?</a></li>
+  <li><a href="#how-frequent-are-positive-references-and-how-long-do-they-last" id="toc-how-frequent-are-positive-references-and-how-long-do-they-last" class="nav-link" data-scroll-target="#how-frequent-are-positive-references-and-how-long-do-they-last">4. How frequent are positive references, and how long do they last?</a></li>
+  <li><a href="#what-i-would-take-into-the-next-research-step" id="toc-what-i-would-take-into-the-next-research-step" class="nav-link" data-scroll-target="#what-i-would-take-into-the-next-research-step">What I would take into the next research step</a></li>
+  <li><a href="#data-methods-and-updates" id="toc-data-methods-and-updates" class="nav-link" data-scroll-target="#data-methods-and-updates">Data, methods, and updates</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">When Do Soccer Prices Disagree on Kalshi and Polymarket?</h1>
+<p class="subtitle lead">Freshness, price gaps, and fee-adjusted trade references across 1,973 matched fixtures.</p>
+</div>
+
+<div>
+  <div class="description">
+    An interactive study of soccer 1X2 trade activity, cross-venue price gaps, fees, and how long last-trade differences persist.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Zehao Zhou </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 15, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>In my <a href="https://zehao-zhou.hashnode.dev/soccer-1x2-markets-on-kalshi-and-polymarket-trade-counts-volume-and-timing">previous post</a>, I looked at how much trading happens in soccer 1X2 markets on Kalshi and Polymarket. The natural next question is: <strong>when the two venues show different prices, how much of that difference is worth investigating?</strong></p>
+<p>A gap between two last trades can be misleading. One venue may have traded a second ago and the other a minute ago. A buy-side print and a sell-side print can also differ because of the spread. And even a price difference that clears an assumed fee schedule may disappear before both legs can fill.</p>
+<p>This post works through those issues using matched regular-time markets: <strong>home win, draw, and away win</strong>. The charts are interactive. Use the dropdown above a chart to switch competition or window; hover for values, click the legend to compare series, and double-click the plot to reset the zoom.</p>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<ul>
+<li><strong>Freshness changes the population you are studying.</strong> With a 60-second cutoff, both venues are fresh for 78.31% of Premier League 2025/26 in-play time and 69.68% of Champions League time. Much of the remaining time has only Kalshi fresh.</li>
+<li><strong>Waiting for another trade is a different question.</strong> After an eligible Kalshi trade second, Polymarket trades again within 60 seconds about 93.6% of the time in the Premier League. If Polymarket was already stale, that falls to about 61.8%.</li>
+<li><strong>The World Cup supports a much tighter freshness filter.</strong> The study selects World Cup in-play observations at 5 seconds, its last pregame hour at 10 seconds, and Premier League / Champions League in-play observations at 60 seconds.</li>
+<li><strong>The sign and the trading side matter.</strong> A negative Polymarket-minus-Kalshi gap means Polymarket’s reference is cheaper. Which buy/sell prints produced that gap determines the route it describes.</li>
+<li><strong>Two-taker positives are uncommon.</strong> In the selected Premier League in-play sample, they occur in 3.64% of observations for PM YES + Kalshi NO and 1.70% in the reverse direction under the charged-fee scenario.</li>
+<li><strong>Positive after assumed fees is a research screen.</strong> Passive routes also assume fills. The tape does not establish whether both legs were available, how much could trade, or what P&amp;L a strategy would realize.</li>
+</ul>
+<p>The percentages above describe this published snapshot. They use different denominators, explained below.</p>
+</section>
+<section id="data-and-the-comparison-being-made" class="level2">
+<h2 class="anchored" data-anchor-id="data-and-the-comparison-being-made">Data and the comparison being made</h2>
+<p>The sample contains <strong>1,973 matched fixtures across 10 competition-season groups</strong>, with scheduled kickoffs from <strong>September 12, 2025 to August 11, 2026</strong>. This is the current linked universe used by this study; the previous trade-count post used an earlier 1,942-fixture snapshot.</p>
+<p>The time reference is <strong>scheduled kickoff</strong>, including for the in-play reporting windows. These are elapsed wall-clock minutes, including halftime; they are not observed match-clock or first-whistle timestamps. “In play” below is shorthand for the 0–105 minute window after scheduled kickoff. Late-game diagnostics extend to 135 minutes.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Term</th>
+<th>What it means here</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Trade reference</td>
+<td>Fills within one second, venue, outcome and taker side are combined into a volume-weighted price. The latest such print is carried forward until another arrives.</td>
+</tr>
+<tr class="even">
+<td>Fresh pair</td>
+<td>Both venues’ most recent prints are at most <strong>F seconds old</strong>. F looks backward.</td>
+</tr>
+<tr class="odd">
+<td>Forward waiting horizon</td>
+<td>Whether the other venue trades strictly later and within <strong>H seconds</strong>. H looks forward.</td>
+</tr>
+<tr class="even">
+<td>Signed gap</td>
+<td>Polymarket price minus Kalshi price, in cents per $1 contract. Negative means the Polymarket reference is lower.</td>
+</tr>
+<tr class="odd">
+<td>Taker / maker</td>
+<td>Taker crosses to trade; maker rests an order. Route labels give the <strong>Polymarket role first</strong>, then the Kalshi role.</td>
+</tr>
+<tr class="even">
+<td>Team-win selection</td>
+<td>Home and away are priced separately, then pooled for reporting. It is not a new combined payoff.</td>
+</tr>
+</tbody>
+</table>
+<section id="where-the-trading-is-concentrated" class="level3">
+<h3 class="anchored" data-anchor-id="where-the-trading-is-concentrated">Where the trading is concentrated</h3>
+<iframe class="research-chart" src="charts/chart-03-0.html" title="Interactive chart 3.0" loading="lazy" height="510">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-03-0.html" target="_blank">Open full screen</a> · <a href="data/chart-03-0.csv" download="">Chart data (CSV)</a>
+</div>
+<p>The World Cup is a different activity regime from ordinary club fixtures. This matters because a single freshness cutoff does not retain the same share of each competition’s clock. The logarithmic axis keeps both the busiest and quieter groups visible.</p>
+<details>
+<summary>
+Full population table
+</summary>
+<div class="table-scroll">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+fixtures
+</th>
+<th>
+both_traded
+</th>
+<th>
+complete_1x2
+</th>
+<th>
+trades
+</th>
+<th>
+pm_trades
+</th>
+<th>
+k_trades
+</th>
+<th>
+first_kickoff
+</th>
+<th>
+last_kickoff
+</th>
+<th>
+trades_per_fixture
+</th>
+<th>
+pm_trades_per_fixture
+</th>
+<th>
+k_trades_per_fixture
+</th>
+</tr>
+<tr>
+<th>
+combo
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+World Cup 2026/27
+</th>
+<td>
+104
+</td>
+<td>
+104
+</td>
+<td>
+104
+</td>
+<td>
+29220673
+</td>
+<td>
+5343638
+</td>
+<td>
+23877035
+</td>
+<td>
+2026-06-11 19:00:00+00:00
+</td>
+<td>
+2026-07-19 19:00:00+00:00
+</td>
+<td>
+280968
+</td>
+<td>
+51381
+</td>
+<td>
+229587
+</td>
+</tr>
+<tr>
+<th>
+UEFA Champions League 2025/26
+</th>
+<td>
+189
+</td>
+<td>
+189
+</td>
+<td>
+189
+</td>
+<td>
+3702166
+</td>
+<td>
+1279303
+</td>
+<td>
+2422863
+</td>
+<td>
+2025-09-16 16:45:00+00:00
+</td>
+<td>
+2026-05-30 16:00:00+00:00
+</td>
+<td>
+19588
+</td>
+<td>
+6769
+</td>
+<td>
+12819
+</td>
+</tr>
+<tr>
+<th>
+Premier League 2025/26
+</th>
+<td>
+339
+</td>
+<td>
+339
+</td>
+<td>
+339
+</td>
+<td>
+5223092
+</td>
+<td>
+1935389
+</td>
+<td>
+3287703
+</td>
+<td>
+2025-09-20 11:30:00+00:00
+</td>
+<td>
+2026-05-24 15:00:00+00:00
+</td>
+<td>
+15407
+</td>
+<td>
+5709
+</td>
+<td>
+9698
+</td>
+</tr>
+<tr>
+<th>
+La Liga 2025/26
+</th>
+<td>
+336
+</td>
+<td>
+336
+</td>
+<td>
+336
+</td>
+<td>
+3356317
+</td>
+<td>
+1334990
+</td>
+<td>
+2021327
+</td>
+<td>
+2025-09-19 19:00:00+00:00
+</td>
+<td>
+2026-05-24 19:00:00+00:00
+</td>
+<td>
+9989
+</td>
+<td>
+3973
+</td>
+<td>
+6016
+</td>
+</tr>
+<tr>
+<th>
+Serie A 2025/26
+</th>
+<td>
+348
+</td>
+<td>
+348
+</td>
+<td>
+348
+</td>
+<td>
+2159847
+</td>
+<td>
+888826
+</td>
+<td>
+1271021
+</td>
+<td>
+2025-09-19 18:45:00+00:00
+</td>
+<td>
+2026-05-24 18:45:00+00:00
+</td>
+<td>
+6206
+</td>
+<td>
+2554
+</td>
+<td>
+3652
+</td>
+</tr>
+<tr>
+<th>
+UEFA Champions League 2026/27
+</th>
+<td>
+73
+</td>
+<td>
+73
+</td>
+<td>
+73
+</td>
+<td>
+437983
+</td>
+<td>
+136926
+</td>
+<td>
+301057
+</td>
+<td>
+2026-07-07 16:00:00+00:00
+</td>
+<td>
+2026-08-11 19:00:00+00:00
+</td>
+<td>
+6000
+</td>
+<td>
+1876
+</td>
+<td>
+4124
+</td>
+</tr>
+<tr>
+<th>
+Bundesliga 2025/26
+</th>
+<td>
+275
+</td>
+<td>
+275
+</td>
+<td>
+275
+</td>
+<td>
+1525955
+</td>
+<td>
+692814
+</td>
+<td>
+833141
+</td>
+<td>
+2025-09-19 18:30:00+00:00
+</td>
+<td>
+2026-05-25 18:30:00+00:00
+</td>
+<td>
+5549
+</td>
+<td>
+2519
+</td>
+<td>
+3030
+</td>
+</tr>
+<tr>
+<th>
+Ligue 1 2025/26
+</th>
+<td>
+278
+</td>
+<td>
+278
+</td>
+<td>
+278
+</td>
+<td>
+1173568
+</td>
+<td>
+512157
+</td>
+<td>
+661411
+</td>
+<td>
+2025-09-12 18:45:00+00:00
+</td>
+<td>
+2026-05-29 18:45:00+00:00
+</td>
+<td>
+4221
+</td>
+<td>
+1842
+</td>
+<td>
+2379
+</td>
+</tr>
+<tr>
+<th>
+UEFA Champions League Women 2026/27
+</th>
+<td>
+27
+</td>
+<td>
+27
+</td>
+<td>
+27
+</td>
+<td>
+27141
+</td>
+<td>
+4563
+</td>
+<td>
+22578
+</td>
+<td>
+2026-08-04 14:00:00+00:00
+</td>
+<td>
+2026-08-08 19:00:00+00:00
+</td>
+<td>
+1005
+</td>
+<td>
+169
+</td>
+<td>
+836
+</td>
+</tr>
+<tr>
+<th>
+UEFA Champions League Women 2025/26
+</th>
+<td>
+4
+</td>
+<td>
+0
+</td>
+<td>
+4
+</td>
+<td>
+3156
+</td>
+<td>
+3156
+</td>
+<td>
+0
+</td>
+<td>
+2026-03-25 17:45:00+00:00
+</td>
+<td>
+2026-05-03 14:30:00+00:00
+</td>
+<td>
+789
+</td>
+<td>
+789
+</td>
+<td>
+0
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+<a href="data/table-03-0.csv" download="">Download table (CSV)</a>
+</p>
+</details>
+</section>
+</section>
+<section id="are-both-venues-trading-recently-enough-to-compare" class="level2">
+<h2 class="anchored" data-anchor-id="are-both-venues-trading-recently-enough-to-compare">1. Are both venues trading recently enough to compare?</h2>
+<p>Start with every fixture, including outcomes and time intervals with no recent trade. At each instant, the market belongs to one of four states: both venues fresh, only Kalshi fresh, only Polymarket fresh, or neither fresh.</p>
+<iframe class="research-chart" src="charts/chart-07-2.html" title="Interactive chart 7.2" loading="lazy" height="645">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-07-2.html" target="_blank">Open full screen</a> · <a href="data/chart-07-2.csv" download="">Chart data (CSV)</a>
+</div>
+<p><strong>Read this as a share of time, not a share of trades.</strong> At F=60 seconds, the Premier League 2025/26 in-play split is 78.31% both fresh, 15.68% only Kalshi fresh, 2.63% only Polymarket fresh, and 3.38% neither fresh. The corresponding Champions League split is 69.68%, 18.70%, 4.43%, and 7.19%.</p>
+<p>So the excluded clock is often one-sided: Kalshi has traded recently while Polymarket has not. “Neither fresh” means neither has traded in the preceding F seconds. It does not mean the data are missing.</p>
+<details>
+<summary>
+Compare tighter freshness cutoffs and the full freshness curve
+</summary>
+<iframe class="research-chart" src="charts/chart-07-0.html" title="Interactive chart 7.0" loading="lazy" height="645">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-07-0.html" target="_blank">Open full screen</a> · <a href="data/chart-07-0.csv" download="">Chart data (CSV)</a>
+</div>
+<iframe class="research-chart" src="charts/chart-07-1.html" title="Interactive chart 7.1" loading="lazy" height="645">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-07-1.html" target="_blank">Open full screen</a> · <a href="data/chart-07-1.csv" download="">Chart data (CSV)</a>
+</div>
+<iframe class="research-chart" src="charts/chart-05-0.html" title="Interactive chart 5.0" loading="lazy" height="555">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-05-0.html" target="_blank">Open full screen</a> · <a href="data/chart-05-0.csv" download="">Chart data (CSV)</a>
+</div>
+</details>
+<section id="if-i-see-a-trade-now-how-soon-does-the-other-venue-trade" class="level3">
+<h3 class="anchored" data-anchor-id="if-i-see-a-trade-now-how-soon-does-the-other-venue-trade">If I see a trade now, how soon does the other venue trade?</h3>
+<p>This asks about <strong>source trade seconds</strong>, rather than the whole clock. The chart counts whether a destination trade arrives strictly later, within H seconds. Same-second prints are excluded from the response numerator.</p>
+<iframe class="research-chart" src="charts/chart-09-2.html" title="Interactive chart 9.2" loading="lazy" height="555">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-09-2.html" target="_blank">Open full screen</a> · <a href="data/chart-09-2.csv" download="">Chart data (CSV)</a>
+</div>
+<p>In the Premier League in-play window, Polymarket prints within 60 seconds after 93.6% of eligible Kalshi trade seconds. Kalshi prints within 60 seconds after 98.8% of eligible Polymarket trade seconds. But when the destination venue is already stale at the trigger, these rates drop to 61.8% and 70.1%, respectively.</p>
+<p>That is useful context for researching an asynchronous strategy. It does <strong>not</strong> show that the source trade causes or predicts the destination trade above its ordinary activity rate.</p>
+<details>
+<summary>
+Other time windows, destination-state splits, and waiting denominators
+</summary>
+<iframe class="research-chart" src="charts/chart-09-0.html" title="Interactive chart 9.0" loading="lazy" height="555">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-09-0.html" target="_blank">Open full screen</a> · <a href="data/chart-09-0.csv" download="">Chart data (CSV)</a>
+</div>
+<iframe class="research-chart" src="charts/chart-09-1.html" title="Interactive chart 9.1" loading="lazy" height="555">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-09-1.html" target="_blank">Open full screen</a> · <a href="data/chart-09-1.csv" download="">Chart data (CSV)</a>
+</div>
+<iframe class="research-chart" src="charts/chart-09-3.html" title="Interactive chart 9.3" loading="lazy" height="555">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-09-3.html" target="_blank">Open full screen</a> · <a href="data/chart-09-3.csv" download="">Chart data (CSV)</a>
+</div>
+<div class="table-scroll">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+</th>
+<th>
+other_state
+</th>
+<th>
+all
+</th>
+<th>
+fresh
+</th>
+<th>
+no_prior_print
+</th>
+<th>
+stale
+</th>
+</tr>
+<tr>
+<th>
+combo
+</th>
+<th>
+phase
+</th>
+<th>
+source
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th rowspan="8" valign="top">
+Bundesliga 2025/26
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+86.2
+</td>
+<td>
+91.2
+</td>
+<td>
+NaN
+</td>
+<td>
+54.9
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+91.1
+</td>
+<td>
+94.2
+</td>
+<td>
+NaN
+</td>
+<td>
+59.0
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+92.3
+</td>
+<td>
+95.6
+</td>
+<td>
+NaN
+</td>
+<td>
+51.1
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+79.2
+</td>
+<td>
+93.8
+</td>
+<td>
+NaN
+</td>
+<td>
+14.6
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+34.4
+</td>
+<td>
+62.7
+</td>
+<td>
+10.1
+</td>
+<td>
+23.8
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+21.6
+</td>
+<td>
+45.2
+</td>
+<td>
+1.9
+</td>
+<td>
+13.1
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+71.1
+</td>
+<td>
+84.0
+</td>
+<td>
+NaN
+</td>
+<td>
+41.6
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+60.0
+</td>
+<td>
+77.1
+</td>
+<td>
+NaN
+</td>
+<td>
+34.2
+</td>
+</tr>
+<tr>
+<th rowspan="8" valign="top">
+La Liga 2025/26
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+91.3
+</td>
+<td>
+94.4
+</td>
+<td>
+NaN
+</td>
+<td>
+59.8
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+96.5
+</td>
+<td>
+97.6
+</td>
+<td>
+NaN
+</td>
+<td>
+64.1
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+96.8
+</td>
+<td>
+97.8
+</td>
+<td>
+NaN
+</td>
+<td>
+62.4
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+82.2
+</td>
+<td>
+95.2
+</td>
+<td>
+NaN
+</td>
+<td>
+10.3
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+49.6
+</td>
+<td>
+73.1
+</td>
+<td>
+10.2
+</td>
+<td>
+30.3
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+41.8
+</td>
+<td>
+64.3
+</td>
+<td>
+2.1
+</td>
+<td>
+21.5
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+83.4
+</td>
+<td>
+90.3
+</td>
+<td>
+NaN
+</td>
+<td>
+50.1
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+81.0
+</td>
+<td>
+88.9
+</td>
+<td>
+0.0
+</td>
+<td>
+45.4
+</td>
+</tr>
+<tr>
+<th rowspan="8" valign="top">
+Ligue 1 2025/26
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+82.2
+</td>
+<td>
+89.8
+</td>
+<td>
+NaN
+</td>
+<td>
+48.0
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+89.4
+</td>
+<td>
+93.1
+</td>
+<td>
+NaN
+</td>
+<td>
+55.8
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+91.7
+</td>
+<td>
+95.0
+</td>
+<td>
+NaN
+</td>
+<td>
+54.7
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+76.9
+</td>
+<td>
+93.0
+</td>
+<td>
+NaN
+</td>
+<td>
+13.9
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+37.8
+</td>
+<td>
+65.6
+</td>
+<td>
+5.7
+</td>
+<td>
+26.8
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+21.2
+</td>
+<td>
+46.6
+</td>
+<td>
+1.4
+</td>
+<td>
+11.7
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+70.2
+</td>
+<td>
+83.8
+</td>
+<td>
+0.0
+</td>
+<td>
+40.0
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+59.7
+</td>
+<td>
+76.4
+</td>
+<td>
+0.0
+</td>
+<td>
+34.3
+</td>
+</tr>
+<tr>
+<th rowspan="8" valign="top">
+Premier League 2025/26
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+93.6
+</td>
+<td>
+95.7
+</td>
+<td>
+NaN
+</td>
+<td>
+61.8
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+98.8
+</td>
+<td>
+99.1
+</td>
+<td>
+NaN
+</td>
+<td>
+70.1
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+97.7
+</td>
+<td>
+98.3
+</td>
+<td>
+NaN
+</td>
+<td>
+68.3
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+83.0
+</td>
+<td>
+95.9
+</td>
+<td>
+NaN
+</td>
+<td>
+8.5
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+49.9
+</td>
+<td>
+71.9
+</td>
+<td>
+11.6
+</td>
+<td>
+31.1
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+53.2
+</td>
+<td>
+68.6
+</td>
+<td>
+6.9
+</td>
+<td>
+30.2
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+86.9
+</td>
+<td>
+91.7
+</td>
+<td>
+NaN
+</td>
+<td>
+56.1
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+91.5
+</td>
+<td>
+94.2
+</td>
+<td>
+NaN
+</td>
+<td>
+60.1
+</td>
+</tr>
+<tr>
+<th rowspan="8" valign="top">
+Serie A 2025/26
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+87.4
+</td>
+<td>
+91.9
+</td>
+<td>
+NaN
+</td>
+<td>
+56.6
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+94.1
+</td>
+<td>
+95.9
+</td>
+<td>
+NaN
+</td>
+<td>
+62.1
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+94.2
+</td>
+<td>
+96.2
+</td>
+<td>
+NaN
+</td>
+<td>
+59.3
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+80.6
+</td>
+<td>
+94.5
+</td>
+<td>
+NaN
+</td>
+<td>
+13.0
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+40.5
+</td>
+<td>
+65.7
+</td>
+<td>
+8.8
+</td>
+<td>
+27.8
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+29.8
+</td>
+<td>
+51.8
+</td>
+<td>
+1.3
+</td>
+<td>
+17.2
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+74.7
+</td>
+<td>
+84.3
+</td>
+<td>
+NaN
+</td>
+<td>
+48.4
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+71.1
+</td>
+<td>
+82.6
+</td>
+<td>
+NaN
+</td>
+<td>
+41.0
+</td>
+</tr>
+<tr>
+<th rowspan="8" valign="top">
+UEFA Champions League 2025/26
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+93.5
+</td>
+<td>
+95.8
+</td>
+<td>
+NaN
+</td>
+<td>
+60.0
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+97.2
+</td>
+<td>
+98.9
+</td>
+<td>
+NaN
+</td>
+<td>
+36.0
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+96.4
+</td>
+<td>
+97.5
+</td>
+<td>
+NaN
+</td>
+<td>
+63.4
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+74.7
+</td>
+<td>
+94.8
+</td>
+<td>
+NaN
+</td>
+<td>
+6.0
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+63.6
+</td>
+<td>
+80.4
+</td>
+<td>
+11.8
+</td>
+<td>
+36.6
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+63.2
+</td>
+<td>
+78.7
+</td>
+<td>
+10.4
+</td>
+<td>
+31.9
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+91.1
+</td>
+<td>
+94.4
+</td>
+<td>
+NaN
+</td>
+<td>
+58.5
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+94.2
+</td>
+<td>
+96.3
+</td>
+<td>
+NaN
+</td>
+<td>
+59.3
+</td>
+</tr>
+<tr>
+<th rowspan="8" valign="top">
+UEFA Champions League 2026/27
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+79.6
+</td>
+<td>
+87.1
+</td>
+<td>
+NaN
+</td>
+<td>
+50.5
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+85.5
+</td>
+<td>
+90.7
+</td>
+<td>
+NaN
+</td>
+<td>
+53.8
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+91.2
+</td>
+<td>
+94.5
+</td>
+<td>
+NaN
+</td>
+<td>
+55.3
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+84.9
+</td>
+<td>
+95.3
+</td>
+<td>
+NaN
+</td>
+<td>
+13.4
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+17.9
+</td>
+<td>
+41.9
+</td>
+<td>
+4.8
+</td>
+<td>
+13.9
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+12.5
+</td>
+<td>
+33.1
+</td>
+<td>
+1.4
+</td>
+<td>
+9.1
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+54.5
+</td>
+<td>
+68.9
+</td>
+<td>
+NaN
+</td>
+<td>
+38.8
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+43.6
+</td>
+<td>
+63.1
+</td>
+<td>
+NaN
+</td>
+<td>
+27.7
+</td>
+</tr>
+<tr>
+<th rowspan="8" valign="top">
+UEFA Champions League Women 2025/26
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+0.0
+</td>
+<td>
+NaN
+</td>
+<td>
+0.0
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+0.0
+</td>
+<td>
+NaN
+</td>
+<td>
+0.0
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+0.0
+</td>
+<td>
+NaN
+</td>
+<td>
+0.0
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+0.0
+</td>
+<td>
+NaN
+</td>
+<td>
+0.0
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th rowspan="8" valign="top">
+UEFA Champions League Women 2026/27
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+32.2
+</td>
+<td>
+58.7
+</td>
+<td>
+15.4
+</td>
+<td>
+23.4
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+58.6
+</td>
+<td>
+69.9
+</td>
+<td>
+0.0
+</td>
+<td>
+30.5
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+36.0
+</td>
+<td>
+48.4
+</td>
+<td>
+NaN
+</td>
+<td>
+30.0
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+51.2
+</td>
+<td>
+75.7
+</td>
+<td>
+NaN
+</td>
+<td>
+4.5
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+58.7
+</td>
+<td>
+85.6
+</td>
+<td>
+19.6
+</td>
+<td>
+46.7
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+23.5
+</td>
+<td>
+45.0
+</td>
+<td>
+12.4
+</td>
+<td>
+7.8
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+55.8
+</td>
+<td>
+85.1
+</td>
+<td>
+66.7
+</td>
+<td>
+44.2
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+16.8
+</td>
+<td>
+32.2
+</td>
+<td>
+0.0
+</td>
+<td>
+8.5
+</td>
+</tr>
+<tr>
+<th rowspan="8" valign="top">
+World Cup 2026/27
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+99.9
+</td>
+<td>
+99.9
+</td>
+<td>
+NaN
+</td>
+<td>
+69.0
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+100.0
+</td>
+<td>
+100.0
+</td>
+<td>
+NaN
+</td>
+<td>
+80.6
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+98.7
+</td>
+<td>
+99.4
+</td>
+<td>
+NaN
+</td>
+<td>
+43.1
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+79.0
+</td>
+<td>
+96.6
+</td>
+<td>
+NaN
+</td>
+<td>
+0.3
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+90.2
+</td>
+<td>
+93.5
+</td>
+<td>
+60.8
+</td>
+<td>
+59.2
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+93.2
+</td>
+<td>
+96.5
+</td>
+<td>
+38.8
+</td>
+<td>
+47.6
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+99.8
+</td>
+<td>
+99.8
+</td>
+<td>
+NaN
+</td>
+<td>
+89.1
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+100.0
+</td>
+<td>
+100.0
+</td>
+<td>
+NaN
+</td>
+<td>
+100.0
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+<a href="data/table-09-0.csv" download="">Download table (CSV)</a>
+</p>
+<div class="table-scroll">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+triggers
+</th>
+<th>
+eligible
+</th>
+<th>
+followed
+</th>
+<th>
+same_second_pct
+</th>
+<th>
+censored_pct
+</th>
+</tr>
+<tr>
+<th>
+combo
+</th>
+<th>
+phase
+</th>
+<th>
+source
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th rowspan="8" valign="top">
+Bundesliga 2025/26
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+318238
+</td>
+<td>
+310723
+</td>
+<td>
+267698
+</td>
+<td>
+10.1
+</td>
+<td>
+2.4
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+220468
+</td>
+<td>
+216331
+</td>
+<td>
+197165
+</td>
+<td>
+14.6
+</td>
+<td>
+1.9
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+84129
+</td>
+<td>
+84092
+</td>
+<td>
+77623
+</td>
+<td>
+15.5
+</td>
+<td>
+0.0
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+53361
+</td>
+<td>
+52999
+</td>
+<td>
+41992
+</td>
+<td>
+24.4
+</td>
+<td>
+0.7
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+80776
+</td>
+<td>
+80460
+</td>
+<td>
+27712
+</td>
+<td>
+0.9
+</td>
+<td>
+0.4
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+130302
+</td>
+<td>
+129736
+</td>
+<td>
+28070
+</td>
+<td>
+0.6
+</td>
+<td>
+0.4
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+34425
+</td>
+<td>
+33073
+</td>
+<td>
+23529
+</td>
+<td>
+5.7
+</td>
+<td>
+3.9
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+50769
+</td>
+<td>
+48522
+</td>
+<td>
+29129
+</td>
+<td>
+3.9
+</td>
+<td>
+4.4
+</td>
+</tr>
+<tr>
+<th rowspan="8" valign="top">
+La Liga 2025/26
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+687143
+</td>
+<td>
+670692
+</td>
+<td>
+612419
+</td>
+<td>
+12.5
+</td>
+<td>
+2.4
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+360777
+</td>
+<td>
+353262
+</td>
+<td>
+340833
+</td>
+<td>
+23.8
+</td>
+<td>
+2.1
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+161380
+</td>
+<td>
+161287
+</td>
+<td>
+156051
+</td>
+<td>
+18.5
+</td>
+<td>
+0.1
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+92701
+</td>
+<td>
+92021
+</td>
+<td>
+75657
+</td>
+<td>
+32.2
+</td>
+<td>
+0.7
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+267286
+</td>
+<td>
+266221
+</td>
+<td>
+132077
+</td>
+<td>
+2.1
+</td>
+<td>
+0.4
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+273592
+</td>
+<td>
+272608
+</td>
+<td>
+113848
+</td>
+<td>
+2.0
+</td>
+<td>
+0.4
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+120255
+</td>
+<td>
+116376
+</td>
+<td>
+97060
+</td>
+<td>
+9.4
+</td>
+<td>
+3.2
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+94607
+</td>
+<td>
+91102
+</td>
+<td>
+73752
+</td>
+<td>
+12.0
+</td>
+<td>
+3.7
+</td>
+</tr>
+<tr>
+<th rowspan="8" valign="top">
+Ligue 1 2025/26
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+266578
+</td>
+<td>
+260270
+</td>
+<td>
+213901
+</td>
+<td>
+8.4
+</td>
+<td>
+2.4
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+171324
+</td>
+<td>
+168022
+</td>
+<td>
+150276
+</td>
+<td>
+13.1
+</td>
+<td>
+1.9
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+61632
+</td>
+<td>
+61609
+</td>
+<td>
+56468
+</td>
+<td>
+12.5
+</td>
+<td>
+0.0
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+38709
+</td>
+<td>
+38413
+</td>
+<td>
+29522
+</td>
+<td>
+19.9
+</td>
+<td>
+0.8
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+58662
+</td>
+<td>
+58397
+</td>
+<td>
+22079
+</td>
+<td>
+1.3
+</td>
+<td>
+0.5
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+95676
+</td>
+<td>
+95331
+</td>
+<td>
+20216
+</td>
+<td>
+0.8
+</td>
+<td>
+0.4
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+30625
+</td>
+<td>
+29523
+</td>
+<td>
+20717
+</td>
+<td>
+6.2
+</td>
+<td>
+3.6
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+47089
+</td>
+<td>
+45146
+</td>
+<td>
+26944
+</td>
+<td>
+4.0
+</td>
+<td>
+4.1
+</td>
+</tr>
+<tr>
+<th rowspan="8" valign="top">
+Premier League 2025/26
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+1037870
+</td>
+<td>
+1014850
+</td>
+<td>
+949407
+</td>
+<td>
+13.7
+</td>
+<td>
+2.2
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+481261
+</td>
+<td>
+471414
+</td>
+<td>
+465850
+</td>
+<td>
+29.6
+</td>
+<td>
+2.0
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+214945
+</td>
+<td>
+214879
+</td>
+<td>
+210042
+</td>
+<td>
+20.4
+</td>
+<td>
+0.0
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+118856
+</td>
+<td>
+117870
+</td>
+<td>
+97870
+</td>
+<td>
+36.8
+</td>
+<td>
+0.8
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+527088
+</td>
+<td>
+525412
+</td>
+<td>
+261985
+</td>
+<td>
+2.0
+</td>
+<td>
+0.3
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+423240
+</td>
+<td>
+421902
+</td>
+<td>
+224325
+</td>
+<td>
+2.5
+</td>
+<td>
+0.3
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+211327
+</td>
+<td>
+204041
+</td>
+<td>
+177243
+</td>
+<td>
+9.0
+</td>
+<td>
+3.4
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+137789
+</td>
+<td>
+132697
+</td>
+<td>
+121461
+</td>
+<td>
+13.8
+</td>
+<td>
+3.7
+</td>
+</tr>
+<tr>
+<th rowspan="8" valign="top">
+Serie A 2025/26
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+496423
+</td>
+<td>
+485333
+</td>
+<td>
+424247
+</td>
+<td>
+9.8
+</td>
+<td>
+2.2
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+298250
+</td>
+<td>
+292772
+</td>
+<td>
+275498
+</td>
+<td>
+16.3
+</td>
+<td>
+1.8
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+109477
+</td>
+<td>
+109443
+</td>
+<td>
+103097
+</td>
+<td>
+14.8
+</td>
+<td>
+0.0
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+66897
+</td>
+<td>
+66365
+</td>
+<td>
+53505
+</td>
+<td>
+24.3
+</td>
+<td>
+0.8
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+147539
+</td>
+<td>
+146963
+</td>
+<td>
+59523
+</td>
+<td>
+1.2
+</td>
+<td>
+0.4
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+184010
+</td>
+<td>
+183344
+</td>
+<td>
+54708
+</td>
+<td>
+0.9
+</td>
+<td>
+0.4
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+66124
+</td>
+<td>
+63759
+</td>
+<td>
+47656
+</td>
+<td>
+5.4
+</td>
+<td>
+3.6
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+71932
+</td>
+<td>
+69067
+</td>
+<td>
+49102
+</td>
+<td>
+5.0
+</td>
+<td>
+4.0
+</td>
+</tr>
+<tr>
+<th rowspan="8" valign="top">
+UEFA Champions League 2025/26
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+619607
+</td>
+<td>
+607844
+</td>
+<td>
+568046
+</td>
+<td>
+16.8
+</td>
+<td>
+1.9
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+262393
+</td>
+<td>
+257514
+</td>
+<td>
+250232
+</td>
+<td>
+39.7
+</td>
+<td>
+1.9
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+85612
+</td>
+<td>
+85591
+</td>
+<td>
+82552
+</td>
+<td>
+22.8
+</td>
+<td>
+0.0
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+52213
+</td>
+<td>
+51668
+</td>
+<td>
+38600
+</td>
+<td>
+37.4
+</td>
+<td>
+1.0
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+468784
+</td>
+<td>
+467187
+</td>
+<td>
+297169
+</td>
+<td>
+3.7
+</td>
+<td>
+0.3
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+363199
+</td>
+<td>
+362243
+</td>
+<td>
+228869
+</td>
+<td>
+4.8
+</td>
+<td>
+0.3
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+172664
+</td>
+<td>
+167034
+</td>
+<td>
+152152
+</td>
+<td>
+13.7
+</td>
+<td>
+3.3
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+93874
+</td>
+<td>
+90861
+</td>
+<td>
+85584
+</td>
+<td>
+25.1
+</td>
+<td>
+3.2
+</td>
+</tr>
+<tr>
+<th rowspan="8" valign="top">
+UEFA Champions League 2026/27
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+98023
+</td>
+<td>
+95748
+</td>
+<td>
+76219
+</td>
+<td>
+8.4
+</td>
+<td>
+2.3
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+57199
+</td>
+<td>
+56296
+</td>
+<td>
+48141
+</td>
+<td>
+14.4
+</td>
+<td>
+1.6
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+19741
+</td>
+<td>
+19731
+</td>
+<td>
+18003
+</td>
+<td>
+13.1
+</td>
+<td>
+0.1
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+8720
+</td>
+<td>
+8703
+</td>
+<td>
+7388
+</td>
+<td>
+29.7
+</td>
+<td>
+0.2
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+11687
+</td>
+<td>
+11645
+</td>
+<td>
+2084
+</td>
+<td>
+0.4
+</td>
+<td>
+0.4
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+18075
+</td>
+<td>
+18013
+</td>
+<td>
+2244
+</td>
+<td>
+0.3
+</td>
+<td>
+0.3
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+6712
+</td>
+<td>
+6406
+</td>
+<td>
+3492
+</td>
+<td>
+3.0
+</td>
+<td>
+4.6
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+9917
+</td>
+<td>
+9471
+</td>
+<td>
+4126
+</td>
+<td>
+2.0
+</td>
+<td>
+4.5
+</td>
+</tr>
+<tr>
+<th rowspan="8" valign="top">
+UEFA Champions League Women 2025/26
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+890
+</td>
+<td>
+886
+</td>
+<td>
+0
+</td>
+<td>
+0.0
+</td>
+<td>
+0.4
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+81
+</td>
+<td>
+77
+</td>
+<td>
+0
+</td>
+<td>
+0.0
+</td>
+<td>
+4.9
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+923
+</td>
+<td>
+922
+</td>
+<td>
+0
+</td>
+<td>
+0.0
+</td>
+<td>
+0.1
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+227
+</td>
+<td>
+217
+</td>
+<td>
+0
+</td>
+<td>
+0.0
+</td>
+<td>
+4.4
+</td>
+</tr>
+<tr>
+<th rowspan="8" valign="top">
+UEFA Champions League Women 2026/27
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+5027
+</td>
+<td>
+4918
+</td>
+<td>
+1584
+</td>
+<td>
+1.1
+</td>
+<td>
+2.2
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+1480
+</td>
+<td>
+1460
+</td>
+<td>
+855
+</td>
+<td>
+3.8
+</td>
+<td>
+1.4
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+1289
+</td>
+<td>
+1289
+</td>
+<td>
+464
+</td>
+<td>
+1.9
+</td>
+<td>
+0.0
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+328
+</td>
+<td>
+326
+</td>
+<td>
+167
+</td>
+<td>
+7.3
+</td>
+<td>
+0.6
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+686
+</td>
+<td>
+685
+</td>
+<td>
+402
+</td>
+<td>
+2.5
+</td>
+<td>
+0.1
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+1140
+</td>
+<td>
+1140
+</td>
+<td>
+268
+</td>
+<td>
+1.5
+</td>
+<td>
+0.0
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+267
+</td>
+<td>
+242
+</td>
+<td>
+135
+</td>
+<td>
+0.0
+</td>
+<td>
+9.4
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+346
+</td>
+<td>
+333
+</td>
+<td>
+56
+</td>
+<td>
+0.0
+</td>
+<td>
+3.8
+</td>
+</tr>
+<tr>
+<th rowspan="8" valign="top">
+World Cup 2026/27
+</th>
+<th rowspan="2" valign="top">
+post_0_to_105m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+1613722
+</td>
+<td>
+1584262
+</td>
+<td>
+1582919
+</td>
+<td>
+39.8
+</td>
+<td>
+1.8
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+734890
+</td>
+<td>
+721087
+</td>
+<td>
+720993
+</td>
+<td>
+87.3
+</td>
+<td>
+1.9
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+post_105_to_135m
+</th>
+<th>
+KALSHI
+</th>
+<td>
+225124
+</td>
+<td>
+224683
+</td>
+<td>
+221864
+</td>
+<td>
+50.7
+</td>
+<td>
+0.2
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+163269
+</td>
+<td>
+161228
+</td>
+<td>
+127417
+</td>
+<td>
+69.9
+</td>
+<td>
+1.3
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_24h_to_1h
+</th>
+<th>
+KALSHI
+</th>
+<td>
+3815826
+</td>
+<td>
+3804736
+</td>
+<td>
+3433493
+</td>
+<td>
+11.1
+</td>
+<td>
+0.3
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+1423441
+</td>
+<td>
+1419782
+</td>
+<td>
+1323191
+</td>
+<td>
+29.8
+</td>
+<td>
+0.3
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+pre_last_hour
+</th>
+<th>
+KALSHI
+</th>
+<td>
+811900
+</td>
+<td>
+795303
+</td>
+<td>
+793510
+</td>
+<td>
+28.5
+</td>
+<td>
+2.0
+</td>
+</tr>
+<tr>
+<th>
+POLYMARKET
+</th>
+<td>
+288778
+</td>
+<td>
+281630
+</td>
+<td>
+281626
+</td>
+<td>
+80.1
+</td>
+<td>
+2.5
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+<a href="data/table-09-1.csv" download="">Download table (CSV)</a>
+</p>
+Each source second counts once per fixture and outcome. A trigger is eligible only if its entire future H-second window lies inside its phase and the observed data window. The 0–55 and 55–105 minute boundaries are respected before pooling. Denominators therefore vary with H, so curves need not increase at every point. An undefined rate means no eligible triggers.
+</details>
+</section>
+<section id="which-markets-enter-the-price-gap-study" class="level3">
+<h3 class="anchored" data-anchor-id="which-markets-enter-the-price-gap-study">Which markets enter the price-gap study?</h3>
+<p>For the rest of the article, a competition-window group must have roughly 70% dual-fresh clock coverage. The rule rounds coverage to a whole percent, then chooses the smallest qualifying F from 5, 10, and 60 seconds. <strong>This is why Champions League qualifies at 69.68%.</strong></p>
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+Competition
+</th>
+<th>
+Window
+</th>
+<th>
+Freshness (seconds)
+</th>
+<th>
+Both fresh (%)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Premier League 2025/26
+</td>
+<td>
+In play: 0–105 min
+</td>
+<td>
+60
+</td>
+<td>
+78.31
+</td>
+</tr>
+<tr>
+<td>
+UEFA Champions League 2025/26
+</td>
+<td>
+In play: 0–105 min
+</td>
+<td>
+60
+</td>
+<td>
+69.68
+</td>
+</tr>
+<tr>
+<td>
+World Cup 2026
+</td>
+<td>
+In play: 0–105 min
+</td>
+<td>
+5
+</td>
+<td>
+83.23
+</td>
+</tr>
+<tr>
+<td>
+World Cup 2026
+</td>
+<td>
+Last hour before kickoff
+</td>
+<td>
+10
+</td>
+<td>
+85.06
+</td>
+</tr>
+</tbody>
+</table>
+<p>This is a scope rule, not a ranking of profitability. The activity diagnostics above include the full population. Excluding a group from the fresh-pair study says nothing decisive about asynchronous strategies in that group.</p>
+</section>
+</section>
+<section id="how-large-are-the-gapsand-which-venue-is-cheaper" class="level2">
+<h2 class="anchored" data-anchor-id="how-large-are-the-gapsand-which-venue-is-cheaper">2. How large are the gaps—and which venue is cheaper?</h2>
+<p>A gap of −2 cents means the Polymarket reference is 2 cents below Kalshi. A +2 cent gap means the reverse. Taking an absolute value would hide that direction.</p>
+<iframe class="research-chart" src="charts/chart-14-0.html" title="Interactive chart 14.0" loading="lazy" height="555">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-14-0.html" target="_blank">Open full screen</a> · <a href="data/chart-14-0.csv" download="">Chart data (CSV)</a>
+</div>
+<p>The two series answer different questions. <strong>Per print</strong> weights each update equally. <strong>Per second</strong> weights a pair by how long it remains fresh before the next update or freshness expiry. A difference that produces many rapid trades need not occupy much of the clock.</p>
+<p>The middle bucket contains gaps strictly between −1 and +1 cent; exact one-cent gaps sit in adjacent buckets. The end buckets include everything at or beyond ±4 cents. Reported means use the exact gaps, not bucket midpoints.</p>
+<p>For all outcomes pooled, the Premier League in-play sample has a <strong>1.28-cent mean absolute gap</strong>, with 20.80% of fresh prints at least 2 cents apart. World Cup in play has a 0.69-cent mean absolute gap and 4.57% at least 2 cents apart. These use <strong>different freshness cutoffs: 60 seconds and 5 seconds</strong>. The comparison mixes activity and freshness effects; it is not an equal-cutoff ranking of mispricing.</p>
+<section id="a-signed-gap-needs-the-trading-side-attached" class="level3">
+<h3 class="anchored" data-anchor-id="a-signed-gap-needs-the-trading-side-attached">A signed gap needs the trading side attached</h3>
+<p>The two venues’ pooled last trades do not necessarily describe prices you could buy at. A taker buy and a taker sell hit different sides of the market. The next chart separates those combinations.</p>
+<iframe class="research-chart" src="charts/chart-16-0.html" title="Interactive chart 16.0" loading="lazy" height="535">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-16-0.html" target="_blank">Open full screen</a> · <a href="data/chart-16-0.csv" download="">Chart data (CSV)</a>
+</div>
+<p>Hover over a square for the mean signed gap, the share at least 2 cents in each direction, and the number of fresh observations. The color scale is shared across groups.</p>
+<p>For example, a <strong>Polymarket taker-buy / Kalshi taker-sell</strong> pair with a −2 cent gap corresponds to a 2-cent pre-fee reference edge for buying Polymarket YES and Kalshi NO. Other action pairs describe routes that require one or both legs to rest as makers.</p>
+<p>Even this mapping uses historical prints as price references. A trade that happened at a price does not establish that you could also have filled there.</p>
+<details>
+<summary>
+Compare home, draw, and away; inspect exact gap statistics
+</summary>
+<iframe class="research-chart" src="charts/chart-18-0.html" title="Interactive chart 18.0" loading="lazy" height="555">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-18-0.html" target="_blank">Open full screen</a> · <a href="data/chart-18-0.csv" download="">Chart data (CSV)</a>
+</div>
+<div class="table-scroll">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th colspan="3" halign="left">
+ge_2c_pct
+</th>
+<th colspan="3" halign="left">
+mean_abs_gap_c
+</th>
+<th colspan="3" halign="left">
+mean_gap_c
+</th>
+<th colspan="3" halign="left">
+pm_higher_1c_pct
+</th>
+<th colspan="3" halign="left">
+pm_lower_1c_pct
+</th>
+</tr>
+<tr>
+<th>
+outcome
+</th>
+<th>
+all
+</th>
+<th>
+team_win
+</th>
+<th>
+draw
+</th>
+<th>
+all
+</th>
+<th>
+team_win
+</th>
+<th>
+draw
+</th>
+<th>
+all
+</th>
+<th>
+team_win
+</th>
+<th>
+draw
+</th>
+<th>
+all
+</th>
+<th>
+team_win
+</th>
+<th>
+draw
+</th>
+<th>
+all
+</th>
+<th>
+team_win
+</th>
+<th>
+draw
+</th>
+</tr>
+<tr>
+<th>
+cell
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+Premier League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<td>
+20.80
+</td>
+<td>
+20.90
+</td>
+<td>
+20.43
+</td>
+<td>
+1.28
+</td>
+<td>
+1.27
+</td>
+<td>
+1.31
+</td>
+<td>
+-0.44
+</td>
+<td>
+-0.50
+</td>
+<td>
+-0.20
+</td>
+<td>
+14.63
+</td>
+<td>
+13.50
+</td>
+<td>
+18.69
+</td>
+<td>
+41.32
+</td>
+<td>
+42.80
+</td>
+<td>
+36.01
+</td>
+</tr>
+<tr>
+<th>
+UEFA Champions League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<td>
+20.56
+</td>
+<td>
+20.84
+</td>
+<td>
+19.49
+</td>
+<td>
+1.43
+</td>
+<td>
+1.46
+</td>
+<td>
+1.30
+</td>
+<td>
+-0.37
+</td>
+<td>
+-0.47
+</td>
+<td>
+0.01
+</td>
+<td>
+16.03
+</td>
+<td>
+14.83
+</td>
+<td>
+20.57
+</td>
+<td>
+37.75
+</td>
+<td>
+39.28
+</td>
+<td>
+31.94
+</td>
+</tr>
+<tr>
+<th>
+World Cup 2026/27 | post_0_to_105m&nbsp;&nbsp;F=5s
+</th>
+<td>
+4.57
+</td>
+<td>
+5.41
+</td>
+<td>
+2.79
+</td>
+<td>
+0.69
+</td>
+<td>
+0.72
+</td>
+<td>
+0.62
+</td>
+<td>
+-0.21
+</td>
+<td>
+-0.33
+</td>
+<td>
+0.02
+</td>
+<td>
+7.66
+</td>
+<td>
+5.83
+</td>
+<td>
+11.54
+</td>
+<td>
+21.38
+</td>
+<td>
+24.66
+</td>
+<td>
+14.42
+</td>
+</tr>
+<tr>
+<th>
+World Cup 2026/27 | pre_last_hour&nbsp;&nbsp;F=10s
+</th>
+<td>
+4.16
+</td>
+<td>
+4.70
+</td>
+<td>
+2.65
+</td>
+<td>
+0.57
+</td>
+<td>
+0.61
+</td>
+<td>
+0.46
+</td>
+<td>
+-0.36
+</td>
+<td>
+-0.45
+</td>
+<td>
+-0.11
+</td>
+<td>
+2.91
+</td>
+<td>
+2.19
+</td>
+<td>
+4.94
+</td>
+<td>
+31.27
+</td>
+<td>
+35.18
+</td>
+<td>
+20.35
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+<a href="data/table-14-0.csv" download="">Download table (CSV)</a>
+</p>
+<div class="table-scroll">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+</th>
+<th>
+prints
+</th>
+<th>
+mean_gap_c
+</th>
+<th>
+mean_abs_gap_c
+</th>
+<th>
+le_m2c_pct
+</th>
+<th>
+ge_p2c_pct
+</th>
+</tr>
+<tr>
+<th>
+cell
+</th>
+<th>
+outcome
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th rowspan="3" valign="top">
+Premier League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th>
+home
+</th>
+<td>
+508574
+</td>
+<td>
+-0.46
+</td>
+<td>
+1.27
+</td>
+<td>
+15.59
+</td>
+<td>
+4.87
+</td>
+</tr>
+<tr>
+<th>
+draw
+</th>
+<td>
+284283
+</td>
+<td>
+-0.20
+</td>
+<td>
+1.31
+</td>
+<td>
+13.37
+</td>
+<td>
+7.06
+</td>
+</tr>
+<tr>
+<th>
+away
+</th>
+<td>
+512009
+</td>
+<td>
+-0.55
+</td>
+<td>
+1.27
+</td>
+<td>
+17.02
+</td>
+<td>
+4.33
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+UEFA Champions League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th>
+home
+</th>
+<td>
+274797
+</td>
+<td>
+-0.56
+</td>
+<td>
+1.49
+</td>
+<td>
+14.62
+</td>
+<td>
+5.96
+</td>
+</tr>
+<tr>
+<th>
+draw
+</th>
+<td>
+151959
+</td>
+<td>
+0.01
+</td>
+<td>
+1.30
+</td>
+<td>
+10.72
+</td>
+<td>
+8.77
+</td>
+</tr>
+<tr>
+<th>
+away
+</th>
+<td>
+304009
+</td>
+<td>
+-0.39
+</td>
+<td>
+1.44
+</td>
+<td>
+15.95
+</td>
+<td>
+5.12
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+World Cup 2026/27 | post_0_to_105m&nbsp;&nbsp;F=5s
+</th>
+<th>
+home
+</th>
+<td>
+540539
+</td>
+<td>
+-0.34
+</td>
+<td>
+0.77
+</td>
+<td>
+5.35
+</td>
+<td>
+0.83
+</td>
+</tr>
+<tr>
+<th>
+draw
+</th>
+<td>
+498251
+</td>
+<td>
+0.02
+</td>
+<td>
+0.62
+</td>
+<td>
+1.40
+</td>
+<td>
+1.40
+</td>
+</tr>
+<tr>
+<th>
+away
+</th>
+<td>
+516521
+</td>
+<td>
+-0.31
+</td>
+<td>
+0.68
+</td>
+<td>
+3.95
+</td>
+<td>
+0.64
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+World Cup 2026/27 | pre_last_hour&nbsp;&nbsp;F=10s
+</th>
+<th>
+home
+</th>
+<td>
+308512
+</td>
+<td>
+-0.50
+</td>
+<td>
+0.64
+</td>
+<td>
+5.60
+</td>
+<td>
+0.02
+</td>
+</tr>
+<tr>
+<th>
+draw
+</th>
+<td>
+208414
+</td>
+<td>
+-0.11
+</td>
+<td>
+0.46
+</td>
+<td>
+2.44
+</td>
+<td>
+0.21
+</td>
+</tr>
+<tr>
+<th>
+away
+</th>
+<td>
+274013
+</td>
+<td>
+-0.41
+</td>
+<td>
+0.57
+</td>
+<td>
+3.61
+</td>
+<td>
+0.05
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+<a href="data/table-18-0.csv" download="">Download table (CSV)</a>
+</p>
+The outcome chart separates mean gaps in cents from tail shares in percent. Choose the metric in the dropdown.
+</details>
+</section>
+</section>
+<section id="what-survives-assumed-fees" class="level2">
+<h2 class="anchored" data-anchor-id="what-survives-assumed-fees">3. What survives assumed fees?</h2>
+<p>The next screen asks whether the two last-trade references imply a positive net edge after the study’s charged-fee scenario. It uses each candidate group’s own freshness cutoff.</p>
+<iframe class="research-chart" src="charts/chart-20-0.html" title="Interactive chart 20.0" loading="lazy" height="555">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-20-0.html" target="_blank">Open full screen</a> · <a href="data/chart-20-0.csv" download="">Chart data (CSV)</a>
+</div>
+<p><strong>Positive means above zero under that scenario; it is not a return.</strong> The denominator is fresh route-leg observations. A high positive rate can coexist with tiny edges, unavailable size, or poor execution.</p>
+<p>For a concrete example, Premier League in play shows a positive two-taker reference in <strong>3.64%</strong> of PM YES + Kalshi NO observations and <strong>1.70%</strong> in the reverse direction. The corresponding World Cup in-play rates are <strong>0.80%</strong> and <strong>0.72%</strong>, using its tighter 5-second cutoff.</p>
+<p>Maker/maker is especially easy to overread. It uses two passive-fill price references and assumes <strong>both</strong> resting legs fill at those prices. The chart does not measure joint fill probability, queue position, or exposure while only one leg is filled.</p>
+<details>
+<summary>
+Fee sensitivity, freshness sensitivity, and reference-screen tables
+</summary>
+<iframe class="research-chart" src="charts/chart-21-0.html" title="Interactive chart 21.0" loading="lazy" height="555">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-21-0.html" target="_blank">Open full screen</a> · <a href="data/chart-21-0.csv" download="">Chart data (CSV)</a>
+</div>
+<iframe class="research-chart" src="charts/chart-22-0.html" title="Interactive chart 22.0" loading="lazy" height="555">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-22-0.html" target="_blank">Open full screen</a> · <a href="data/chart-22-0.csv" download="">Chart data (CSV)</a>
+</div>
+<div class="table-scroll">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+outcome_sel
+</th>
+<th colspan="2" halign="left">
+all
+</th>
+<th colspan="2" halign="left">
+team_win
+</th>
+<th colspan="2" halign="left">
+draw
+</th>
+</tr>
+<tr>
+<th>
+</th>
+<th>
+direction
+</th>
+<th>
+K YES + PM NO
+</th>
+<th>
+PM YES + K NO
+</th>
+<th>
+K YES + PM NO
+</th>
+<th>
+PM YES + K NO
+</th>
+<th>
+K YES + PM NO
+</th>
+<th>
+PM YES + K NO
+</th>
+</tr>
+<tr>
+<th>
+cell
+</th>
+<th>
+route
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th rowspan="2" valign="top">
+Premier League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th>
+maker/maker
+</th>
+<td>
+443863.0
+</td>
+<td>
+855169.0
+</td>
+<td>
+361607.0
+</td>
+<td>
+687136.0
+</td>
+<td>
+82256.0
+</td>
+<td>
+168033.0
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+855169.0
+</td>
+<td>
+443863.0
+</td>
+<td>
+687136.0
+</td>
+<td>
+361607.0
+</td>
+<td>
+168033.0
+</td>
+<td>
+82256.0
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+UEFA Champions League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th>
+maker/maker
+</th>
+<td>
+269310.0
+</td>
+<td>
+498863.0
+</td>
+<td>
+221864.0
+</td>
+<td>
+403218.0
+</td>
+<td>
+47446.0
+</td>
+<td>
+95645.0
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+498863.0
+</td>
+<td>
+269310.0
+</td>
+<td>
+403218.0
+</td>
+<td>
+221864.0
+</td>
+<td>
+95645.0
+</td>
+<td>
+47446.0
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+World Cup 2026/27 | post_0_to_105m&nbsp;&nbsp;F=5s
+</th>
+<th>
+maker/maker
+</th>
+<td>
+800153.0
+</td>
+<td>
+1038044.0
+</td>
+<td>
+575790.0
+</td>
+<td>
+752325.0
+</td>
+<td>
+224363.0
+</td>
+<td>
+285719.0
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+1038044.0
+</td>
+<td>
+800153.0
+</td>
+<td>
+752325.0
+</td>
+<td>
+575790.0
+</td>
+<td>
+285719.0
+</td>
+<td>
+224363.0
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+World Cup 2026/27 | pre_last_hour&nbsp;&nbsp;F=10s
+</th>
+<th>
+maker/maker
+</th>
+<td>
+202971.0
+</td>
+<td>
+391773.0
+</td>
+<td>
+172668.0
+</td>
+<td>
+319588.0
+</td>
+<td>
+30303.0
+</td>
+<td>
+72185.0
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+391773.0
+</td>
+<td>
+202971.0
+</td>
+<td>
+319588.0
+</td>
+<td>
+172668.0
+</td>
+<td>
+72185.0
+</td>
+<td>
+30303.0
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+<a href="data/table-20-0.csv" download="">Download table (CSV)</a>
+</p>
+<div class="table-scroll">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+outcome_sel
+</th>
+<th colspan="2" halign="left">
+all
+</th>
+<th colspan="2" halign="left">
+team_win
+</th>
+<th colspan="2" halign="left">
+draw
+</th>
+</tr>
+<tr>
+<th>
+</th>
+<th>
+direction
+</th>
+<th>
+K YES + PM NO
+</th>
+<th>
+PM YES + K NO
+</th>
+<th>
+K YES + PM NO
+</th>
+<th>
+PM YES + K NO
+</th>
+<th>
+K YES + PM NO
+</th>
+<th>
+PM YES + K NO
+</th>
+</tr>
+<tr>
+<th>
+cell
+</th>
+<th>
+route
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th rowspan="2" valign="top">
+Premier League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th>
+maker/maker
+</th>
+<td>
+69.73
+</td>
+<td>
+80.16
+</td>
+<td>
+68.18
+</td>
+<td>
+81.32
+</td>
+<td>
+76.51
+</td>
+<td>
+75.42
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+1.70
+</td>
+<td>
+3.64
+</td>
+<td>
+1.57
+</td>
+<td>
+3.74
+</td>
+<td>
+2.22
+</td>
+<td>
+3.19
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+UEFA Champions League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th>
+maker/maker
+</th>
+<td>
+73.57
+</td>
+<td>
+80.17
+</td>
+<td>
+71.69
+</td>
+<td>
+81.56
+</td>
+<td>
+82.32
+</td>
+<td>
+74.34
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+1.92
+</td>
+<td>
+3.52
+</td>
+<td>
+1.71
+</td>
+<td>
+3.80
+</td>
+<td>
+2.80
+</td>
+<td>
+2.24
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+World Cup 2026/27 | post_0_to_105m&nbsp;&nbsp;F=5s
+</th>
+<th>
+maker/maker
+</th>
+<td>
+72.34
+</td>
+<td>
+76.97
+</td>
+<td>
+68.59
+</td>
+<td>
+80.66
+</td>
+<td>
+81.98
+</td>
+<td>
+67.27
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+0.72
+</td>
+<td>
+0.80
+</td>
+<td>
+0.61
+</td>
+<td>
+0.90
+</td>
+<td>
+0.99
+</td>
+<td>
+0.53
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+World Cup 2026/27 | pre_last_hour&nbsp;&nbsp;F=10s
+</th>
+<th>
+maker/maker
+</th>
+<td>
+62.64
+</td>
+<td>
+85.99
+</td>
+<td>
+59.00
+</td>
+<td>
+88.65
+</td>
+<td>
+83.39
+</td>
+<td>
+74.20
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+0.09
+</td>
+<td>
+0.00
+</td>
+<td>
+0.04
+</td>
+<td>
+0.00
+</td>
+<td>
+0.32
+</td>
+<td>
+0.00
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+<a href="data/table-20-1.csv" download="">Download table (CSV)</a>
+</p>
+<div class="table-scroll">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+outcome_sel
+</th>
+<th colspan="2" halign="left">
+all
+</th>
+<th colspan="2" halign="left">
+team_win
+</th>
+<th colspan="2" halign="left">
+draw
+</th>
+</tr>
+<tr>
+<th>
+</th>
+<th>
+direction
+</th>
+<th>
+K YES + PM NO
+</th>
+<th>
+PM YES + K NO
+</th>
+<th>
+K YES + PM NO
+</th>
+<th>
+PM YES + K NO
+</th>
+<th>
+K YES + PM NO
+</th>
+<th>
+PM YES + K NO
+</th>
+</tr>
+<tr>
+<th>
+cell
+</th>
+<th>
+route
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th rowspan="2" valign="top">
+Premier League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th>
+maker/maker
+</th>
+<td>
+0.92
+</td>
+<td>
+1.17
+</td>
+<td>
+0.81
+</td>
+<td>
+1.20
+</td>
+<td>
+1.40
+</td>
+<td>
+1.08
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+-3.62
+</td>
+<td>
+-3.22
+</td>
+<td>
+-3.62
+</td>
+<td>
+-3.07
+</td>
+<td>
+-3.61
+</td>
+<td>
+-3.87
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+UEFA Champions League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th>
+maker/maker
+</th>
+<td>
+1.02
+</td>
+<td>
+1.19
+</td>
+<td>
+0.88
+</td>
+<td>
+1.26
+</td>
+<td>
+1.67
+</td>
+<td>
+0.91
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+-3.54
+</td>
+<td>
+-3.24
+</td>
+<td>
+-3.61
+</td>
+<td>
+-3.09
+</td>
+<td>
+-3.24
+</td>
+<td>
+-3.94
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+World Cup 2026/27 | post_0_to_105m&nbsp;&nbsp;F=5s
+</th>
+<th>
+maker/maker
+</th>
+<td>
+0.53
+</td>
+<td>
+0.63
+</td>
+<td>
+0.44
+</td>
+<td>
+0.72
+</td>
+<td>
+0.76
+</td>
+<td>
+0.39
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+-2.83
+</td>
+<td>
+-2.77
+</td>
+<td>
+-2.87
+</td>
+<td>
+-2.61
+</td>
+<td>
+-2.72
+</td>
+<td>
+-3.17
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+World Cup 2026/27 | pre_last_hour&nbsp;&nbsp;F=10s
+</th>
+<th>
+maker/maker
+</th>
+<td>
+0.32
+</td>
+<td>
+0.80
+</td>
+<td>
+0.25
+</td>
+<td>
+0.85
+</td>
+<td>
+0.67
+</td>
+<td>
+0.54
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+-3.31
+</td>
+<td>
+-2.95
+</td>
+<td>
+-3.39
+</td>
+<td>
+-2.92
+</td>
+<td>
+-2.94
+</td>
+<td>
+-3.12
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+<a href="data/table-20-2.csv" download="">Download table (CSV)</a>
+</p>
+<div class="table-scroll">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+outcome_sel
+</th>
+<th colspan="2" halign="left">
+all
+</th>
+<th colspan="2" halign="left">
+team_win
+</th>
+<th colspan="2" halign="left">
+draw
+</th>
+</tr>
+<tr>
+<th>
+</th>
+<th>
+direction
+</th>
+<th>
+K YES + PM NO
+</th>
+<th>
+PM YES + K NO
+</th>
+<th>
+K YES + PM NO
+</th>
+<th>
+PM YES + K NO
+</th>
+<th>
+K YES + PM NO
+</th>
+<th>
+PM YES + K NO
+</th>
+</tr>
+<tr>
+<th>
+cell
+</th>
+<th>
+route
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th rowspan="2" valign="top">
+Premier League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th>
+maker/maker
+</th>
+<td>
+73.66
+</td>
+<td>
+81.23
+</td>
+<td>
+71.41
+</td>
+<td>
+83.00
+</td>
+<td>
+81.29
+</td>
+<td>
+75.53
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+1.39
+</td>
+<td>
+2.12
+</td>
+<td>
+1.24
+</td>
+<td>
+2.17
+</td>
+<td>
+1.85
+</td>
+<td>
+1.96
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+UEFA Champions League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th>
+maker/maker
+</th>
+<td>
+76.67
+</td>
+<td>
+81.05
+</td>
+<td>
+74.30
+</td>
+<td>
+82.71
+</td>
+<td>
+84.71
+</td>
+<td>
+75.52
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+2.13
+</td>
+<td>
+2.46
+</td>
+<td>
+1.87
+</td>
+<td>
+2.76
+</td>
+<td>
+2.97
+</td>
+<td>
+1.45
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+World Cup 2026/27 | post_0_to_105m&nbsp;&nbsp;F=5s
+</th>
+<th>
+maker/maker
+</th>
+<td>
+73.06
+</td>
+<td>
+76.90
+</td>
+<td>
+68.83
+</td>
+<td>
+80.42
+</td>
+<td>
+83.17
+</td>
+<td>
+67.45
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+0.73
+</td>
+<td>
+0.67
+</td>
+<td>
+0.63
+</td>
+<td>
+0.77
+</td>
+<td>
+1.00
+</td>
+<td>
+0.42
+</td>
+</tr>
+<tr>
+<th rowspan="2" valign="top">
+World Cup 2026/27 | pre_last_hour&nbsp;&nbsp;F=10s
+</th>
+<th>
+maker/maker
+</th>
+<td>
+67.06
+</td>
+<td>
+84.65
+</td>
+<td>
+62.66
+</td>
+<td>
+87.56
+</td>
+<td>
+84.70
+</td>
+<td>
+73.60
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+0.10
+</td>
+<td>
+0.00
+</td>
+<td>
+0.04
+</td>
+<td>
+0.00
+</td>
+<td>
+0.31
+</td>
+<td>
+0.00
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+<a href="data/table-20-3.csv" download="">Download table (CSV)</a>
+</p>
+<div class="table-scroll">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+scenario
+</th>
+<th>
+no_fees
+</th>
+<th>
+fees_K_maker_free
+</th>
+<th>
+fees_K_maker_charged
+</th>
+<th>
+fees_plus_PM_maker_rebate
+</th>
+<th>
+fees_plus_PM_taker_rebate_3pct
+</th>
+<th>
+fees_plus_PM_taker_rebate_50pct
+</th>
+<th>
+fees_PM_fee_free
+</th>
+</tr>
+<tr>
+<th>
+cell
+</th>
+<th>
+route
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th rowspan="4" valign="top">
+Premier League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th>
+maker/taker
+</th>
+<td>
+28.4
+</td>
+<td>
+14.6
+</td>
+<td>
+14.6
+</td>
+<td>
+15.7
+</td>
+<td>
+14.6
+</td>
+<td>
+14.6
+</td>
+<td>
+14.6
+</td>
+</tr>
+<tr>
+<th>
+taker/maker
+</th>
+<td>
+53.5
+</td>
+<td>
+28.9
+</td>
+<td>
+24.5
+</td>
+<td>
+24.5
+</td>
+<td>
+24.8
+</td>
+<td>
+33.2
+</td>
+<td>
+40.9
+</td>
+</tr>
+<tr>
+<th>
+maker/maker
+</th>
+<td>
+71.1
+</td>
+<td>
+71.1
+</td>
+<td>
+69.7
+</td>
+<td>
+70.1
+</td>
+<td>
+69.7
+</td>
+<td>
+69.7
+</td>
+<td>
+69.7
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+16.4
+</td>
+<td>
+5.7
+</td>
+<td>
+5.7
+</td>
+<td>
+5.7
+</td>
+<td>
+5.7
+</td>
+<td>
+6.7
+</td>
+<td>
+8.5
+</td>
+</tr>
+<tr>
+<th rowspan="4" valign="top">
+UEFA Champions League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th>
+maker/taker
+</th>
+<td>
+28.9
+</td>
+<td>
+14.7
+</td>
+<td>
+14.7
+</td>
+<td>
+15.8
+</td>
+<td>
+14.7
+</td>
+<td>
+14.7
+</td>
+<td>
+14.7
+</td>
+</tr>
+<tr>
+<th>
+taker/maker
+</th>
+<td>
+53.7
+</td>
+<td>
+28.8
+</td>
+<td>
+23.5
+</td>
+<td>
+23.5
+</td>
+<td>
+24.1
+</td>
+<td>
+32.2
+</td>
+<td>
+39.0
+</td>
+</tr>
+<tr>
+<th>
+maker/maker
+</th>
+<td>
+74.5
+</td>
+<td>
+74.5
+</td>
+<td>
+73.0
+</td>
+<td>
+73.4
+</td>
+<td>
+73.0
+</td>
+<td>
+73.0
+</td>
+<td>
+73.0
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+13.9
+</td>
+<td>
+4.2
+</td>
+<td>
+4.2
+</td>
+<td>
+4.2
+</td>
+<td>
+4.2
+</td>
+<td>
+4.9
+</td>
+<td>
+6.2
+</td>
+</tr>
+<tr>
+<th rowspan="4" valign="top">
+World Cup 2026/27 | post_0_to_105m&nbsp;&nbsp;F=5s
+</th>
+<th>
+maker/taker
+</th>
+<td>
+21.4
+</td>
+<td>
+7.9
+</td>
+<td>
+7.9
+</td>
+<td>
+8.8
+</td>
+<td>
+7.9
+</td>
+<td>
+7.9
+</td>
+<td>
+7.9
+</td>
+</tr>
+<tr>
+<th>
+taker/maker
+</th>
+<td>
+59.3
+</td>
+<td>
+28.0
+</td>
+<td>
+22.6
+</td>
+<td>
+22.6
+</td>
+<td>
+22.8
+</td>
+<td>
+32.5
+</td>
+<td>
+41.5
+</td>
+</tr>
+<tr>
+<th>
+maker/maker
+</th>
+<td>
+75.3
+</td>
+<td>
+75.2
+</td>
+<td>
+72.4
+</td>
+<td>
+73.6
+</td>
+<td>
+72.4
+</td>
+<td>
+72.4
+</td>
+<td>
+72.4
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+13.2
+</td>
+<td>
+1.6
+</td>
+<td>
+1.6
+</td>
+<td>
+1.6
+</td>
+<td>
+1.7
+</td>
+<td>
+2.3
+</td>
+<td>
+3.3
+</td>
+</tr>
+<tr>
+<th rowspan="4" valign="top">
+World Cup 2026/27 | pre_last_hour&nbsp;&nbsp;F=10s
+</th>
+<th>
+maker/taker
+</th>
+<td>
+8.5
+</td>
+<td>
+1.6
+</td>
+<td>
+1.6
+</td>
+<td>
+1.9
+</td>
+<td>
+1.6
+</td>
+<td>
+1.6
+</td>
+<td>
+1.6
+</td>
+</tr>
+<tr>
+<th>
+taker/maker
+</th>
+<td>
+72.6
+</td>
+<td>
+19.6
+</td>
+<td>
+14.5
+</td>
+<td>
+14.5
+</td>
+<td>
+14.6
+</td>
+<td>
+26.6
+</td>
+<td>
+44.2
+</td>
+</tr>
+<tr>
+<th>
+maker/maker
+</th>
+<td>
+81.6
+</td>
+<td>
+81.5
+</td>
+<td>
+80.2
+</td>
+<td>
+81.1
+</td>
+<td>
+80.2
+</td>
+<td>
+80.2
+</td>
+<td>
+80.2
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+7.3
+</td>
+<td>
+0.1
+</td>
+<td>
+0.1
+</td>
+<td>
+0.1
+</td>
+<td>
+0.1
+</td>
+<td>
+0.2
+</td>
+<td>
+0.4
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+<a href="data/table-21-0.csv" download="">Download table (CSV)</a>
+</p>
+The fee comparison uses a strict <strong>5-second</strong> export and <strong>100-contract legs</strong>, including for club groups selected at 60 seconds. Fee and rebate settings are model scenarios, not a reconstruction of historical billing. The freshness sweep pools outcomes and route directions.
+</details>
+<section id="does-the-latest-venue-or-price-level-change-the-screen" class="level3">
+<h3 class="anchored" data-anchor-id="does-the-latest-venue-or-price-level-change-the-screen">Does the latest venue or price level change the screen?</h3>
+<iframe class="research-chart" src="charts/chart-26-0.html" title="Interactive chart 26.0" loading="lazy" height="555">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-26-0.html" target="_blank">Open full screen</a> · <a href="data/chart-26-0.csv" download="">Chart data (CSV)</a>
+</div>
+<p>This is the positive rate <strong>within each trigger bucket and route</strong>. “Both” means both route legs printed in the same second. It identifies the latest update; it does not identify which venue caused the move.</p>
+<details>
+<summary>
+Explore YES price level and conditional sample sizes
+</summary>
+<iframe class="research-chart" src="charts/chart-28-0.html" title="Interactive chart 28.0" loading="lazy" height="555">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-28-0.html" target="_blank">Open full screen</a> · <a href="data/chart-28-0.csv" download="">Chart data (CSV)</a>
+</div>
+<div class="table-scroll">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+n
+</th>
+<th>
+pos_0c
+</th>
+<th>
+pos_pct
+</th>
+</tr>
+<tr>
+<th>
+cell
+</th>
+<th>
+route
+</th>
+<th>
+trigger
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th rowspan="12" valign="top">
+Premier League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th rowspan="3" valign="top">
+maker/maker
+</th>
+<th>
+k
+</th>
+<td>
+283295.0
+</td>
+<td>
+215322.0
+</td>
+<td>
+76.01
+</td>
+</tr>
+<tr>
+<th>
+pm
+</th>
+<td>
+170979.0
+</td>
+<td>
+126863.0
+</td>
+<td>
+74.20
+</td>
+</tr>
+<tr>
+<th>
+both
+</th>
+<td>
+85208.0
+</td>
+<td>
+62737.0
+</td>
+<td>
+73.63
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+maker/taker
+</th>
+<th>
+k
+</th>
+<td>
+326151.0
+</td>
+<td>
+39974.0
+</td>
+<td>
+12.26
+</td>
+</tr>
+<tr>
+<th>
+pm
+</th>
+<td>
+189830.0
+</td>
+<td>
+22869.0
+</td>
+<td>
+12.05
+</td>
+</tr>
+<tr>
+<th>
+both
+</th>
+<td>
+98895.0
+</td>
+<td>
+11927.0
+</td>
+<td>
+12.06
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+taker/maker
+</th>
+<th>
+k
+</th>
+<td>
+326151.0
+</td>
+<td>
+61752.0
+</td>
+<td>
+18.93
+</td>
+</tr>
+<tr>
+<th>
+pm
+</th>
+<td>
+189830.0
+</td>
+<td>
+41075.0
+</td>
+<td>
+21.64
+</td>
+</tr>
+<tr>
+<th>
+both
+</th>
+<td>
+98895.0
+</td>
+<td>
+20865.0
+</td>
+<td>
+21.10
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+taker/taker
+</th>
+<th>
+k
+</th>
+<td>
+283295.0
+</td>
+<td>
+8088.0
+</td>
+<td>
+2.85
+</td>
+</tr>
+<tr>
+<th>
+pm
+</th>
+<td>
+170979.0
+</td>
+<td>
+4966.0
+</td>
+<td>
+2.90
+</td>
+</tr>
+<tr>
+<th>
+both
+</th>
+<td>
+85208.0
+</td>
+<td>
+3376.0
+</td>
+<td>
+3.96
+</td>
+</tr>
+<tr>
+<th rowspan="12" valign="top">
+UEFA Champions League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th rowspan="3" valign="top">
+maker/maker
+</th>
+<th>
+k
+</th>
+<td>
+202391.0
+</td>
+<td>
+156314.0
+</td>
+<td>
+77.23
+</td>
+</tr>
+<tr>
+<th>
+pm
+</th>
+<td>
+98017.0
+</td>
+<td>
+72983.0
+</td>
+<td>
+74.46
+</td>
+</tr>
+<tr>
+<th>
+both
+</th>
+<td>
+68394.0
+</td>
+<td>
+51272.0
+</td>
+<td>
+74.97
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+maker/taker
+</th>
+<th>
+k
+</th>
+<td>
+231360.0
+</td>
+<td>
+29096.0
+</td>
+<td>
+12.58
+</td>
+</tr>
+<tr>
+<th>
+pm
+</th>
+<td>
+106150.0
+</td>
+<td>
+15159.0
+</td>
+<td>
+14.28
+</td>
+</tr>
+<tr>
+<th>
+both
+</th>
+<td>
+80017.0
+</td>
+<td>
+9406.0
+</td>
+<td>
+11.76
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+taker/maker
+</th>
+<th>
+k
+</th>
+<td>
+231360.0
+</td>
+<td>
+41545.0
+</td>
+<td>
+17.96
+</td>
+</tr>
+<tr>
+<th>
+pm
+</th>
+<td>
+106150.0
+</td>
+<td>
+21735.0
+</td>
+<td>
+20.48
+</td>
+</tr>
+<tr>
+<th>
+both
+</th>
+<td>
+80017.0
+</td>
+<td>
+15881.0
+</td>
+<td>
+19.85
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+taker/taker
+</th>
+<th>
+k
+</th>
+<td>
+202391.0
+</td>
+<td>
+5528.0
+</td>
+<td>
+2.73
+</td>
+</tr>
+<tr>
+<th>
+pm
+</th>
+<td>
+98017.0
+</td>
+<td>
+2962.0
+</td>
+<td>
+3.02
+</td>
+</tr>
+<tr>
+<th>
+both
+</th>
+<td>
+68394.0
+</td>
+<td>
+2225.0
+</td>
+<td>
+3.25
+</td>
+</tr>
+<tr>
+<th rowspan="12" valign="top">
+World Cup 2026/27 | post_0_to_105m&nbsp;&nbsp;F=5s
+</th>
+<th rowspan="3" valign="top">
+maker/maker
+</th>
+<th>
+k
+</th>
+<td>
+1022510.0
+</td>
+<td>
+785677.0
+</td>
+<td>
+76.84
+</td>
+</tr>
+<tr>
+<th>
+pm
+</th>
+<td>
+262608.0
+</td>
+<td>
+187868.0
+</td>
+<td>
+71.54
+</td>
+</tr>
+<tr>
+<th>
+both
+</th>
+<td>
+553079.0
+</td>
+<td>
+404318.0
+</td>
+<td>
+73.10
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+maker/taker
+</th>
+<th>
+k
+</th>
+<td>
+1128306.0
+</td>
+<td>
+81666.0
+</td>
+<td>
+7.24
+</td>
+</tr>
+<tr>
+<th>
+pm
+</th>
+<td>
+209502.0
+</td>
+<td>
+12981.0
+</td>
+<td>
+6.20
+</td>
+</tr>
+<tr>
+<th>
+both
+</th>
+<td>
+668678.0
+</td>
+<td>
+45259.0
+</td>
+<td>
+6.77
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+taker/maker
+</th>
+<th>
+k
+</th>
+<td>
+1128306.0
+</td>
+<td>
+189620.0
+</td>
+<td>
+16.81
+</td>
+</tr>
+<tr>
+<th>
+pm
+</th>
+<td>
+209502.0
+</td>
+<td>
+39647.0
+</td>
+<td>
+18.92
+</td>
+</tr>
+<tr>
+<th>
+both
+</th>
+<td>
+668678.0
+</td>
+<td>
+114584.0
+</td>
+<td>
+17.14
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+taker/taker
+</th>
+<th>
+k
+</th>
+<td>
+1022510.0
+</td>
+<td>
+6615.0
+</td>
+<td>
+0.65
+</td>
+</tr>
+<tr>
+<th>
+pm
+</th>
+<td>
+262608.0
+</td>
+<td>
+1235.0
+</td>
+<td>
+0.47
+</td>
+</tr>
+<tr>
+<th>
+both
+</th>
+<td>
+553079.0
+</td>
+<td>
+5993.0
+</td>
+<td>
+1.08
+</td>
+</tr>
+<tr>
+<th rowspan="12" valign="top">
+World Cup 2026/27 | pre_last_hour&nbsp;&nbsp;F=10s
+</th>
+<th rowspan="3" valign="top">
+maker/maker
+</th>
+<th>
+k
+</th>
+<td>
+246183.0
+</td>
+<td>
+202341.0
+</td>
+<td>
+82.19
+</td>
+</tr>
+<tr>
+<th>
+pm
+</th>
+<td>
+94105.0
+</td>
+<td>
+59110.0
+</td>
+<td>
+62.81
+</td>
+</tr>
+<tr>
+<th>
+both
+</th>
+<td>
+86732.0
+</td>
+<td>
+65983.0
+</td>
+<td>
+76.08
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+maker/taker
+</th>
+<th>
+k
+</th>
+<td>
+419291.0
+</td>
+<td>
+9981.0
+</td>
+<td>
+2.38
+</td>
+</tr>
+<tr>
+<th>
+pm
+</th>
+<td>
+69707.0
+</td>
+<td>
+2854.0
+</td>
+<td>
+4.09
+</td>
+</tr>
+<tr>
+<th>
+both
+</th>
+<td>
+207047.0
+</td>
+<td>
+3094.0
+</td>
+<td>
+1.49
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+taker/maker
+</th>
+<th>
+k
+</th>
+<td>
+419291.0
+</td>
+<td>
+45747.0
+</td>
+<td>
+10.91
+</td>
+</tr>
+<tr>
+<th>
+pm
+</th>
+<td>
+69707.0
+</td>
+<td>
+5083.0
+</td>
+<td>
+7.29
+</td>
+</tr>
+<tr>
+<th>
+both
+</th>
+<td>
+207047.0
+</td>
+<td>
+22197.0
+</td>
+<td>
+10.72
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+taker/taker
+</th>
+<th>
+k
+</th>
+<td>
+246183.0
+</td>
+<td>
+172.0
+</td>
+<td>
+0.07
+</td>
+</tr>
+<tr>
+<th>
+pm
+</th>
+<td>
+94105.0
+</td>
+<td>
+35.0
+</td>
+<td>
+0.04
+</td>
+</tr>
+<tr>
+<th>
+both
+</th>
+<td>
+86732.0
+</td>
+<td>
+49.0
+</td>
+<td>
+0.06
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+<a href="data/table-26-0.csv" download="">Download table (CSV)</a>
+</p>
+<div class="table-scroll">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+n
+</th>
+<th>
+pos_0c
+</th>
+<th>
+pos_pct
+</th>
+</tr>
+<tr>
+<th>
+cell
+</th>
+<th>
+route
+</th>
+<th>
+price_bucket
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th rowspan="20" valign="top">
+Premier League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th rowspan="5" valign="top">
+maker/maker
+</th>
+<th>
+&lt;10c
+</th>
+<td>
+52940.0
+</td>
+<td>
+42335.0
+</td>
+<td>
+79.97
+</td>
+</tr>
+<tr>
+<th>
+&gt;=90c
+</th>
+<td>
+26969.0
+</td>
+<td>
+20056.0
+</td>
+<td>
+74.37
+</td>
+</tr>
+<tr>
+<th>
+70-90c
+</th>
+<td>
+72509.0
+</td>
+<td>
+52789.0
+</td>
+<td>
+72.80
+</td>
+</tr>
+<tr>
+<th>
+10-30c
+</th>
+<td>
+151731.0
+</td>
+<td>
+112912.0
+</td>
+<td>
+74.42
+</td>
+</tr>
+<tr>
+<th>
+30-70c
+</th>
+<td>
+235333.0
+</td>
+<td>
+176830.0
+</td>
+<td>
+75.14
+</td>
+</tr>
+<tr>
+<th rowspan="5" valign="top">
+maker/taker
+</th>
+<th>
+&lt;10c
+</th>
+<td>
+49642.0
+</td>
+<td>
+12713.0
+</td>
+<td>
+25.61
+</td>
+</tr>
+<tr>
+<th>
+&gt;=90c
+</th>
+<td>
+30624.0
+</td>
+<td>
+5752.0
+</td>
+<td>
+18.78
+</td>
+</tr>
+<tr>
+<th>
+70-90c
+</th>
+<td>
+84846.0
+</td>
+<td>
+10611.0
+</td>
+<td>
+12.51
+</td>
+</tr>
+<tr>
+<th>
+10-30c
+</th>
+<td>
+168213.0
+</td>
+<td>
+25779.0
+</td>
+<td>
+15.33
+</td>
+</tr>
+<tr>
+<th>
+30-70c
+</th>
+<td>
+281551.0
+</td>
+<td>
+19915.0
+</td>
+<td>
+7.07
+</td>
+</tr>
+<tr>
+<th rowspan="5" valign="top">
+taker/maker
+</th>
+<th>
+&lt;10c
+</th>
+<td>
+50967.0
+</td>
+<td>
+18960.0
+</td>
+<td>
+37.20
+</td>
+</tr>
+<tr>
+<th>
+&gt;=90c
+</th>
+<td>
+29840.0
+</td>
+<td>
+10898.0
+</td>
+<td>
+36.52
+</td>
+</tr>
+<tr>
+<th>
+70-90c
+</th>
+<td>
+81257.0
+</td>
+<td>
+19752.0
+</td>
+<td>
+24.31
+</td>
+</tr>
+<tr>
+<th>
+10-30c
+</th>
+<td>
+172383.0
+</td>
+<td>
+32498.0
+</td>
+<td>
+18.85
+</td>
+</tr>
+<tr>
+<th>
+30-70c
+</th>
+<td>
+280429.0
+</td>
+<td>
+41584.0
+</td>
+<td>
+14.83
+</td>
+</tr>
+<tr>
+<th rowspan="5" valign="top">
+taker/taker
+</th>
+<th>
+&lt;10c
+</th>
+<td>
+45710.0
+</td>
+<td>
+3013.0
+</td>
+<td>
+6.59
+</td>
+</tr>
+<tr>
+<th>
+&gt;=90c
+</th>
+<td>
+28901.0
+</td>
+<td>
+1596.0
+</td>
+<td>
+5.52
+</td>
+</tr>
+<tr>
+<th>
+70-90c
+</th>
+<td>
+76443.0
+</td>
+<td>
+2277.0
+</td>
+<td>
+2.98
+</td>
+</tr>
+<tr>
+<th>
+10-30c
+</th>
+<td>
+150167.0
+</td>
+<td>
+4326.0
+</td>
+<td>
+2.88
+</td>
+</tr>
+<tr>
+<th>
+30-70c
+</th>
+<td>
+238261.0
+</td>
+<td>
+5218.0
+</td>
+<td>
+2.19
+</td>
+</tr>
+<tr>
+<th rowspan="20" valign="top">
+UEFA Champions League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th rowspan="5" valign="top">
+maker/maker
+</th>
+<th>
+&lt;10c
+</th>
+<td>
+45735.0
+</td>
+<td>
+37924.0
+</td>
+<td>
+82.92
+</td>
+</tr>
+<tr>
+<th>
+&gt;=90c
+</th>
+<td>
+19973.0
+</td>
+<td>
+15151.0
+</td>
+<td>
+75.86
+</td>
+</tr>
+<tr>
+<th>
+70-90c
+</th>
+<td>
+43757.0
+</td>
+<td>
+32261.0
+</td>
+<td>
+73.73
+</td>
+</tr>
+<tr>
+<th>
+10-30c
+</th>
+<td>
+115419.0
+</td>
+<td>
+88736.0
+</td>
+<td>
+76.88
+</td>
+</tr>
+<tr>
+<th>
+30-70c
+</th>
+<td>
+143918.0
+</td>
+<td>
+106497.0
+</td>
+<td>
+74.00
+</td>
+</tr>
+<tr>
+<th rowspan="5" valign="top">
+maker/taker
+</th>
+<th>
+&lt;10c
+</th>
+<td>
+44319.0
+</td>
+<td>
+10518.0
+</td>
+<td>
+23.73
+</td>
+</tr>
+<tr>
+<th>
+&gt;=90c
+</th>
+<td>
+23797.0
+</td>
+<td>
+5012.0
+</td>
+<td>
+21.06
+</td>
+</tr>
+<tr>
+<th>
+70-90c
+</th>
+<td>
+49449.0
+</td>
+<td>
+7603.0
+</td>
+<td>
+15.38
+</td>
+</tr>
+<tr>
+<th>
+10-30c
+</th>
+<td>
+131171.0
+</td>
+<td>
+17123.0
+</td>
+<td>
+13.05
+</td>
+</tr>
+<tr>
+<th>
+30-70c
+</th>
+<td>
+168791.0
+</td>
+<td>
+13405.0
+</td>
+<td>
+7.94
+</td>
+</tr>
+<tr>
+<th rowspan="5" valign="top">
+taker/maker
+</th>
+<th>
+&lt;10c
+</th>
+<td>
+45602.0
+</td>
+<td>
+16714.0
+</td>
+<td>
+36.65
+</td>
+</tr>
+<tr>
+<th>
+&gt;=90c
+</th>
+<td>
+23800.0
+</td>
+<td>
+8681.0
+</td>
+<td>
+36.47
+</td>
+</tr>
+<tr>
+<th>
+70-90c
+</th>
+<td>
+47785.0
+</td>
+<td>
+9003.0
+</td>
+<td>
+18.84
+</td>
+</tr>
+<tr>
+<th>
+10-30c
+</th>
+<td>
+133002.0
+</td>
+<td>
+24203.0
+</td>
+<td>
+18.20
+</td>
+</tr>
+<tr>
+<th>
+30-70c
+</th>
+<td>
+167338.0
+</td>
+<td>
+20560.0
+</td>
+<td>
+12.29
+</td>
+</tr>
+<tr>
+<th rowspan="5" valign="top">
+taker/taker
+</th>
+<th>
+&lt;10c
+</th>
+<td>
+40487.0
+</td>
+<td>
+2034.0
+</td>
+<td>
+5.02
+</td>
+</tr>
+<tr>
+<th>
+&gt;=90c
+</th>
+<td>
+22140.0
+</td>
+<td>
+1162.0
+</td>
+<td>
+5.25
+</td>
+</tr>
+<tr>
+<th>
+70-90c
+</th>
+<td>
+45473.0
+</td>
+<td>
+1657.0
+</td>
+<td>
+3.64
+</td>
+</tr>
+<tr>
+<th>
+10-30c
+</th>
+<td>
+114877.0
+</td>
+<td>
+2852.0
+</td>
+<td>
+2.48
+</td>
+</tr>
+<tr>
+<th>
+30-70c
+</th>
+<td>
+145825.0
+</td>
+<td>
+3010.0
+</td>
+<td>
+2.06
+</td>
+</tr>
+<tr>
+<th rowspan="20" valign="top">
+World Cup 2026/27 | post_0_to_105m&nbsp;&nbsp;F=5s
+</th>
+<th rowspan="5" valign="top">
+maker/maker
+</th>
+<th>
+&lt;10c
+</th>
+<td>
+310131.0
+</td>
+<td>
+263430.0
+</td>
+<td>
+84.94
+</td>
+</tr>
+<tr>
+<th>
+&gt;=90c
+</th>
+<td>
+108658.0
+</td>
+<td>
+89462.0
+</td>
+<td>
+82.33
+</td>
+</tr>
+<tr>
+<th>
+70-90c
+</th>
+<td>
+186926.0
+</td>
+<td>
+138209.0
+</td>
+<td>
+73.94
+</td>
+</tr>
+<tr>
+<th>
+10-30c
+</th>
+<td>
+565069.0
+</td>
+<td>
+422877.0
+</td>
+<td>
+74.84
+</td>
+</tr>
+<tr>
+<th>
+30-70c
+</th>
+<td>
+667413.0
+</td>
+<td>
+463885.0
+</td>
+<td>
+69.50
+</td>
+</tr>
+<tr>
+<th rowspan="5" valign="top">
+maker/taker
+</th>
+<th>
+&lt;10c
+</th>
+<td>
+318056.0
+</td>
+<td>
+37013.0
+</td>
+<td>
+11.64
+</td>
+</tr>
+<tr>
+<th>
+&gt;=90c
+</th>
+<td>
+121478.0
+</td>
+<td>
+13557.0
+</td>
+<td>
+11.16
+</td>
+</tr>
+<tr>
+<th>
+70-90c
+</th>
+<td>
+195423.0
+</td>
+<td>
+16212.0
+</td>
+<td>
+8.30
+</td>
+</tr>
+<tr>
+<th>
+10-30c
+</th>
+<td>
+637277.0
+</td>
+<td>
+43267.0
+</td>
+<td>
+6.79
+</td>
+</tr>
+<tr>
+<th>
+30-70c
+</th>
+<td>
+734252.0
+</td>
+<td>
+29857.0
+</td>
+<td>
+4.07
+</td>
+</tr>
+<tr>
+<th rowspan="5" valign="top">
+taker/maker
+</th>
+<th>
+&lt;10c
+</th>
+<td>
+321517.0
+</td>
+<td>
+148029.0
+</td>
+<td>
+46.04
+</td>
+</tr>
+<tr>
+<th>
+&gt;=90c
+</th>
+<td>
+118937.0
+</td>
+<td>
+57414.0
+</td>
+<td>
+48.27
+</td>
+</tr>
+<tr>
+<th>
+70-90c
+</th>
+<td>
+192689.0
+</td>
+<td>
+29717.0
+</td>
+<td>
+15.42
+</td>
+</tr>
+<tr>
+<th>
+10-30c
+</th>
+<td>
+650508.0
+</td>
+<td>
+62537.0
+</td>
+<td>
+9.61
+</td>
+</tr>
+<tr>
+<th>
+30-70c
+</th>
+<td>
+722835.0
+</td>
+<td>
+46154.0
+</td>
+<td>
+6.39
+</td>
+</tr>
+<tr>
+<th rowspan="5" valign="top">
+taker/taker
+</th>
+<th>
+&lt;10c
+</th>
+<td>
+291714.0
+</td>
+<td>
+5989.0
+</td>
+<td>
+2.05
+</td>
+</tr>
+<tr>
+<th>
+&gt;=90c
+</th>
+<td>
+115919.0
+</td>
+<td>
+1594.0
+</td>
+<td>
+1.38
+</td>
+</tr>
+<tr>
+<th>
+70-90c
+</th>
+<td>
+185285.0
+</td>
+<td>
+1026.0
+</td>
+<td>
+0.55
+</td>
+</tr>
+<tr>
+<th>
+10-30c
+</th>
+<td>
+561257.0
+</td>
+<td>
+2822.0
+</td>
+<td>
+0.50
+</td>
+</tr>
+<tr>
+<th>
+30-70c
+</th>
+<td>
+684022.0
+</td>
+<td>
+2412.0
+</td>
+<td>
+0.35
+</td>
+</tr>
+<tr>
+<th rowspan="20" valign="top">
+World Cup 2026/27 | pre_last_hour&nbsp;&nbsp;F=10s
+</th>
+<th rowspan="5" valign="top">
+maker/maker
+</th>
+<th>
+&lt;10c
+</th>
+<td>
+31455.0
+</td>
+<td>
+28166.0
+</td>
+<td>
+89.54
+</td>
+</tr>
+<tr>
+<th>
+&gt;=90c
+</th>
+<td>
+5325.0
+</td>
+<td>
+2586.0
+</td>
+<td>
+48.56
+</td>
+</tr>
+<tr>
+<th>
+70-90c
+</th>
+<td>
+50100.0
+</td>
+<td>
+38195.0
+</td>
+<td>
+76.24
+</td>
+</tr>
+<tr>
+<th>
+10-30c
+</th>
+<td>
+141762.0
+</td>
+<td>
+115583.0
+</td>
+<td>
+81.53
+</td>
+</tr>
+<tr>
+<th>
+30-70c
+</th>
+<td>
+198378.0
+</td>
+<td>
+142904.0
+</td>
+<td>
+72.04
+</td>
+</tr>
+<tr>
+<th rowspan="5" valign="top">
+maker/taker
+</th>
+<th>
+&lt;10c
+</th>
+<td>
+47708.0
+</td>
+<td>
+2505.0
+</td>
+<td>
+5.25
+</td>
+</tr>
+<tr>
+<th>
+&gt;=90c
+</th>
+<td>
+9519.0
+</td>
+<td>
+486.0
+</td>
+<td>
+5.11
+</td>
+</tr>
+<tr>
+<th>
+70-90c
+</th>
+<td>
+92062.0
+</td>
+<td>
+1249.0
+</td>
+<td>
+1.36
+</td>
+</tr>
+<tr>
+<th>
+10-30c
+</th>
+<td>
+261669.0
+</td>
+<td>
+9504.0
+</td>
+<td>
+3.63
+</td>
+</tr>
+<tr>
+<th>
+30-70c
+</th>
+<td>
+285087.0
+</td>
+<td>
+2185.0
+</td>
+<td>
+0.77
+</td>
+</tr>
+<tr>
+<th rowspan="5" valign="top">
+taker/maker
+</th>
+<th>
+&lt;10c
+</th>
+<td>
+47971.0
+</td>
+<td>
+22296.0
+</td>
+<td>
+46.48
+</td>
+</tr>
+<tr>
+<th>
+&gt;=90c
+</th>
+<td>
+8579.0
+</td>
+<td>
+3164.0
+</td>
+<td>
+36.88
+</td>
+</tr>
+<tr>
+<th>
+70-90c
+</th>
+<td>
+84301.0
+</td>
+<td>
+10774.0
+</td>
+<td>
+12.78
+</td>
+</tr>
+<tr>
+<th>
+10-30c
+</th>
+<td>
+267071.0
+</td>
+<td>
+22077.0
+</td>
+<td>
+8.27
+</td>
+</tr>
+<tr>
+<th>
+30-70c
+</th>
+<td>
+288123.0
+</td>
+<td>
+14716.0
+</td>
+<td>
+5.11
+</td>
+</tr>
+<tr>
+<th rowspan="5" valign="top">
+taker/taker
+</th>
+<th>
+&lt;10c
+</th>
+<td>
+27680.0
+</td>
+<td>
+256.0
+</td>
+<td>
+0.92
+</td>
+</tr>
+<tr>
+<th>
+&gt;=90c
+</th>
+<td>
+5781.0
+</td>
+<td>
+0.0
+</td>
+<td>
+0.00
+</td>
+</tr>
+<tr>
+<th>
+70-90c
+</th>
+<td>
+57017.0
+</td>
+<td>
+0.0
+</td>
+<td>
+0.00
+</td>
+</tr>
+<tr>
+<th>
+10-30c
+</th>
+<td>
+140319.0
+</td>
+<td>
+0.0
+</td>
+<td>
+0.00
+</td>
+</tr>
+<tr>
+<th>
+30-70c
+</th>
+<td>
+196223.0
+</td>
+<td>
+0.0
+</td>
+<td>
+0.00
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+<a href="data/table-28-0.csv" download="">Download table (CSV)</a>
+</p>
+These condition comparisons use strict F=5 seconds. Outcomes and directions are pooled. Price buckets refer to the YES acquisition reference on whichever venue holds YES for the route.
+</details>
+</section>
+</section>
+<section id="how-frequent-are-positive-references-and-how-long-do-they-last" class="level2">
+<h2 class="anchored" data-anchor-id="how-frequent-are-positive-references-and-how-long-do-they-last">4. How frequent are positive references, and how long do they last?</h2>
+<p>Counts make the scale of the research screen more tangible, but they still do not count independent trades a strategy could execute. Several observations can belong to the same continuing price difference.</p>
+<iframe class="research-chart" src="charts/chart-30-0.html" title="Interactive chart 30.0" loading="lazy" height="555">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-30-0.html" target="_blank">Open full screen</a> · <a href="data/chart-30-0.csv" download="">Chart data (CSV)</a>
+</div>
+<p>The denominator is the group’s number of fixtures multiplied by the hours in its reporting window. Outcomes and directions are summed. Maker/maker is excluded from this section and the duration analysis.</p>
+<iframe class="research-chart" src="charts/chart-32-0.html" title="Interactive chart 32.0" loading="lazy" height="555">
+</iframe>
+<div class="chart-links">
+<a href="charts/chart-32-0.html" target="_blank">Open full screen</a> · <a href="data/chart-32-0.csv" download="">Chart data (CSV)</a>
+</div>
+<p>The duration curves show the time from an episode opening until a later leg print removes the positive reference edge. The median is where the curve reaches 0.5. <strong>A long duration does not establish that a quote was executable throughout that time.</strong></p>
+<p>Among Premier League in-play episodes with an observed closing print, the two-taker median is <strong>7 seconds</strong> and the 90th percentile is <strong>36 seconds</strong>. The one-maker routes have 13-second medians. These durations describe the trade tape, not a measured execution window.</p>
+<p>Episodes qualify on freshness at opening and may subsequently outlive that freshness cutoff. If no later closing print is observed, the duration is missing and the episode is marked censored. The curves and duration quantiles exclude those missing spans; the table reports the censored share across all episodes. This is a descriptive distribution of observed closures, not a censoring-adjusted survival estimate. Zero-second spans do not appear on the logarithmic axis.</p>
+<details>
+<summary>
+Per-fixture concentration, clock shares, duration quantiles, and censoring
+</summary>
+<div class="table-scroll">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+</th>
+<th>
+n
+</th>
+<th>
+pos_per_fixture_hour
+</th>
+<th>
+open_pct_of_fresh
+</th>
+<th>
+open_pct_of_clock
+</th>
+</tr>
+<tr>
+<th>
+cell
+</th>
+<th>
+route
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th rowspan="3" valign="top">
+Premier League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th>
+maker/taker
+</th>
+<td>
+1366217.0
+</td>
+<td>
+311.57
+</td>
+<td>
+14.32
+</td>
+<td>
+8.14
+</td>
+</tr>
+<tr>
+<th>
+taker/maker
+</th>
+<td>
+1366217.0
+</td>
+<td>
+425.35
+</td>
+<td>
+17.57
+</td>
+<td>
+9.98
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+1299032.0
+</td>
+<td>
+51.75
+</td>
+<td>
+1.72
+</td>
+<td>
+0.93
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+UEFA Champions League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th>
+maker/taker
+</th>
+<td>
+801169.0
+</td>
+<td>
+357.45
+</td>
+<td>
+17.76
+</td>
+<td>
+8.95
+</td>
+</tr>
+<tr>
+<th>
+taker/maker
+</th>
+<td>
+801169.0
+</td>
+<td>
+452.44
+</td>
+<td>
+19.33
+</td>
+<td>
+9.73
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+768173.0
+</td>
+<td>
+57.67
+</td>
+<td>
+2.29
+</td>
+<td>
+1.09
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+World Cup 2026/27 | post_0_to_105m&nbsp;&nbsp;F=5s
+</th>
+<th>
+maker/taker
+</th>
+<td>
+2006486.0
+</td>
+<td>
+768.71
+</td>
+<td>
+6.83
+</td>
+<td>
+3.97
+</td>
+</tr>
+<tr>
+<th>
+taker/maker
+</th>
+<td>
+2006486.0
+</td>
+<td>
+1889.29
+</td>
+<td>
+17.46
+</td>
+<td>
+10.15
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+1838197.0
+</td>
+<td>
+76.06
+</td>
+<td>
+0.70
+</td>
+<td>
+0.38
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+World Cup 2026/27 | pre_last_hour&nbsp;&nbsp;F=10s
+</th>
+<th>
+maker/taker
+</th>
+<td>
+828904.0
+</td>
+<td>
+208.72
+</td>
+<td>
+3.50
+</td>
+<td>
+1.80
+</td>
+</tr>
+<tr>
+<th>
+taker/maker
+</th>
+<td>
+828904.0
+</td>
+<td>
+841.27
+</td>
+<td>
+9.37
+</td>
+<td>
+4.81
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+594744.0
+</td>
+<td>
+3.33
+</td>
+<td>
+0.05
+</td>
+<td>
+0.02
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+<a href="data/table-30-0.csv" download="">Download table (CSV)</a>
+</p>
+<div class="table-scroll">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+</th>
+<th>
+fixtures
+</th>
+<th>
+with_any
+</th>
+<th>
+with_5_plus
+</th>
+<th>
+with_20_plus
+</th>
+<th>
+median
+</th>
+<th>
+p90
+</th>
+<th>
+top10_share_pct
+</th>
+</tr>
+<tr>
+<th>
+cell
+</th>
+<th>
+route
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th rowspan="3" valign="top">
+Premier League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th>
+taker/taker
+</th>
+<td>
+339
+</td>
+<td>
+337
+</td>
+<td>
+334
+</td>
+<td>
+313
+</td>
+<td>
+76.0
+</td>
+<td>
+174.2
+</td>
+<td>
+10.8
+</td>
+</tr>
+<tr>
+<th>
+taker/maker
+</th>
+<td>
+339
+</td>
+<td>
+339
+</td>
+<td>
+339
+</td>
+<td>
+339
+</td>
+<td>
+643.0
+</td>
+<td>
+1370.6
+</td>
+<td>
+9.5
+</td>
+</tr>
+<tr>
+<th>
+maker/taker
+</th>
+<td>
+339
+</td>
+<td>
+339
+</td>
+<td>
+339
+</td>
+<td>
+339
+</td>
+<td>
+466.0
+</td>
+<td>
+1051.2
+</td>
+<td>
+8.6
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+UEFA Champions League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th>
+taker/taker
+</th>
+<td>
+189
+</td>
+<td>
+187
+</td>
+<td>
+183
+</td>
+<td>
+178
+</td>
+<td>
+76.0
+</td>
+<td>
+206.2
+</td>
+<td>
+19.9
+</td>
+</tr>
+<tr>
+<th>
+taker/maker
+</th>
+<td>
+189
+</td>
+<td>
+189
+</td>
+<td>
+189
+</td>
+<td>
+189
+</td>
+<td>
+522.0
+</td>
+<td>
+1754.8
+</td>
+<td>
+19.1
+</td>
+</tr>
+<tr>
+<th>
+maker/taker
+</th>
+<td>
+189
+</td>
+<td>
+189
+</td>
+<td>
+189
+</td>
+<td>
+189
+</td>
+<td>
+483.0
+</td>
+<td>
+1249.4
+</td>
+<td>
+15.4
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+World Cup 2026/27 | post_0_to_105m&nbsp;&nbsp;F=5s
+</th>
+<th>
+taker/taker
+</th>
+<td>
+104
+</td>
+<td>
+104
+</td>
+<td>
+101
+</td>
+<td>
+98
+</td>
+<td>
+104.0
+</td>
+<td>
+261.7
+</td>
+<td>
+31.5
+</td>
+</tr>
+<tr>
+<th>
+taker/maker
+</th>
+<td>
+104
+</td>
+<td>
+104
+</td>
+<td>
+104
+</td>
+<td>
+104
+</td>
+<td>
+2888.0
+</td>
+<td>
+6325.3
+</td>
+<td>
+22.6
+</td>
+</tr>
+<tr>
+<th>
+maker/taker
+</th>
+<td>
+104
+</td>
+<td>
+104
+</td>
+<td>
+104
+</td>
+<td>
+104
+</td>
+<td>
+1142.0
+</td>
+<td>
+2566.4
+</td>
+<td>
+21.7
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+World Cup 2026/27 | pre_last_hour&nbsp;&nbsp;F=10s
+</th>
+<th>
+taker/taker
+</th>
+<td>
+104
+</td>
+<td>
+2
+</td>
+<td>
+2
+</td>
+<td>
+1
+</td>
+<td>
+0.0
+</td>
+<td>
+0.0
+</td>
+<td>
+100.0
+</td>
+</tr>
+<tr>
+<th>
+taker/maker
+</th>
+<td>
+104
+</td>
+<td>
+74
+</td>
+<td>
+71
+</td>
+<td>
+67
+</td>
+<td>
+303.5
+</td>
+<td>
+2667.3
+</td>
+<td>
+39.0
+</td>
+</tr>
+<tr>
+<th>
+maker/taker
+</th>
+<td>
+104
+</td>
+<td>
+67
+</td>
+<td>
+66
+</td>
+<td>
+59
+</td>
+<td>
+53.5
+</td>
+<td>
+574.9
+</td>
+<td>
+52.6
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+<a href="data/table-30-1.csv" download="">Download table (CSV)</a>
+</p>
+<div class="table-scroll">
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+</th>
+<th>
+</th>
+<th>
+episodes
+</th>
+<th>
+fixtures
+</th>
+<th>
+single_print_pct
+</th>
+<th>
+median_reprice_s
+</th>
+<th>
+p90_reprice_s
+</th>
+<th>
+censored_pct
+</th>
+</tr>
+<tr>
+<th>
+cell
+</th>
+<th>
+route
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+<th>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th rowspan="3" valign="top">
+Premier League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th>
+maker/taker
+</th>
+<td>
+37206
+</td>
+<td>
+339
+</td>
+<td>
+29.8
+</td>
+<td>
+13.0
+</td>
+<td>
+87.0
+</td>
+<td>
+0.2
+</td>
+</tr>
+<tr>
+<th>
+taker/maker
+</th>
+<td>
+43787
+</td>
+<td>
+339
+</td>
+<td>
+27.3
+</td>
+<td>
+13.0
+</td>
+<td>
+74.0
+</td>
+<td>
+0.3
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+8736
+</td>
+<td>
+337
+</td>
+<td>
+36.1
+</td>
+<td>
+7.0
+</td>
+<td>
+36.0
+</td>
+<td>
+0.1
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+UEFA Champions League 2025/26 | post_0_to_105m&nbsp;&nbsp;F=60s
+</th>
+<th>
+maker/taker
+</th>
+<td>
+21195
+</td>
+<td>
+189
+</td>
+<td>
+27.7
+</td>
+<td>
+12.0
+</td>
+<td>
+95.7
+</td>
+<td>
+0.4
+</td>
+</tr>
+<tr>
+<th>
+taker/maker
+</th>
+<td>
+22339
+</td>
+<td>
+189
+</td>
+<td>
+26.8
+</td>
+<td>
+12.0
+</td>
+<td>
+80.0
+</td>
+<td>
+0.5
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+4892
+</td>
+<td>
+187
+</td>
+<td>
+33.7
+</td>
+<td>
+8.0
+</td>
+<td>
+43.0
+</td>
+<td>
+0.5
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+World Cup 2026/27 | post_0_to_105m&nbsp;&nbsp;F=5s
+</th>
+<th>
+maker/taker
+</th>
+<td>
+15337
+</td>
+<td>
+104
+</td>
+<td>
+22.3
+</td>
+<td>
+4.0
+</td>
+<td>
+29.0
+</td>
+<td>
+0.2
+</td>
+</tr>
+<tr>
+<th>
+taker/maker
+</th>
+<td>
+21703
+</td>
+<td>
+104
+</td>
+<td>
+19.5
+</td>
+<td>
+5.0
+</td>
+<td>
+45.4
+</td>
+<td>
+0.3
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+3615
+</td>
+<td>
+104
+</td>
+<td>
+30.9
+</td>
+<td>
+3.0
+</td>
+<td>
+7.0
+</td>
+<td>
+0.2
+</td>
+</tr>
+<tr>
+<th rowspan="3" valign="top">
+World Cup 2026/27 | pre_last_hour&nbsp;&nbsp;F=10s
+</th>
+<th>
+maker/taker
+</th>
+<td>
+152
+</td>
+<td>
+58
+</td>
+<td>
+8.6
+</td>
+<td>
+127.0
+</td>
+<td>
+921.9
+</td>
+<td>
+0.0
+</td>
+</tr>
+<tr>
+<th>
+taker/maker
+</th>
+<td>
+215
+</td>
+<td>
+67
+</td>
+<td>
+3.3
+</td>
+<td>
+118.0
+</td>
+<td>
+1143.2
+</td>
+<td>
+0.0
+</td>
+</tr>
+<tr>
+<th>
+taker/taker
+</th>
+<td>
+7
+</td>
+<td>
+2
+</td>
+<td>
+0.0
+</td>
+<td>
+27.0
+</td>
+<td>
+253.8
+</td>
+<td>
+0.0
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+<a href="data/table-32-0.csv" download="">Download table (CSV)</a>
+</p>
+The full-clock positive share uses six clocks per fixture: three outcomes × two route directions. The fresh-clock share uses only time when a pair is fresh. The top-ten-fixture share shows whether a few games dominate the screen.
+</details>
+</section>
+<section id="what-i-would-take-into-the-next-research-step" class="level2">
+<h2 class="anchored" data-anchor-id="what-i-would-take-into-the-next-research-step">What I would take into the next research step</h2>
+<p>The useful result is a map of where the comparison is informative. The World Cup and club competitions support different freshness cutoffs. One-sided activity is common enough that a fresh-only study leaves out a meaningful population. And trading side, assumed fees, and passive-fill assumptions all change what a displayed gap represents.</p>
+<p>Before treating any of these screens as a strategy, the next questions are about the subsequent price, hedge timing, available size, and realized fills. Those are separate measurements. <strong>This article establishes historical trade-reference patterns; it does not establish sustainable profits.</strong></p>
+</section>
+<section id="data-methods-and-updates" class="level2">
+<h2 class="anchored" data-anchor-id="data-methods-and-updates">Data, methods, and updates</h2>
+<p>This is a dated static research snapshot. Every chart has downloadable CSV data and a full-screen view. The public bundle contains <strong>19 interactive charts</strong>, aggregate tables, and a <a href="data/manifest.json">snapshot manifest</a> with source hashes and the fixture date range.</p>
+<p>The <a href="source/02.1_cross_venue_gaps_by_competition.ipynb">original notebook</a> is available as a source download. It requires the local research modules and curated inputs; downloading it alone does not recreate the raw-data pipeline. The <a href="source/README.md">publication notes</a> describe the build and manual-update workflow.</p>
+<details>
+<summary>
+Method details
+</summary>
+<ul>
+<li>Both venues’ regular-time home/draw/away markets are linked to common API-Football fixtures. Market linkage is distinct from actual trading coverage.</li>
+<li>Availability is weighted by fixture × outcome × phase seconds, including silence. Intervals are split at phase boundaries. Missing required tape inputs stop the upstream computation.</li>
+<li>Gap observations occur when either pair leg prints and the other is still fresh. Time weights use the duration until the next update, capped by the remaining freshness allowance.</li>
+<li>Candidate selection uses rounded whole-percent coverage. The 55-minute split is a clock diagnostic, not observed halftime.</li>
+<li>Source-trade waiting uses strictly later destination prints, with forward-window boundary censoring. F and H are independent.</li>
+<li>Fee scenarios are frozen analysis assumptions. The historical tape contains no order-book depth, queue positions, or the researcher’s own fills.</li>
+<li>No confidence intervals or fixture-clustered uncertainty estimates are supplied here. Comparisons are descriptive for this sample.</li>
+</ul>
+</details>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/zaozzh\.github\.io\/soccer-cross-venue-research\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>Zehao Zhou · Historical trade research · Polymarket &amp; Kalshi</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

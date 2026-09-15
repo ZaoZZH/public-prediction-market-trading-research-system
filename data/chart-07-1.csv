@@ -1,0 +1,161 @@
+combo,phase,freshness,series,clock_pct
+Bundesliga 2025/26,post_105_to_135m,10,Both fresh,11.856767676767676
+Bundesliga 2025/26,pre_24h_to_1h,10,Both fresh,0.1591758161323378
+Bundesliga 2025/26,pre_last_hour,10,Both fresh,2.90973063973064
+La Liga 2025/26,post_105_to_135m,10,Both fresh,17.59259259259259
+La Liga 2025/26,pre_24h_to_1h,10,Both fresh,0.5465335288704853
+La Liga 2025/26,pre_last_hour,10,Both fresh,7.768766534391534
+Ligue 1 2025/26,post_105_to_135m,10,Both fresh,8.782240873967492
+Ligue 1 2025/26,pre_24h_to_1h,10,Both fresh,0.1337828288094162
+Ligue 1 2025/26,pre_last_hour,10,Both fresh,2.61923794297895
+Premier League 2025/26,post_105_to_135m,10,Both fresh,22.17518846279908
+Premier League 2025/26,pre_24h_to_1h,10,Both fresh,1.0457179636992386
+Premier League 2025/26,pre_last_hour,10,Both fresh,14.051158090243636
+Serie A 2025/26,post_105_to_135m,10,Both fresh,12.456577266922094
+Serie A 2025/26,pre_24h_to_1h,10,Both fresh,0.2680303366835101
+Serie A 2025/26,pre_last_hour,10,Both fresh,4.397855470412941
+UEFA Champions League 2025/26,post_105_to_135m,10,Both fresh,14.453556731334508
+UEFA Champions League 2025/26,pre_24h_to_1h,10,Both fresh,1.8925525479470728
+UEFA Champions League 2025/26,pre_last_hour,10,Both fresh,18.14530668234372
+UEFA Champions League 2026/27,post_105_to_135m,10,Both fresh,8.015728056823948
+UEFA Champions League 2026/27,pre_24h_to_1h,10,Both fresh,0.0374506430194339
+UEFA Champions League 2026/27,pre_last_hour,10,Both fresh,1.2833587011669203
+UEFA Champions League Women 2025/26,post_105_to_135m,10,Both fresh,0.0
+UEFA Champions League Women 2025/26,pre_24h_to_1h,10,Both fresh,0.0
+UEFA Champions League Women 2025/26,pre_last_hour,10,Both fresh,0.0
+UEFA Champions League Women 2026/27,post_105_to_135m,10,Both fresh,0.7071330589849109
+UEFA Champions League Women 2026/27,pre_24h_to_1h,10,Both fresh,0.0382298562652829
+UEFA Champions League Women 2026/27,pre_last_hour,10,Both fresh,0.2479423868312757
+World Cup 2026/27,post_105_to_135m,10,Both fresh,45.88995726495727
+World Cup 2026/27,pre_24h_to_1h,10,Both fresh,23.22343769354639
+World Cup 2026/27,pre_last_hour,10,Both fresh,85.05813746438747
+Bundesliga 2025/26,post_0_to_105m,10,Both fresh,14.69693121693122
+La Liga 2025/26,post_0_to_105m,10,Both fresh,23.688869992441422
+Ligue 1 2025/26,post_0_to_105m,10,Both fresh,11.336664002131627
+Premier League 2025/26,post_0_to_105m,10,Both fresh,34.04891448549266
+Serie A 2025/26,post_0_to_105m,10,Both fresh,17.63219911208417
+UEFA Champions League 2025/26,post_0_to_105m,10,Both fresh,31.11774586377761
+UEFA Champions League 2026/27,post_0_to_105m,10,Both fresh,12.720373994346597
+UEFA Champions League Women 2025/26,post_0_to_105m,10,Both fresh,0.0
+UEFA Champions League Women 2026/27,post_0_to_105m,10,Both fresh,0.9811875367430923
+World Cup 2026/27,post_0_to_105m,10,Both fresh,93.23748473748473
+Bundesliga 2025/26,post_105_to_135m,10,Only Kalshi fresh,9.465252525252524
+Bundesliga 2025/26,pre_24h_to_1h,10,Only Kalshi fresh,0.9718123261601522
+Bundesliga 2025/26,pre_last_hour,10,Only Kalshi fresh,6.323636363636363
+La Liga 2025/26,post_105_to_135m,10,Only Kalshi fresh,10.210703262786597
+La Liga 2025/26,pre_24h_to_1h,10,Only Kalshi fresh,2.289557932673875
+La Liga 2025/26,pre_last_hour,10,Only Kalshi fresh,12.146963183421516
+Ligue 1 2025/26,post_105_to_135m,10,Only Kalshi fresh,9.075339728217426
+Ligue 1 2025/26,pre_24h_to_1h,10,Only Kalshi fresh,0.6719682225234306
+Ligue 1 2025/26,pre_last_hour,10,Only Kalshi fresh,5.478017585931255
+Premier League 2025/26,post_105_to_135m,10,Only Kalshi fresh,10.319130339779308
+Premier League 2025/26,pre_24h_to_1h,10,Only Kalshi fresh,4.48132472603423
+Premier League 2025/26,pre_last_hour,10,Only Kalshi fresh,19.71686878619032
+Serie A 2025/26,post_105_to_135m,10,Only Kalshi fresh,10.024744572158363
+Serie A 2025/26,pre_24h_to_1h,10,Only Kalshi fresh,1.3416717567142356
+Serie A 2025/26,pre_last_hour,10,Only Kalshi fresh,9.19369944657301
+UEFA Champions League 2025/26,post_105_to_135m,10,Only Kalshi fresh,8.356554967666078
+UEFA Champions League 2025/26,pre_24h_to_1h,10,Only Kalshi fresh,5.952713237737393
+UEFA Champions League 2025/26,pre_last_hour,10,Only Kalshi fresh,20.30374289633549
+UEFA Champions League 2026/27,post_105_to_135m,10,Only Kalshi fresh,9.309994926433282
+UEFA Champions League 2026/27,pre_24h_to_1h,10,Only Kalshi fresh,0.5889583746939315
+UEFA Champions League 2026/27,pre_last_hour,10,Only Kalshi fresh,5.868721461187215
+UEFA Champions League Women 2025/26,post_105_to_135m,10,Only Kalshi fresh,0.0
+UEFA Champions League Women 2025/26,pre_24h_to_1h,10,Only Kalshi fresh,0.0
+UEFA Champions League Women 2025/26,pre_last_hour,10,Only Kalshi fresh,0.0
+UEFA Champions League Women 2026/27,post_105_to_135m,10,Only Kalshi fresh,5.253772290809328
+UEFA Champions League Women 2026/27,pre_24h_to_1h,10,Only Kalshi fresh,0.0515447009005785
+UEFA Champions League Women 2026/27,pre_last_hour,10,Only Kalshi fresh,0.553840877914952
+World Cup 2026/27,post_105_to_135m,10,Only Kalshi fresh,7.31712962962963
+World Cup 2026/27,pre_24h_to_1h,10,Only Kalshi fresh,30.50303093645485
+World Cup 2026/27,pre_last_hour,10,Only Kalshi fresh,13.659633190883191
+Bundesliga 2025/26,post_0_to_105m,10,Only Kalshi fresh,20.037960557960552
+La Liga 2025/26,post_0_to_105m,10,Only Kalshi fresh,25.705325648778025
+Ligue 1 2025/26,post_0_to_105m,10,Only Kalshi fresh,18.98068212096989
+Premier League 2025/26,post_0_to_105m,10,Only Kalshi fresh,30.845187370261115
+Serie A 2025/26,post_0_to_105m,10,Only Kalshi fresh,23.473575381621362
+UEFA Champions League 2025/26,post_0_to_105m,10,Only Kalshi fresh,28.444332465496487
+UEFA Champions League 2026/27,post_0_to_105m,10,Only Kalshi fresh,23.50228310502283
+UEFA Champions League Women 2025/26,post_0_to_105m,10,Only Kalshi fresh,0.0
+UEFA Champions League Women 2026/27,post_0_to_105m,10,Only Kalshi fresh,6.494806976288459
+World Cup 2026/27,post_0_to_105m,10,Only Kalshi fresh,5.311050061050061
+Bundesliga 2025/26,post_105_to_135m,10,Only PM fresh,9.90013468013468
+Bundesliga 2025/26,pre_24h_to_1h,10,Only PM fresh,1.4914287805592152
+Bundesliga 2025/26,pre_last_hour,10,Only PM fresh,9.172996632996632
+La Liga 2025/26,post_105_to_135m,10,Only PM fresh,11.186728395061728
+La Liga 2025/26,pre_24h_to_1h,10,Only PM fresh,2.2738718273138563
+La Liga 2025/26,pre_last_hour,10,Only PM fresh,9.815779320987655
+Ligue 1 2025/26,post_105_to_135m,10,Only PM fresh,8.370303756994405
+Ligue 1 2025/26,pre_24h_to_1h,10,Only PM fresh,1.0773164077433706
+Ligue 1 2025/26,pre_last_hour,10,Only PM fresh,8.10068611777245
+Premier League 2025/26,post_105_to_135m,10,Only PM fresh,12.731399541134056
+Premier League 2025/26,pre_24h_to_1h,10,Only PM fresh,3.26236824229642
+Premier League 2025/26,pre_last_hour,10,Only PM fresh,11.040860919916968
+Serie A 2025/26,post_105_to_135m,10,Only PM fresh,9.787728820774795
+Serie A 2025/26,pre_24h_to_1h,10,Only PM fresh,1.605214753734244
+Serie A 2025/26,pre_last_hour,10,Only PM fresh,9.363026819923371
+UEFA Champions League 2025/26,post_105_to_135m,10,Only PM fresh,12.493337252596511
+UEFA Champions League 2025/26,pre_24h_to_1h,10,Only PM fresh,4.461295146077755
+UEFA Champions League 2025/26,pre_last_hour,10,Only PM fresh,9.587987458357828
+UEFA Champions League 2026/27,post_105_to_135m,10,Only PM fresh,5.069507864028412
+UEFA Champions League 2026/27,pre_24h_to_1h,10,Only PM fresh,0.8154214369223303
+UEFA Champions League 2026/27,pre_last_hour,10,Only PM fresh,7.605022831050229
+UEFA Champions League Women 2025/26,post_105_to_135m,10,Only PM fresh,3.611111111111111
+UEFA Champions League Women 2025/26,pre_24h_to_1h,10,Only PM fresh,0.867049114331723
+UEFA Champions League Women 2025/26,pre_last_hour,10,Only PM fresh,4.925925925925926
+UEFA Champions League Women 2026/27,post_105_to_135m,10,Only PM fresh,1.168724279835391
+UEFA Champions League Women 2026/27,pre_24h_to_1h,10,Only PM fresh,0.1069958847736625
+UEFA Champions League Women 2026/27,pre_last_hour,10,Only PM fresh,0.8453360768175583
+World Cup 2026/27,post_105_to_135m,10,Only PM fresh,21.51745014245014
+World Cup 2026/27,pre_24h_to_1h,10,Only PM fresh,11.099068654775175
+World Cup 2026/27,pre_last_hour,10,Only PM fresh,0.8609330484330484
+Bundesliga 2025/26,post_0_to_105m,10,Only PM fresh,12.091332371332369
+La Liga 2025/26,post_0_to_105m,10,Only PM fresh,10.19455467372134
+Ligue 1 2025/26,post_0_to_105m,10,Only PM fresh,10.674355753492444
+Premier League 2025/26,post_0_to_105m,10,Only PM fresh,8.667665558521016
+Serie A 2025/26,post_0_to_105m,10,Only PM fresh,11.21133613087636
+UEFA Champions League 2025/26,post_0_to_105m,10,Only PM fresh,7.622518966434312
+UEFA Champions League 2026/27,post_0_to_105m,10,Only PM fresh,12.388852649126619
+UEFA Champions League Women 2025/26,post_0_to_105m,10,Only PM fresh,8.834656084656084
+UEFA Champions League Women 2026/27,post_0_to_105m,10,Only PM fresh,1.342347638643935
+World Cup 2026/27,post_0_to_105m,10,Only PM fresh,0.5284391534391534
+Bundesliga 2025/26,post_105_to_135m,10,Neither fresh,68.77784511784512
+Bundesliga 2025/26,pre_24h_to_1h,10,Neither fresh,97.3775830771483
+Bundesliga 2025/26,pre_last_hour,10,Neither fresh,81.59363636363636
+La Liga 2025/26,post_105_to_135m,10,Neither fresh,61.00997574955908
+La Liga 2025/26,pre_24h_to_1h,10,Neither fresh,94.8900367111418
+La Liga 2025/26,pre_last_hour,10,Neither fresh,70.26849096119929
+Ligue 1 2025/26,post_105_to_135m,10,Neither fresh,73.77211564082067
+Ligue 1 2025/26,pre_24h_to_1h,10,Neither fresh,98.11693254092378
+Ligue 1 2025/26,pre_last_hour,10,Neither fresh,83.80205835331735
+Premier League 2025/26,post_105_to_135m,10,Neither fresh,54.77428165628756
+Premier League 2025/26,pre_24h_to_1h,10,Neither fresh,91.21058906797012
+Premier League 2025/26,pre_last_hour,10,Neither fresh,55.19111220364908
+Serie A 2025/26,post_105_to_135m,10,Neither fresh,67.73094934014475
+Serie A 2025/26,pre_24h_to_1h,10,Neither fresh,96.785083152868
+Serie A 2025/26,pre_last_hour,10,Neither fresh,77.04541826309068
+UEFA Champions League 2025/26,post_105_to_135m,10,Neither fresh,64.6965510484029
+UEFA Champions League 2025/26,pre_24h_to_1h,10,Neither fresh,87.69343906823778
+UEFA Champions League 2025/26,pre_last_hour,10,Neither fresh,51.96296296296296
+UEFA Champions League 2026/27,post_105_to_135m,10,Neither fresh,77.60476915271435
+UEFA Champions League 2026/27,pre_24h_to_1h,10,Neither fresh,98.55816954536432
+UEFA Champions League 2026/27,pre_last_hour,10,Neither fresh,85.24289700659564
+UEFA Champions League Women 2025/26,post_105_to_135m,10,Neither fresh,96.38888888888889
+UEFA Champions League Women 2025/26,pre_24h_to_1h,10,Neither fresh,99.13295088566828
+UEFA Champions League Women 2025/26,pre_last_hour,10,Neither fresh,95.07407407407408
+UEFA Champions League Women 2026/27,post_105_to_135m,10,Neither fresh,92.87037037037037
+UEFA Champions League Women 2026/27,pre_24h_to_1h,10,Neither fresh,99.80322955806048
+UEFA Champions League Women 2026/27,pre_last_hour,10,Neither fresh,98.35288065843622
+World Cup 2026/27,post_105_to_135m,10,Neither fresh,25.27546296296296
+World Cup 2026/27,pre_24h_to_1h,10,Neither fresh,35.174462715223584
+World Cup 2026/27,pre_last_hour,10,Neither fresh,0.4212962962962963
+Bundesliga 2025/26,post_0_to_105m,10,Neither fresh,53.17377585377585
+La Liga 2025/26,post_0_to_105m,10,Neither fresh,40.41124968505921
+Ligue 1 2025/26,post_0_to_105m,10,Neither fresh,59.008298123406036
+Premier League 2025/26,post_0_to_105m,10,Neither fresh,26.438232585725213
+Serie A 2025/26,post_0_to_105m,10,Neither fresh,47.682889375418114
+UEFA Champions League 2025/26,post_0_to_105m,10,Neither fresh,32.81540270429159
+UEFA Champions League 2026/27,post_0_to_105m,10,Neither fresh,51.38849025150395
+UEFA Champions League Women 2025/26,post_0_to_105m,10,Neither fresh,91.16534391534393
+UEFA Champions League Women 2026/27,post_0_to_105m,10,Neither fresh,91.18165784832452
+World Cup 2026/27,post_0_to_105m,10,Neither fresh,0.923026048026048

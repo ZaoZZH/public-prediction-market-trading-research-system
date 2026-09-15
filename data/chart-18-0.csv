@@ -1,0 +1,37 @@
+cell,outcome,metric,value,panel
+Premier League 2025/26 | post_0_to_105m  F=60s,home,mean_gap_c,-0.4580129112188507,Premier League 2025/26 | post_0_to_105m  F=60s | mean_gap_c
+Premier League 2025/26 | post_0_to_105m  F=60s,draw,mean_gap_c,-0.2045952884994593,Premier League 2025/26 | post_0_to_105m  F=60s | mean_gap_c
+Premier League 2025/26 | post_0_to_105m  F=60s,away,mean_gap_c,-0.5467159099792286,Premier League 2025/26 | post_0_to_105m  F=60s | mean_gap_c
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,home,mean_gap_c,-0.5580810864114074,UEFA Champions League 2025/26 | post_0_to_105m  F=60s | mean_gap_c
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,draw,mean_gap_c,0.005868368140476351,UEFA Champions League 2025/26 | post_0_to_105m  F=60s | mean_gap_c
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,away,mean_gap_c,-0.3878296769697671,UEFA Champions League 2025/26 | post_0_to_105m  F=60s | mean_gap_c
+World Cup 2026/27 | post_0_to_105m  F=5s,home,mean_gap_c,-0.3418370280275606,World Cup 2026/27 | post_0_to_105m  F=5s | mean_gap_c
+World Cup 2026/27 | post_0_to_105m  F=5s,draw,mean_gap_c,0.022990244688299334,World Cup 2026/27 | post_0_to_105m  F=5s | mean_gap_c
+World Cup 2026/27 | post_0_to_105m  F=5s,away,mean_gap_c,-0.3085205108408125,World Cup 2026/27 | post_0_to_105m  F=5s | mean_gap_c
+World Cup 2026/27 | pre_last_hour  F=10s,home,mean_gap_c,-0.49893710313662654,World Cup 2026/27 | pre_last_hour  F=10s | mean_gap_c
+World Cup 2026/27 | pre_last_hour  F=10s,draw,mean_gap_c,-0.10962677872591152,World Cup 2026/27 | pre_last_hour  F=10s | mean_gap_c
+World Cup 2026/27 | pre_last_hour  F=10s,away,mean_gap_c,-0.4053684249399014,World Cup 2026/27 | pre_last_hour  F=10s | mean_gap_c
+Premier League 2025/26 | post_0_to_105m  F=60s,home,le_m2c_pct,15.5912413925997,Premier League 2025/26 | post_0_to_105m  F=60s | le_m2c_pct
+Premier League 2025/26 | post_0_to_105m  F=60s,draw,le_m2c_pct,13.368368843722628,Premier League 2025/26 | post_0_to_105m  F=60s | le_m2c_pct
+Premier League 2025/26 | post_0_to_105m  F=60s,away,le_m2c_pct,17.015130593407537,Premier League 2025/26 | post_0_to_105m  F=60s | le_m2c_pct
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,home,le_m2c_pct,14.620246945927358,UEFA Champions League 2025/26 | post_0_to_105m  F=60s | le_m2c_pct
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,draw,le_m2c_pct,10.721312985739576,UEFA Champions League 2025/26 | post_0_to_105m  F=60s | le_m2c_pct
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,away,le_m2c_pct,15.951830373442892,UEFA Champions League 2025/26 | post_0_to_105m  F=60s | le_m2c_pct
+World Cup 2026/27 | post_0_to_105m  F=5s,home,le_m2c_pct,5.354840261294745,World Cup 2026/27 | post_0_to_105m  F=5s | le_m2c_pct
+World Cup 2026/27 | post_0_to_105m  F=5s,draw,le_m2c_pct,1.3962842021390824,World Cup 2026/27 | post_0_to_105m  F=5s | le_m2c_pct
+World Cup 2026/27 | post_0_to_105m  F=5s,away,le_m2c_pct,3.9496942041078675,World Cup 2026/27 | post_0_to_105m  F=5s | le_m2c_pct
+World Cup 2026/27 | pre_last_hour  F=10s,home,le_m2c_pct,5.599458043771393,World Cup 2026/27 | pre_last_hour  F=10s | le_m2c_pct
+World Cup 2026/27 | pre_last_hour  F=10s,draw,le_m2c_pct,2.4417745448962163,World Cup 2026/27 | pre_last_hour  F=10s | le_m2c_pct
+World Cup 2026/27 | pre_last_hour  F=10s,away,le_m2c_pct,3.606033290391332,World Cup 2026/27 | pre_last_hour  F=10s | le_m2c_pct
+Premier League 2025/26 | post_0_to_105m  F=60s,home,ge_p2c_pct,4.869301222634268,Premier League 2025/26 | post_0_to_105m  F=60s | ge_p2c_pct
+Premier League 2025/26 | post_0_to_105m  F=60s,draw,ge_p2c_pct,7.057052303514455,Premier League 2025/26 | post_0_to_105m  F=60s | ge_p2c_pct
+Premier League 2025/26 | post_0_to_105m  F=60s,away,ge_p2c_pct,4.325900521279899,Premier League 2025/26 | post_0_to_105m  F=60s | ge_p2c_pct
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,home,ge_p2c_pct,5.957852523863069,UEFA Champions League 2025/26 | post_0_to_105m  F=60s | ge_p2c_pct
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,draw,ge_p2c_pct,8.770786856981161,UEFA Champions League 2025/26 | post_0_to_105m  F=60s | ge_p2c_pct
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,away,ge_p2c_pct,5.11991421306606,UEFA Champions League 2025/26 | post_0_to_105m  F=60s | ge_p2c_pct
+World Cup 2026/27 | post_0_to_105m  F=5s,home,ge_p2c_pct,0.832502372631762,World Cup 2026/27 | post_0_to_105m  F=5s | ge_p2c_pct
+World Cup 2026/27 | post_0_to_105m  F=5s,draw,ge_p2c_pct,1.3960835000832914,World Cup 2026/27 | post_0_to_105m  F=5s | ge_p2c_pct
+World Cup 2026/27 | post_0_to_105m  F=5s,away,ge_p2c_pct,0.6443106863031707,World Cup 2026/27 | post_0_to_105m  F=5s | ge_p2c_pct
+World Cup 2026/27 | pre_last_hour  F=10s,home,ge_p2c_pct,0.018475780520692875,World Cup 2026/27 | pre_last_hour  F=10s | ge_p2c_pct
+World Cup 2026/27 | pre_last_hour  F=10s,draw,ge_p2c_pct,0.20775955550011035,World Cup 2026/27 | pre_last_hour  F=10s | ge_p2c_pct
+World Cup 2026/27 | pre_last_hour  F=10s,away,ge_p2c_pct,0.053282143547933855,World Cup 2026/27 | pre_last_hour  F=10s | ge_p2c_pct

@@ -1,0 +1,11 @@
+outcome_sel,,all,all,team_win,team_win,draw,draw
+direction,,K YES + PM NO,PM YES + K NO,K YES + PM NO,PM YES + K NO,K YES + PM NO,PM YES + K NO
+cell,route,,,,,,
+Premier League 2025/26 | post_0_to_105m  F=60s,maker/maker,443863.0,855169.0,361607.0,687136.0,82256.0,168033.0
+Premier League 2025/26 | post_0_to_105m  F=60s,taker/taker,855169.0,443863.0,687136.0,361607.0,168033.0,82256.0
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,maker/maker,269310.0,498863.0,221864.0,403218.0,47446.0,95645.0
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,taker/taker,498863.0,269310.0,403218.0,221864.0,95645.0,47446.0
+World Cup 2026/27 | post_0_to_105m  F=5s,maker/maker,800153.0,1038044.0,575790.0,752325.0,224363.0,285719.0
+World Cup 2026/27 | post_0_to_105m  F=5s,taker/taker,1038044.0,800153.0,752325.0,575790.0,285719.0,224363.0
+World Cup 2026/27 | pre_last_hour  F=10s,maker/maker,202971.0,391773.0,172668.0,319588.0,30303.0,72185.0
+World Cup 2026/27 | pre_last_hour  F=10s,taker/taker,391773.0,202971.0,319588.0,172668.0,72185.0,30303.0

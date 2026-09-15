@@ -1,0 +1,81 @@
+cell,route,price_bucket,n,pos_0c,pos_pct
+Premier League 2025/26 | post_0_to_105m  F=60s,maker/maker,<10c,52940.0,42335.0,79.96788817529279
+Premier League 2025/26 | post_0_to_105m  F=60s,maker/maker,>=90c,26969.0,20056.0,74.36686566057325
+Premier League 2025/26 | post_0_to_105m  F=60s,maker/maker,70-90c,72509.0,52789.0,72.80337613261803
+Premier League 2025/26 | post_0_to_105m  F=60s,maker/maker,10-30c,151731.0,112912.0,74.41590709874713
+Premier League 2025/26 | post_0_to_105m  F=60s,maker/maker,30-70c,235333.0,176830.0,75.14033305996185
+Premier League 2025/26 | post_0_to_105m  F=60s,maker/taker,<10c,49642.0,12713.0,25.60936303936183
+Premier League 2025/26 | post_0_to_105m  F=60s,maker/taker,>=90c,30624.0,5752.0,18.782654127481713
+Premier League 2025/26 | post_0_to_105m  F=60s,maker/taker,70-90c,84846.0,10611.0,12.506187681210664
+Premier League 2025/26 | post_0_to_105m  F=60s,maker/taker,10-30c,168213.0,25779.0,15.32521267678479
+Premier League 2025/26 | post_0_to_105m  F=60s,maker/taker,30-70c,281551.0,19915.0,7.073318865853788
+Premier League 2025/26 | post_0_to_105m  F=60s,taker/maker,<10c,50967.0,18960.0,37.200541526870325
+Premier League 2025/26 | post_0_to_105m  F=60s,taker/maker,>=90c,29840.0,10898.0,36.52144772117963
+Premier League 2025/26 | post_0_to_105m  F=60s,taker/maker,70-90c,81257.0,19752.0,24.30805961332562
+Premier League 2025/26 | post_0_to_105m  F=60s,taker/maker,10-30c,172383.0,32498.0,18.852207004170946
+Premier League 2025/26 | post_0_to_105m  F=60s,taker/maker,30-70c,280429.0,41584.0,14.82870887105114
+Premier League 2025/26 | post_0_to_105m  F=60s,taker/taker,<10c,45710.0,3013.0,6.591555458324218
+Premier League 2025/26 | post_0_to_105m  F=60s,taker/taker,>=90c,28901.0,1596.0,5.522300266426767
+Premier League 2025/26 | post_0_to_105m  F=60s,taker/taker,70-90c,76443.0,2277.0,2.978690004316942
+Premier League 2025/26 | post_0_to_105m  F=60s,taker/taker,10-30c,150167.0,4326.0,2.8807927174412487
+Premier League 2025/26 | post_0_to_105m  F=60s,taker/taker,30-70c,238261.0,5218.0,2.1900352974259323
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,maker/maker,<10c,45735.0,37924.0,82.92117634197004
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,maker/maker,>=90c,19973.0,15151.0,75.85740750012516
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,maker/maker,70-90c,43757.0,32261.0,73.72763215028452
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,maker/maker,10-30c,115419.0,88736.0,76.88162260979561
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,maker/maker,30-70c,143918.0,106497.0,73.9983879709279
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,maker/taker,<10c,44319.0,10518.0,23.732484938739592
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,maker/taker,>=90c,23797.0,5012.0,21.061478337605582
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,maker/taker,70-90c,49449.0,7603.0,15.375437319258225
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,maker/taker,10-30c,131171.0,17123.0,13.053952474251169
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,maker/taker,30-70c,168791.0,13405.0,7.941774146725833
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,taker/maker,<10c,45602.0,16714.0,36.65190123240209
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,taker/maker,>=90c,23800.0,8681.0,36.47478991596638
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,taker/maker,70-90c,47785.0,9003.0,18.840640368316418
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,taker/maker,10-30c,133002.0,24203.0,18.197470714726094
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,taker/maker,30-70c,167338.0,20560.0,12.286509937969857
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,taker/taker,<10c,40487.0,2034.0,5.023834811173957
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,taker/taker,>=90c,22140.0,1162.0,5.248419150858175
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,taker/taker,70-90c,45473.0,1657.0,3.643920568249291
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,taker/taker,10-30c,114877.0,2852.0,2.4826553618217746
+UEFA Champions League 2025/26 | post_0_to_105m  F=60s,taker/taker,30-70c,145825.0,3010.0,2.06411794959712
+World Cup 2026/27 | post_0_to_105m  F=5s,maker/maker,<10c,310131.0,263430.0,84.94152471052556
+World Cup 2026/27 | post_0_to_105m  F=5s,maker/maker,>=90c,108658.0,89462.0,82.33356034530361
+World Cup 2026/27 | post_0_to_105m  F=5s,maker/maker,70-90c,186926.0,138209.0,73.93781496421043
+World Cup 2026/27 | post_0_to_105m  F=5s,maker/maker,10-30c,565069.0,422877.0,74.83634741951867
+World Cup 2026/27 | post_0_to_105m  F=5s,maker/maker,30-70c,667413.0,463885.0,69.5049392205426
+World Cup 2026/27 | post_0_to_105m  F=5s,maker/taker,<10c,318056.0,37013.0,11.637258847498554
+World Cup 2026/27 | post_0_to_105m  F=5s,maker/taker,>=90c,121478.0,13557.0,11.160045440326643
+World Cup 2026/27 | post_0_to_105m  F=5s,maker/taker,70-90c,195423.0,16212.0,8.295850539598717
+World Cup 2026/27 | post_0_to_105m  F=5s,maker/taker,10-30c,637277.0,43267.0,6.789355335278066
+World Cup 2026/27 | post_0_to_105m  F=5s,maker/taker,30-70c,734252.0,29857.0,4.0663151070749555
+World Cup 2026/27 | post_0_to_105m  F=5s,taker/maker,<10c,321517.0,148029.0,46.04080033093118
+World Cup 2026/27 | post_0_to_105m  F=5s,taker/maker,>=90c,118937.0,57414.0,48.27261491377788
+World Cup 2026/27 | post_0_to_105m  F=5s,taker/maker,70-90c,192689.0,29717.0,15.422260741401947
+World Cup 2026/27 | post_0_to_105m  F=5s,taker/maker,10-30c,650508.0,62537.0,9.613563553407491
+World Cup 2026/27 | post_0_to_105m  F=5s,taker/maker,30-70c,722835.0,46154.0,6.385136303582422
+World Cup 2026/27 | post_0_to_105m  F=5s,taker/taker,<10c,291714.0,5989.0,2.053038249792605
+World Cup 2026/27 | post_0_to_105m  F=5s,taker/taker,>=90c,115919.0,1594.0,1.375098128865846
+World Cup 2026/27 | post_0_to_105m  F=5s,taker/taker,70-90c,185285.0,1026.0,0.553741533313544
+World Cup 2026/27 | post_0_to_105m  F=5s,taker/taker,10-30c,561257.0,2822.0,0.5027999650783865
+World Cup 2026/27 | post_0_to_105m  F=5s,taker/taker,30-70c,684022.0,2412.0,0.3526202373607866
+World Cup 2026/27 | pre_last_hour  F=10s,maker/maker,<10c,31455.0,28166.0,89.54379271975839
+World Cup 2026/27 | pre_last_hour  F=10s,maker/maker,>=90c,5325.0,2586.0,48.563380281690144
+World Cup 2026/27 | pre_last_hour  F=10s,maker/maker,70-90c,50100.0,38195.0,76.2375249500998
+World Cup 2026/27 | pre_last_hour  F=10s,maker/maker,10-30c,141762.0,115583.0,81.53313299755929
+World Cup 2026/27 | pre_last_hour  F=10s,maker/maker,30-70c,198378.0,142904.0,72.03621369305064
+World Cup 2026/27 | pre_last_hour  F=10s,maker/taker,<10c,47708.0,2505.0,5.250691707889662
+World Cup 2026/27 | pre_last_hour  F=10s,maker/taker,>=90c,9519.0,486.0,5.10557831705011
+World Cup 2026/27 | pre_last_hour  F=10s,maker/taker,70-90c,92062.0,1249.0,1.3566944015989224
+World Cup 2026/27 | pre_last_hour  F=10s,maker/taker,10-30c,261669.0,9504.0,3.6320695229469293
+World Cup 2026/27 | pre_last_hour  F=10s,maker/taker,30-70c,285087.0,2185.0,0.7664327029994352
+World Cup 2026/27 | pre_last_hour  F=10s,taker/maker,<10c,47971.0,22296.0,46.478080506972965
+World Cup 2026/27 | pre_last_hour  F=10s,taker/maker,>=90c,8579.0,3164.0,36.88075533278937
+World Cup 2026/27 | pre_last_hour  F=10s,taker/maker,70-90c,84301.0,10774.0,12.780394064127353
+World Cup 2026/27 | pre_last_hour  F=10s,taker/maker,10-30c,267071.0,22077.0,8.266341160215823
+World Cup 2026/27 | pre_last_hour  F=10s,taker/maker,30-70c,288123.0,14716.0,5.107540876639491
+World Cup 2026/27 | pre_last_hour  F=10s,taker/taker,<10c,27680.0,256.0,0.9248554913294798
+World Cup 2026/27 | pre_last_hour  F=10s,taker/taker,>=90c,5781.0,0.0,0.0
+World Cup 2026/27 | pre_last_hour  F=10s,taker/taker,70-90c,57017.0,0.0,0.0
+World Cup 2026/27 | pre_last_hour  F=10s,taker/taker,10-30c,140319.0,0.0,0.0
+World Cup 2026/27 | pre_last_hour  F=10s,taker/taker,30-70c,196223.0,0.0,0.0
