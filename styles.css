@@ -1,17 +1,23 @@
-:root { --ink: #23302f; --muted: #62706b; --accent: #167263; }
-body { color: var(--ink); background: #fcfcf9; font-size: 17px; line-height: 1.7; }
-h1, h2, h3 { color: #183d36; font-weight: 650; letter-spacing: -.025em; }
-h1.title { font-size: clamp(2.1rem, 4vw, 3.05rem); line-height: 1.12; }
-h2 { margin-top: 2.6rem; padding-top: .7rem; }
-a { color: var(--accent); text-underline-offset: 3px; }
-.subtitle { color: var(--muted); font-size: 1.2rem; line-height: 1.5; }
+body { font-size: 17px; line-height: 1.7; }
+h1, h2, h3 { font-weight: 650; letter-spacing: -.02em; }
+h1.title { font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.15; }
+h2 { margin-top: 2.8rem; padding-top: .6rem; border-top: 1px solid var(--rule); }
+h3 { margin-top: 1.8rem; font-size: 1.2rem; }
+a { text-underline-offset: 3px; }
+.subtitle { color: var(--muted); font-size: 1.15rem; line-height: 1.5; }
 #title-block-header .description { display: none; }
-.research-chart { width: 100%; border: 1px solid #dce4de; border-radius: 8px; background: white; margin: .9rem 0 0; }
-.chart-links { font-size: .78rem; color: var(--muted); text-align: right; margin-bottom: 1.5rem; }
-.table-scroll { overflow-x: auto; max-height: 600px; font-size: .78rem; }
-details { margin: 1.1rem 0; border: 1px solid #dce4de; border-radius: 7px; padding: .8rem 1rem; background: #f6f8f4; }
-summary { cursor: pointer; color: #245347; font-weight: 600; }
-.callout { background: #f1f6f1; }
-#TOC { font-size: .8rem; }
-blockquote { color: #426358; border-left-color: #9fbfae; }
-@media (max-width: 640px) { body { font-size: 16px; } .research-chart { min-width: 0; } }
+.chart-block { margin: 1rem 0 1.6rem; }
+.chart-frame { overflow-x: auto; border: 1px solid var(--rule); border-radius: 8px; background: var(--panel); padding: .4rem .2rem; }
+.research-chart { width: 100%; min-width: 900px; }
+.chart-links { font-size: .8rem; color: var(--muted); text-align: right; margin: .35rem .2rem 0; }
+.chart-links a { color: var(--muted); }
+table.table { font-size: .86rem; }
+table.table th { font-weight: 600; }
+.callout { background: var(--panel); }
+.summary-list li { margin-bottom: .55rem; }
+#TOC, #quarto-sidebar { font-size: .84rem; }
+blockquote { color: var(--muted); border-left-color: var(--rule); }
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+  .research-chart { min-width: 820px; }
+}
