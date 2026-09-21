@@ -1,9 +1,9 @@
 # Public soccer research article
 
 Quarto + Plotly, now part of the [public website](../../README.md).
-The previous standalone deployment is at
-https://zaozzh.github.io/soccer-cross-venue-research/ (branch `codex/publication`, root).
-Moving the local sources does not change that deployment.
+The article is hosted at
+https://zaozzh.github.io/public-prediction-market-trading-research-system/blog/soccer_1x2_analysis/.
+The complete website is deployed from branch `codex/publication`, root.
 
 ## Design
 
