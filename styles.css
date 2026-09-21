@@ -1,23 +1,81 @@
-body { font-size: 17px; line-height: 1.7; }
-h1, h2, h3 { font-weight: 650; letter-spacing: -.02em; }
-h1.title { font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.15; }
-h2 { margin-top: 2.8rem; padding-top: .6rem; border-top: 1px solid var(--rule); }
-h3 { margin-top: 1.8rem; font-size: 1.2rem; }
-a { text-underline-offset: 3px; }
-.subtitle { color: var(--muted); font-size: 1.15rem; line-height: 1.5; }
-#title-block-header .description { display: none; }
-.chart-block { margin: 1rem 0 1.6rem; }
-.chart-frame { overflow-x: auto; border: 1px solid var(--rule); border-radius: 8px; background: var(--panel); padding: .4rem .2rem; }
-.research-chart { width: 100%; min-width: 900px; }
-.chart-links { font-size: .8rem; color: var(--muted); text-align: right; margin: .35rem .2rem 0; }
-.chart-links a { color: var(--muted); }
-table.table { font-size: .86rem; }
-table.table th { font-weight: 600; }
-.callout { background: var(--panel); }
-.summary-list li { margin-bottom: .55rem; }
-#TOC, #quarto-sidebar { font-size: .84rem; }
-blockquote { color: var(--muted); border-left-color: var(--rule); }
+:root {
+  /* Match the soccer article's Quarto/Cosmo typography and theme palette. */
+  --background: #fcfcf9;
+  --ink: #23302f;
+  --heading: #183d36;
+  --muted: #62706b;
+  --accent: #167263;
+  --rule: #dce4de;
+  font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--ink);
+  background: var(--background);
+  color-scheme: light dark;
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+
+main {
+  max-width: 908px;
+  margin: 64px auto;
+  padding: 0 24px;
+}
+
+h1 {
+  margin: 0 0 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--heading);
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  line-height: 1.15;
+  font-weight: 650;
+  letter-spacing: -.02em;
+}
+
+a { color: var(--accent); text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+ul { padding-left: 22px; }
+li { margin: 16px 0; }
+
+.back {
+  display: inline-block;
+  margin-bottom: 28px;
+  font-size: 14px;
+}
+
+.note { color: var(--muted); font-size: .84rem; }
+
+.posts { list-style: none; padding: 0; }
+.posts li {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: 20px;
+  margin: 24px 0;
+  align-items: baseline;
+}
+.posts time {
+  color: var(--muted);
+  font-size: .88rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #14181b;
+    --ink: #d9dfda;
+    --heading: #e6efe9;
+    --muted: #98a39c;
+    --accent: #5fc3ad;
+    --rule: #2b3237;
+  }
+}
+
 @media (max-width: 640px) {
-  body { font-size: 16px; }
-  .research-chart { min-width: 820px; }
+  :root { font-size: 16px; }
+  main { margin: 40px auto; }
+  .posts li { grid-template-columns: 5.5rem minmax(0, 1fr); gap: 12px; }
 }

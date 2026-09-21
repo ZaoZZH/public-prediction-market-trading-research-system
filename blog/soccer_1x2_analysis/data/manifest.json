@@ -1,0 +1,112 @@
+{
+  "built_at_utc": "2026-09-20T19:47:38.930021+00:00",
+  "fixture_count": 1973,
+  "first_kickoff": "2025-09-12 18:45:00+00:00",
+  "last_kickoff": "2026-08-11 19:00:00+00:00",
+  "notebook_sha256": "b2e28084b561ab577393207460d1cf3c874cc12025d64fcee4c0358c6e4aec07",
+  "inputs": [
+    {
+      "file": "availability.csv",
+      "bytes": 10784956,
+      "sha256": "218183786a9cba31707ff524b5e1c08da65be4fe5de0001fe0f1597119856732"
+    },
+    {
+      "file": "trade_waits.parquet",
+      "bytes": 2463518,
+      "sha256": "a9c73c8b65f7a32a8e88fcfdab5561055e69b14690b9fb8823bb4af8d665f793"
+    },
+    {
+      "file": "gap_cents.csv",
+      "bytes": 8862704,
+      "sha256": "bd489bc119163f89f1889a2860b777e4c55201c0f79a0bcd4676ac95e3de3d46"
+    },
+    {
+      "file": "screen_sweep.csv",
+      "bytes": 11315278,
+      "sha256": "b72b64dc6a9bcebf681e80a03f67607305b0144fe246eb685afc4c087280ea97"
+    },
+    {
+      "file": "matches.parquet",
+      "bytes": 229600,
+      "sha256": "0c56659f8bcf487e6ae2b9d02e32a4ef0dd713fd4530f46e25797122c14e2dee"
+    },
+    {
+      "file": "audit.parquet",
+      "bytes": 119936,
+      "sha256": "c4a904a91ddd5eb2bea4540569d4907df011df867f99edf962c3d8d8a9805d61"
+    },
+    {
+      "file": "screen.parquet",
+      "bytes": 19460312,
+      "sha256": "36e8f57c938b4d2334b2e3eb2d7b05ca15ebd642def690920ebbd359018f9f56"
+    },
+    {
+      "file": "conditions.parquet",
+      "bytes": 55397295,
+      "sha256": "ec4363da03c838a0d4be427c217dfe64dd319c9012c8e4716f7aa4d107cb234f"
+    },
+    {
+      "file": "manifest.json",
+      "bytes": 230035,
+      "sha256": "691fbfc3e7b1d5c505ab9ea8980adaf3e2497c12aa3b6b77108d08503d527b21"
+    }
+  ],
+  "charts": [
+    {
+      "id": "chart-03-0",
+      "rows": 10,
+      "notebook_cell": 3
+    },
+    {
+      "id": "chart-05-0",
+      "rows": 13500,
+      "notebook_cell": 5
+    },
+    {
+      "id": "chart-07-0",
+      "rows": 108,
+      "notebook_cell": 7
+    },
+    {
+      "id": "chart-11-0",
+      "rows": 20,
+      "notebook_cell": 11
+    },
+    {
+      "id": "chart-13-0",
+      "rows": 480,
+      "notebook_cell": 13
+    },
+    {
+      "id": "chart-16-0",
+      "rows": 216,
+      "notebook_cell": 16
+    },
+    {
+      "id": "chart-18-0",
+      "rows": 108,
+      "notebook_cell": 18
+    },
+    {
+      "id": "chart-21-0",
+      "rows": 96,
+      "notebook_cell": 21
+    },
+    {
+      "id": "chart-22-0",
+      "rows": 4800,
+      "notebook_cell": 22
+    },
+    {
+      "id": "chart-24-0",
+      "rows": 720,
+      "notebook_cell": 24
+    },
+    {
+      "id": "chart-28-0",
+      "rows": 120,
+      "notebook_cell": 28
+    }
+  ],
+  "note": "Trade-reference research. Public data contain chart aggregates only. Raw inputs remain local."
+}
