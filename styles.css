@@ -63,19 +63,32 @@ li { margin: 16px 0; }
   white-space: nowrap;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
+:root[data-theme="dark"] {
     --background: #14181b;
     --ink: #d9dfda;
     --heading: #e6efe9;
     --muted: #98a39c;
     --accent: #5fc3ad;
     --rule: #2b3237;
-  }
 }
+
+.eyebrow { color: var(--muted); font-size: 12px; letter-spacing: .13em; text-transform: uppercase; margin: 0 0 20px; }
+.home { margin-top: 80px; }
+.home h1 { border: 0; padding-bottom: 8px; margin-bottom: 48px; }
+.home-links ul { list-style: none; padding: 0; }
+.home-links li { margin: 0; border-top: 1px solid var(--rule); }
+.home-links li:last-child { border-bottom: 1px solid var(--rule); }
+.home-links a { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 24px 4px; color: var(--heading); text-decoration: none; font-size: 1.2rem; font-weight: 550; }
+.home-links a:hover { color: var(--accent); }
+.home-links small { display: block; color: var(--muted); font-size: .85rem; font-weight: 400; margin-top: 4px; }
+.posts li { border-bottom: 1px solid var(--rule); padding: 24px 0; margin: 0; }
+.posts a { font-weight: 550; text-decoration: none; font-size: 1.08rem; line-height: 1.4; }
+.posts a:hover { text-decoration: underline; }
+.posts .note { display: block; margin-top: 6px; line-height: 1.5; }
 
 @media (max-width: 640px) {
   :root { font-size: 16px; }
   main { margin: 40px auto; }
+  .desktop-break { display: none; }
   .posts li { grid-template-columns: 5.5rem minmax(0, 1fr); gap: 12px; }
 }
