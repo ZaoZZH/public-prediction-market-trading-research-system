@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Zehao Zhou">
+<meta name="dcterms.date" content="2026-09-22">
+<meta name="description" content="Part 2 of a trade-tape study of soccer 1X2 markets on Kalshi and Polymarket: fee-adjusted route screens on last-trade references, direction by outcome and matchup, the freshness sweep, price levels, frequency, and where to look first.">
+
+<title>What survives fees – Zehao (Gerald) Zhou · Prediction Market Research</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-816253360dce6a4e3f30408ef63133a0.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-d0d81244e8ed40314a7a066e55328b5b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-816253360dce6a4e3f30408ef63133a0.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+<script defer="" src="assets/plotly.min.js"></script>
+<script defer="" src="assets/charts.js"></script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="What survives fees – Zehao (Gerald) Zhou · Prediction Market Research">
+<meta property="og:description" content="Part 2 of a trade-tape study of soccer 1X2 markets on Kalshi and Polymarket: fee-adjusted route screens on last-trade references, direction by outcome and matchup, the freshness sweep, price levels, frequency, and where to look first.">
+<meta property="og:site_name" content="Zehao (Gerald) Zhou · Prediction Market Research">
+<link rel="stylesheet" href="../../navigation.css">
+<script src="../../navigation.js"></script>
+</head>
+
+<body class="floating quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link active" data-scroll-target="#summary">Summary</a></li>
+  <li><a href="#definitions-added-in-this-part" id="toc-definitions-added-in-this-part" class="nav-link" data-scroll-target="#definitions-added-in-this-part">Definitions added in this part</a></li>
+  <li><a href="#what-survives-fees" id="toc-what-survives-fees" class="nav-link" data-scroll-target="#what-survives-fees">1. What survives fees</a></li>
+  <li><a href="#across-the-freshness-cutoff" id="toc-across-the-freshness-cutoff" class="nav-link" data-scroll-target="#across-the-freshness-cutoff">2. Across the freshness cutoff</a></li>
+  <li><a href="#resting-on-both-venues-direction-and-freshness" id="toc-resting-on-both-venues-direction-and-freshness" class="nav-link" data-scroll-target="#resting-on-both-venues-direction-and-freshness">3. Resting on both venues: direction and freshness</a></li>
+  <li><a href="#price-level" id="toc-price-level" class="nav-link" data-scroll-target="#price-level">4. Price level</a></li>
+  <li><a href="#how-often-and-for-how-long" id="toc-how-often-and-for-how-long" class="nav-link" data-scroll-target="#how-often-and-for-how-long">5. How often, and for how long</a></li>
+  <li><a href="#where-to-look-first" id="toc-where-to-look-first" class="nav-link" data-scroll-target="#where-to-look-first">6. Where to look first</a></li>
+  <li><a href="#what-is-not-measured" id="toc-what-is-not-measured" class="nav-link" data-scroll-target="#what-is-not-measured">What is not measured</a></li>
+  <li><a href="#data-methods-and-updates" id="toc-data-methods-and-updates" class="nav-link" data-scroll-target="#data-methods-and-updates">Data, methods and updates</a></li>
+  </ul>
+</nav>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<nav aria-label="Site" style="padding: 1rem 5%;"><a href="../../index.html">← Zehao (Gerald) Zhou · Home</a></nav>
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">What survives fees</h1>
+<p class="subtitle lead">Kalshi vs Polymarket in soccer 1X2 markets, part 2 of 3: which way of pairing the two tapes, taking or resting on each venue, leaves anything after both fee curves; how that changes with freshness and price; and how often it stands.</p>
+</div>
+
+<div>
+  <div class="description">
+    Part 2 of a trade-tape study of soccer 1X2 markets on Kalshi and Polymarket: fee-adjusted route screens on last-trade references, direction by outcome and matchup, the freshness sweep, price levels, frequency, and where to look first.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Zehao Zhou </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 22, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><a href="../soccer_1x2_gaps_1/index.html">Part 1</a> established where the two tapes can be compared and how far apart their last trades print: Polymarket prints below Kalshi except on draws, the sign follows the taker side each print came from, and the size of the gap does not depend on the freshness cutoff. This part asks what is left once each print is given a role and charged its venue’s fee: which pairing of the two tapes screens positive, in which direction, at which price, and for how much of the clock. Part 3 will ask what the prices did next.</p>
+<p>Like part 1, this is a backward look. Each observation compares two prints that had already happened; a positive number here is a property of reference prices, not a fill.</p>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<div class="summary-list">
+<ol type="1">
+<li><p><strong>Crossing both venues never pays; resting on both usually does.</strong> Taker/taker is positive on at most 3.8% of observations in any group, with a mean net result of −3.22 c per contract pair in the Premier League. Maker/maker is positive on 59.0%–88.7% with a mean net edge of +0.25 to +1.67 c.&nbsp;Seen after the fact, the two venues’ resting-side references overlap after fees on most observations: there is spread-capture room in the reference prices. Both resting legs have to fill, and the tape does not say how often they would.</p></li>
+<li><p><strong>Which venue holds YES depends on the outcome.</strong> Team wins: YES on Polymarket, NO on Kalshi (81.3% against 68.2% positive in the Premier League). Draws: the reverse (mean net edge +1.40 against +1.08 c).</p></li>
+<li><p><strong>The freshness cutoff hardly moves any rate.</strong> Maker/maker in the Premier League is positive on 73.8% of observations at F = 1 s and 76.9% at 300 s; the taker routes move by about a point.</p></li>
+<li><p><strong>The mid-price fee penalty falls on one direction.</strong> With YES on Kalshi, the positive share drops from 82.9% below 10 c to 62.5% at 30–70 c in the Premier League; with YES on Polymarket it stays at 82.6% in the same bucket.</p></li>
+<li><p><strong>A positive resting-side overlap is standing for much of the match.</strong> 42.1% of the Premier League in-play clock, 40.7% of the World Cup’s, in every fixture; the ten busiest fixtures hold 9.8%–22.0% of the total.</p></li>
+</ol>
+</div>
+</section>
+<section id="definitions-added-in-this-part" class="level2">
+<h2 class="anchored" data-anchor-id="definitions-added-in-this-part">Definitions added in this part</h2>
+<p>The vocabulary of part 1 carries over: a print is one venue’s fills within one second on one outcome and one taker side; a pair is fresh when both venues’ latest prints are at most F seconds old; an observation is a print on either leg while the other leg is fresh. Two additions:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Term</th>
+<th>Meaning here</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Route</td>
+<td>A direction (which venue holds YES: <code>PM YES + K NO</code> or <code>K YES + PM NO</code>) and a role for each leg: a <strong>taker</strong> crosses, a <strong>maker</strong> rests. Route names give the Polymarket role first, then the Kalshi role. A taker leg is priced from the print on the side it would hit; a resting leg from the print on the side that would fill it, so a taker-sell print is the reference for a resting bid.</td>
+</tr>
+<tr class="even">
+<td>Reference net edge</td>
+<td><code>1 − Polymarket cost − Kalshi cost − fees</code> per contract pair, both legs priced from their latest prints at an observation. Positive means the two references overlapped after fees. It does not mean either leg would have filled.</td>
+</tr>
+</tbody>
+</table>
+<p>Each route reads one of part 1’s taker-action pairs, one print per venue:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Route (PM role / Kalshi role)</th>
+<th><code>PM YES + K NO</code> reads</th>
+<th><code>K YES + PM NO</code> reads</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>taker/taker</td>
+<td>PM buy / K sell</td>
+<td>PM sell / K buy</td>
+</tr>
+<tr class="even">
+<td>taker/maker</td>
+<td>PM buy / K buy</td>
+<td>PM sell / K sell</td>
+</tr>
+<tr class="odd">
+<td>maker/taker</td>
+<td>PM sell / K sell</td>
+<td>PM buy / K buy</td>
+</tr>
+<tr class="even">
+<td>maker/maker</td>
+<td>PM sell / K buy</td>
+<td>PM buy / K sell</td>
+</tr>
+</tbody>
+</table>
+<p>The gross edge before fees is that pair’s signed gap from part 1, read in the route’s favour: Kalshi minus Polymarket for <code>PM YES + K NO</code>, Polymarket minus Kalshi for <code>K YES + PM NO</code>. The maker/maker pairs are the cross-side ones, so what that route reads is the cross-venue bid–ask spread.</p>
+<section id="fees" class="level3">
+<h3 class="anchored" data-anchor-id="fees">Fees</h3>
+<p>Neither venue charges a flat fee. Both charge <code>rate × p × (1 − p)</code> per contract, largest at 50 c and zero at the extremes, where p is the price of the leg being bought (a NO leg pays on 1 − p; the curve is symmetric). Rates are the venues’ published schedules, not historical billing, and no rebates are assumed:</p>
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+Leg
+</th>
+<th>
+Rate
+</th>
+<th>
+Rounding
+</th>
+<th>
+At p = 50 c
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Polymarket taker
+</td>
+<td>
+5%
+</td>
+<td>
+none
+</td>
+<td>
+1.25 c per contract
+</td>
+</tr>
+<tr>
+<td>
+Polymarket maker
+</td>
+<td>
+0
+</td>
+<td>
+—
+</td>
+<td>
+0
+</td>
+</tr>
+<tr>
+<td>
+Kalshi taker
+</td>
+<td>
+7%
+</td>
+<td>
+rounded up to the cent on a 100-contract lot, plus the cent rounding of the lot’s cash cost
+</td>
+<td>
+1.75 c per contract
+</td>
+</tr>
+<tr>
+<td>
+Kalshi maker
+</td>
+<td>
+1.75%
+</td>
+<td>
+same
+</td>
+<td>
+0.44 c per contract
+</td>
+</tr>
+</tbody>
+</table>
+<p>Two taker fees at 50 c cost 3.00 c per contract pair, against a mean absolute gap of 1.28–1.43 c in the club groups (part 1). A maker/maker pair pays 0.44 c.</p>
+</section>
+</section>
+<section id="what-survives-fees" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="what-survives-fees">1. What survives fees</h2>
+<p>At every route-leg print with the other leg fresh, both legs are priced from their latest prints and the fee model is subtracted, at each group’s cutoff from part 1 (60 s for the club groups, 5 s for the World Cup in play, 10 s for its last pregame hour).</p>
+<div class="column-screen-inset-right chart-block">
+<div class="chart-frame"><div id="chart-21-0" class="research-chart" style="height:820px"></div></div>
+<script type="application/json" data-chart="chart-21-0">{"data":[{"customdata":[[443863.0,-3.2215576608133802],[971339.0,-0.9292215777685706],[394878.0,-1.1371556568321461],[855169.0,1.1742080013486023]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":true,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[3.638,17.549,19.697,80.16],"type":"bar","xaxis":"x","yaxis":"y"},{"customdata":[[855169.0,-3.6212835207956395],[394878.0,-1.0736634666439653],[971339.0,-1.5612507528389712],[443863.0,0.9187733538763315]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":true,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[1.702,20.734,11.022,69.727],"type":"bar","xaxis":"x","yaxis":"y"},{"customdata":[[269310.0,-3.243574932653074],[557256.0,-0.9834500951255378],[243913.0,-1.0485312885304516],[498863.0,1.1942568675817204]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[3.525,17.729,20.282,80.173],"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":[[498863.0,-3.537716661232486],[243913.0,-1.0683207793380096],[557256.0,-1.4001916423523888],[269310.0,1.02128092715755]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[1.921,20.846,12.338,73.567],"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":[[800153.0,-2.769232413142459],[1354573.0,-0.9638232026952132],[651913.0,-1.1562612472673186],[1038044.0,0.6278844437290869]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[0.8,16.374,8.55,76.972],"type":"bar","xaxis":"x3","yaxis":"y3"},{"customdata":[[1038044.0,-2.8306484706104276],[651913.0,-0.9758869524004253],[1354573.0,-1.3059970426810064],[800153.0,0.5282578572887601]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[0.717,18.722,6.213,72.343],"type":"bar","xaxis":"x3","yaxis":"y3"},{"customdata":[[202971.0,-2.9492978356551975],[741101.0,-0.9671349817221431],[87803.0,-1.1495218801685934],[391773.0,0.7955859867962592]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[0.0,11.32,8.54,85.99],"type":"bar","xaxis":"x4","yaxis":"y4"},{"customdata":[[391773.0,-3.3088871936175583],[87803.0,-1.4759581147062968],[741101.0,-1.5030045515668407],[202971.0,0.31613854265275126]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[0.088,4.1,1.917,62.639],"type":"bar","xaxis":"x4","yaxis":"y4"},{"customdata":[[361607.0,-3.0739826217822315],[761687.0,-0.855608070273978],[323520.0,-1.050822021941437],[687136.0,1.1960241391851685]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[3.741,19.135,20.479,81.32],"type":"bar","xaxis":"x5","yaxis":"y5"},{"customdata":[[687136.0,-3.6248989246133854],[323520.0,-1.1293734596362088],[761687.0,-1.6082429276031018],[361607.0,0.8094167860268411]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[1.575,19.72,10.281,68.184],"type":"bar","xaxis":"x5","yaxis":"y5"},{"customdata":[[221864.0,-3.0940669232711384],[442613.0,-0.8984224193304731],[202382.0,-0.9377019945072423],[403218.0,1.2624741607121372]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[3.8,19.865,21.661,81.558],"type":"bar","xaxis":"x6","yaxis":"y6"},{"customdata":[[403218.0,-3.60728297105791],[202382.0,-1.1729278510323808],[442613.0,-1.4792576653936522],[221864.0,0.8831812900904524]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[1.711,19.599,11.362,71.695],"type":"bar","xaxis":"x6","yaxis":"y6"},{"customdata":[[575790.0,-2.6111469149421307],[918946.0,-0.8006423191096531],[487702.0,-1.0653896089315076],[752325.0,0.7182884034326994]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[0.904,20.229,9.533,80.658],"type":"bar","xaxis":"x7","yaxis":"y7"},{"customdata":[[752325.0,-2.873226049396894],[487702.0,-1.015413767413059],[918946.0,-1.3929080045546305],[575790.0,0.4366292113522759]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[0.611,19.086,5.235,68.589],"type":"bar","xaxis":"x7","yaxis":"y7"},{"customdata":[[172668.0,-2.9198889459697903],[549402.0,-0.8908915803913119],[77672.0,-1.1149589793398074],[319588.0,0.8531407045159134]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[0.0,13.204,9.001,88.653],"type":"bar","xaxis":"x8","yaxis":"y8"},{"customdata":[[319588.0,-3.39111269761328],[77672.0,-1.5296981833443004],[549402.0,-1.6036182033553807],[172668.0,0.2539254075608227]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[0.036,4.143,1.958,58.996],"type":"bar","xaxis":"x8","yaxis":"y8"},{"customdata":[[82256.0,-3.8703147987599937],[209652.0,-1.1966669237849863],[71358.0,-1.5285715816036107],[168033.0,1.0849954437648737]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[3.188,11.79,16.152,75.419],"type":"bar","xaxis":"x9","yaxis":"y9"},{"customdata":[[168033.0,-3.6064990789436777],[71358.0,-0.8210877647906257],[209652.0,-1.3905234112463984],[82256.0,1.3995176209249443]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[2.22,25.331,13.714,76.514],"type":"bar","xaxis":"x9","yaxis":"y9"},{"customdata":[[47446.0,-3.9426948794033545],[114643.0,-1.3117244308170406],[41531.0,-1.5886062730722423],[95645.0,0.9066679658988271]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[2.238,9.482,13.563,74.336],"type":"bar","xaxis":"x10","yaxis":"y10"},{"customdata":[[95645.0,-3.244440605869553],[41531.0,-0.558566899497643],[114643.0,-1.094934019502649],[47446.0,1.6670537610793674]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[2.803,26.922,16.11,82.321],"type":"bar","xaxis":"x10","yaxis":"y10"},{"customdata":[[224363.0,-3.174932323594569],[435627.0,-1.3080498466989503],[164211.0,-1.4261474288242886],[285719.0,0.38984231498014]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[0.534,8.242,5.632,67.267],"type":"bar","xaxis":"x11","yaxis":"y11"},{"customdata":[[285719.0,-2.7185377010762766],[164211.0,-0.8584934359168065],[435627.0,-1.122660195401294],[224363.0,0.7634074053148082]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[0.995,17.642,8.277,81.978],"type":"bar","xaxis":"x11","yaxis":"y11"},{"customdata":[[30303.0,-3.11687115064711],[191699.0,-1.1856456530243478],[10131.0,-1.4145075314541],[72185.0,0.540771314404643]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[0.0,5.92,5.004,74.2],"type":"bar","xaxis":"x12","yaxis":"y12"},{"customdata":[[72185.0,-2.944846404381777],[10131.0,-1.0639456172972546],[191699.0,-1.2146496748072995],[30303.0,0.6706320782780398]],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata[0]:,.0f}, mean %{customdata[1]:+.2f} c\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["taker/taker","taker/maker","maker/taker","maker/maker"],"y":[0.319,3.771,1.801,83.394],"type":"bar","xaxis":"x12","yaxis":"y12"}],"layout":{"xaxis":{"anchor":"y","domain":[0.0,0.22],"matches":"x9","showticklabels":false},"yaxis":{"anchor":"x","domain":[0.72,1.0],"range":[0,100],"title":{"font":{"size":12},"text":"\u003cb>All outcomes\u003c/b>\u003cbr>% of observations positive after fees"}},"xaxis2":{"anchor":"y2","domain":[0.26,0.48],"matches":"x10","showticklabels":false},"yaxis2":{"anchor":"x2","domain":[0.72,1.0],"matches":"y","showticklabels":false,"range":[0,100]},"xaxis3":{"anchor":"y3","domain":[0.52,0.74],"matches":"x11","showticklabels":false},"yaxis3":{"anchor":"x3","domain":[0.72,1.0],"matches":"y","showticklabels":false,"range":[0,100]},"xaxis4":{"anchor":"y4","domain":[0.78,1.0],"matches":"x12","showticklabels":false},"yaxis4":{"anchor":"x4","domain":[0.72,1.0],"matches":"y","showticklabels":false,"range":[0,100]},"xaxis5":{"anchor":"y5","domain":[0.0,0.22],"matches":"x9","showticklabels":false},"yaxis5":{"anchor":"x5","domain":[0.36,0.6399999999999999],"range":[0,100],"title":{"font":{"size":12},"text":"\u003cb>Home + away\u003c/b>\u003cbr>% of observations positive after fees"}},"xaxis6":{"anchor":"y6","domain":[0.26,0.48],"matches":"x10","showticklabels":false},"yaxis6":{"anchor":"x6","domain":[0.36,0.6399999999999999],"matches":"y5","showticklabels":false,"range":[0,100]},"xaxis7":{"anchor":"y7","domain":[0.52,0.74],"matches":"x11","showticklabels":false},"yaxis7":{"anchor":"x7","domain":[0.36,0.6399999999999999],"matches":"y5","showticklabels":false,"range":[0,100]},"xaxis8":{"anchor":"y8","domain":[0.78,1.0],"matches":"x12","showticklabels":false},"yaxis8":{"anchor":"x8","domain":[0.36,0.6399999999999999],"matches":"y5","showticklabels":false,"range":[0,100]},"xaxis9":{"anchor":"y9","domain":[0.0,0.22],"title":{"text":"Route (PM role / Kalshi role)"}},"yaxis9":{"anchor":"x9","domain":[0.0,0.27999999999999997],"range":[0,100],"title":{"font":{"size":12},"text":"\u003cb>Draw\u003c/b>\u003cbr>% of observations positive after fees"}},"xaxis10":{"anchor":"y10","domain":[0.26,0.48],"title":{"text":"Route (PM role / Kalshi role)"}},"yaxis10":{"anchor":"x10","domain":[0.0,0.27999999999999997],"matches":"y9","showticklabels":false,"range":[0,100]},"xaxis11":{"anchor":"y11","domain":[0.52,0.74],"title":{"text":"Route (PM role / Kalshi role)"}},"yaxis11":{"anchor":"x11","domain":[0.0,0.27999999999999997],"matches":"y9","showticklabels":false,"range":[0,100]},"xaxis12":{"anchor":"y12","domain":[0.78,1.0],"title":{"text":"Route (PM role / Kalshi role)"}},"yaxis12":{"anchor":"x12","domain":[0.0,0.27999999999999997],"matches":"y9","showticklabels":false,"range":[0,100]},"annotations":[{"font":{"size":12},"showarrow":false,"text":"Premier League 2025/26\u003cbr>In play \u00b7 F = 60 s","x":0.11,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"Champions League 2025/26\u003cbr>In play \u00b7 F = 60 s","x":0.37,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"World Cup 2026\u003cbr>In play \u00b7 F = 5 s","x":0.63,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"World Cup 2026\u003cbr>Last pregame hour \u00b7 F = 10 s","x":0.89,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"}],"margin":{"l":72,"r":24,"t":118,"b":64},"font":{"family":"\"Source Sans 3\", \"Segoe UI\", Helvetica, Arial, sans-serif","size":12},"legend":{"title":{"text":""},"font":{"size":12},"orientation":"h","x":0,"xanchor":"left","y":1.0815047021943573,"yanchor":"bottom"},"height":820,"hovermode":"closest","bargap":0.25,"barmode":"group"}}</script>
+<p class="chart-links">
+<a href="data/chart-21-0.csv" download="">Chart data (CSV)</a> · <a href="data/chart-21-0.json" download="">Figure (Plotly JSON)</a>
+</p>
+</div>
+<p>Bars show the share of fresh observations whose reference net edge is above zero. <strong>The remainder, 100% minus the bar, is at or below zero.</strong> For the three routes with a taker leg, that is the large majority in every group, outcome and direction: taker/taker is positive on 3.64% of Premier League in-play observations for <code>PM YES + K NO</code> and 1.7% for <code>K YES + PM NO</code>, with a mean net result of −3.22 c; in the World Cup in play 0.8% and −2.77 c; in its last pregame hour 0%. The one-taker routes are positive on 3.77%–26.9% (taker/maker) and 1.8%–21.7% (maker/taker) of observations, and their mean net edge is negative in every cell (−1.53 to −0.56 c and −1.61 to −0.94 c). After the fee curve, any route that crosses a book loses money on most last-trade observations.</p>
+<p>Maker/maker is the only route positive on more than half of its observations: 80.2% (<code>PM YES + K NO</code>) and 69.7% (<code>K YES + PM NO</code>) in the Premier League, 80.2% and 73.6% in the Champions League, 77.0% and 72.3% in the World Cup in play, 86.0% and 62.6% in its last pregame hour, with a mean net edge of +1.17 c and +0.92 c in the Premier League and +0.63 c and +0.53 c in the World Cup in play. What this route reads is the cross-venue bid–ask spread of part 1 section 4: a bid-side print on one venue against an ask-side print on the other, which sat 1–1.5 c apart in the club groups. Seen after the fact, those two resting-side references overlap after fees on most observations. It has the shape of a cross-venue market-making position, not an arbitrage: both resting orders have to fill, and the tape does not say how often they would.</p>
+<p>Within maker/maker, the direction follows the outcome. For team wins, <code>PM YES + K NO</code> is ahead in every group: 81.3% against 68.2% in the Premier League, 81.6% against 71.7% in the Champions League, 80.7% against 68.6% in the World Cup in play and 88.7% against 59.0% in its last hour. For draws, <code>K YES + PM NO</code> carries the larger mean net edge in every group (+1.40 against +1.08 c in the Premier League, +1.67 against +0.91 c in the Champions League, +0.76 against +0.39 c in the World Cup in play) and the higher positive share in three of them (82.3% against 74.3%, 82.0% against 67.3%, 83.4% against 74.2%); the Premier League is level (76.5% against 75.4%). Part 1 section 4 is the reason: for team wins the wider cross-venue spread is Polymarket’s bid side against Kalshi’s ask side, which <code>PM YES + K NO</code> reads; on draws the wider one is the other.</p>
+<section id="by-matchup-class-and-team-role" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="by-matchup-class-and-team-role">By matchup class and team role</h3>
+<div class="column-screen-inset-right chart-block">
+<div class="chart-frame"><div id="chart-21-1" class="research-chart" style="height:620px"></div></div>
+<script type="application/json" data-chart="chart-21-1">{"data":[{"customdata":[251755.0,61428.0,278312.0,156492.0,106486.0],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata:,.0f}\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":true,"x":["Balanced: home + away","Balanced: draw","Unequal: strong side","Unequal: weak side","Unequal: draw"],"y":[80.759,76.179,82.579,79.986,74.979],"type":"bar","xaxis":"x","yaxis":"y"},{"customdata":[251755.0,61428.0,278312.0,156492.0,106486.0],"hovertemplate":"%{x}: %{y:.2f} c over %{customdata:,.0f}\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["Balanced: home + away","Balanced: draw","Unequal: strong side","Unequal: weak side","Unequal: draw"],"y":[1.2216,1.1707,1.2286,1.0932,1.0337],"type":"bar","xaxis":"x4","yaxis":"y4"},{"customdata":[130357.0,31441.0,157926.0,72920.0,50727.0],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata:,.0f}\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":true,"x":["Balanced: home + away","Balanced: draw","Unequal: strong side","Unequal: weak side","Unequal: draw"],"y":[68.806,75.685,65.545,72.75,77.016],"type":"bar","xaxis":"x","yaxis":"y"},{"customdata":[130357.0,31441.0,157926.0,72920.0,50727.0],"hovertemplate":"%{x}: %{y:.2f} c over %{customdata:,.0f}\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["Balanced: home + away","Balanced: draw","Unequal: strong side","Unequal: weak side","Unequal: draw"],"y":[0.8942,1.3334,0.6494,0.9969,1.4395],"type":"bar","xaxis":"x4","yaxis":"y4"},{"customdata":[143037.0,35208.0,150976.0,109205.0,60437.0],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata:,.0f}\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["Balanced: home + away","Balanced: draw","Unequal: strong side","Unequal: weak side","Unequal: draw"],"y":[80.769,74.634,80.64,83.86,74.163],"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":[143037.0,35208.0,150976.0,109205.0,60437.0],"hovertemplate":"%{x}: %{y:.2f} c over %{customdata:,.0f}\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["Balanced: home + away","Balanced: draw","Unequal: strong side","Unequal: weak side","Unequal: draw"],"y":[1.1879,0.8522,1.5098,1.0182,0.9384],"type":"bar","xaxis":"x5","yaxis":"y5"},{"customdata":[79536.0,17689.0,89299.0,53029.0,29757.0],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata:,.0f}\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["Balanced: home + away","Balanced: draw","Unequal: strong side","Unequal: weak side","Unequal: draw"],"y":[72.357,80.813,70.015,73.53,83.217],"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":[79536.0,17689.0,89299.0,53029.0,29757.0],"hovertemplate":"%{x}: %{y:.2f} c over %{customdata:,.0f}\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["Balanced: home + away","Balanced: draw","Unequal: strong side","Unequal: weak side","Unequal: draw"],"y":[0.976,1.4448,0.6285,1.1728,1.7992],"type":"bar","xaxis":"x5","yaxis":"y5"},{"customdata":[150951.0,57135.0,340105.0,261269.0,228584.0],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata:,.0f}\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["Balanced: home + away","Balanced: draw","Unequal: strong side","Unequal: weak side","Unequal: draw"],"y":[78.976,60.543,79.651,82.94,68.948],"type":"bar","xaxis":"x3","yaxis":"y3"},{"customdata":[150951.0,57135.0,340105.0,261269.0,228584.0],"hovertemplate":"%{x}: %{y:.2f} c over %{customdata:,.0f}\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["Balanced: home + away","Balanced: draw","Unequal: strong side","Unequal: weak side","Unequal: draw"],"y":[0.7069,0.2435,0.7708,0.6565,0.4264],"type":"bar","xaxis":"x6","yaxis":"y6"},{"customdata":[109238.0,45548.0,288038.0,178514.0,178815.0],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata:,.0f}\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["Balanced: home + away","Balanced: draw","Unequal: strong side","Unequal: weak side","Unequal: draw"],"y":[64.07,82.772,67.116,73.73,81.776],"type":"bar","xaxis":"x3","yaxis":"y3"},{"customdata":[109238.0,45548.0,288038.0,178514.0,178815.0],"hovertemplate":"%{x}: %{y:.2f} c over %{customdata:,.0f}\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["Balanced: home + away","Balanced: draw","Unequal: strong side","Unequal: weak side","Unequal: draw"],"y":[0.3731,0.7923,0.4037,0.5287,0.7561],"type":"bar","xaxis":"x6","yaxis":"y6"}],"layout":{"xaxis":{"anchor":"y","domain":[0.0,0.3066666666666667],"matches":"x4","showticklabels":false},"yaxis":{"anchor":"x","domain":[0.58,1.0],"range":[0,100],"title":{"text":"\u003cb>Positive share\u003c/b>\u003cbr>% of maker/maker observations"}},"xaxis2":{"anchor":"y2","domain":[0.3466666666666667,0.6533333333333333],"matches":"x5","showticklabels":false},"yaxis2":{"anchor":"x2","domain":[0.58,1.0],"range":[0,100]},"xaxis3":{"anchor":"y3","domain":[0.6933333333333334,1.0],"matches":"x6","showticklabels":false},"yaxis3":{"anchor":"x3","domain":[0.58,1.0],"range":[0,100]},"xaxis4":{"anchor":"y4","domain":[0.0,0.3066666666666667],"tickangle":-30},"yaxis4":{"anchor":"x4","domain":[0.0,0.42],"range":[0,2.0690483285844405],"title":{"text":"\u003cb>Mean net edge\u003c/b>\u003cbr>cents after fees"}},"xaxis5":{"anchor":"y5","domain":[0.3466666666666667,0.6533333333333333],"tickangle":-30},"yaxis5":{"anchor":"x5","domain":[0.0,0.42],"range":[0,2.0690483285844405]},"xaxis6":{"anchor":"y6","domain":[0.6933333333333334,1.0],"tickangle":-30},"yaxis6":{"anchor":"x6","domain":[0.0,0.42],"range":[0,2.0690483285844405]},"annotations":[{"font":{"size":12},"showarrow":false,"text":"Premier League 2025/26\u003cbr>In play \u00b7 F = 60 s","x":0.15333333333333335,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"Champions League 2025/26\u003cbr>In play \u00b7 F = 60 s","x":0.5,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"World Cup 2026\u003cbr>In play \u00b7 F = 5 s","x":0.8466666666666667,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"}],"margin":{"l":72,"r":24,"t":118,"b":64},"font":{"family":"\"Source Sans 3\", \"Segoe UI\", Helvetica, Arial, sans-serif","size":12},"legend":{"title":{"text":""},"font":{"size":12},"orientation":"h","x":0,"xanchor":"left","y":1.1187214611872145,"yanchor":"bottom"},"height":620,"hovermode":"closest","bargap":0.25,"barmode":"group"}}</script>
+<p class="chart-links">
+<a href="data/chart-21-1.csv" download="">Chart data (CSV)</a> · <a href="data/chart-21-1.json" download="">Figure (Plotly JSON)</a>
+</p>
+</div>
+<p>Maker/maker by the pregame fixture label of part 1 section 3.2, in-play groups only. The direction result holds in every class: <code>PM YES + K NO</code> is ahead on both team-win rows of every group, <code>K YES + PM NO</code> on both draw rows. The favourite is not a clearer cell after fees. Its larger gross gap (part 1 section 4) does carry into the mean net edge of <code>PM YES + K NO</code>: +1.23 c on the strong side against +1.09 c on the weak side in the Premier League, +1.51 against +1.02 c in the Champions League and +0.77 against +0.66 c in the World Cup. It does not carry into the positive share: 82.6% against 80.0% in the Premier League, but 80.6% against 83.9% in the Champions League and 79.7% against 82.9% in the World Cup. The favourite’s extra edge sits in the tail of wide gaps, not in how often the two references overlap.</p>
+</section>
+</section>
+<section id="across-the-freshness-cutoff" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="across-the-freshness-cutoff">2. Across the freshness cutoff</h2>
+<p>The same screen at every cutoff from 1 to 120 s (the export runs to 300 s; the curves are flat long before). The dotted line marks each group’s F.</p>
+<div class="column-screen-inset-right chart-block">
+<div class="chart-frame"><div id="chart-22-0" class="research-chart" style="height:400px"></div></div>
+<script type="application/json" data-chart="chart-22-0">{"data":[{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>taker/taker\u003c/extra>","legendgroup":"taker/taker","legendrank":1000,"line":{"color":"#d64550","width":2},"mode":"lines","name":"taker/taker","showlegend":true,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120],"y":[3.749,3.431,3.286,3.149,3.046,2.986,2.939,2.882,2.84,2.803,2.768,2.731,2.7,2.675,2.655,2.63,2.611,2.592,2.577,2.562,2.548,2.535,2.525,2.513,2.505,2.495,2.489,2.483,2.476,2.468,2.462,2.453,2.448,2.442,2.438,2.433,2.428,2.422,2.418,2.415,2.412,2.408,2.406,2.401,2.397,2.395,2.392,2.389,2.388,2.384,2.382,2.379,2.376,2.375,2.372,2.37,2.368,2.365,2.365,2.363,2.362,2.361,2.36,2.358,2.357,2.356,2.355,2.354,2.353,2.352,2.35,2.349,2.348,2.347,2.347,2.345,2.344,2.342,2.341,2.34,2.339,2.337,2.337,2.337,2.336,2.335,2.335,2.334,2.334,2.334,2.334,2.334,2.334,2.333,2.333,2.332,2.332,2.332,2.332,2.331,2.331,2.331,2.331,2.33,2.33,2.33,2.33,2.329,2.329,2.328,2.328,2.327,2.327,2.327,2.327,2.326,2.326,2.326,2.326,2.326],"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>taker/maker\u003c/extra>","legendgroup":"taker/maker","legendrank":1000,"line":{"color":"#e8a33d","width":2},"mode":"lines","name":"taker/maker","showlegend":true,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120],"y":[21.263,20.875,20.568,20.275,20.117,20.023,19.969,19.853,19.727,19.614,19.523,19.437,19.371,19.31,19.25,19.196,19.143,19.106,19.063,19.032,18.999,18.969,18.939,18.9,18.872,18.848,18.825,18.801,18.78,18.764,18.742,18.721,18.702,18.691,18.672,18.666,18.652,18.639,18.627,18.614,18.61,18.595,18.585,18.576,18.564,18.556,18.549,18.543,18.538,18.528,18.522,18.516,18.508,18.501,18.494,18.487,18.485,18.478,18.472,18.47,18.464,18.46,18.454,18.45,18.445,18.44,18.437,18.435,18.432,18.428,18.424,18.42,18.417,18.414,18.413,18.408,18.407,18.403,18.401,18.399,18.397,18.395,18.392,18.388,18.386,18.384,18.382,18.379,18.378,18.376,18.373,18.37,18.37,18.368,18.366,18.364,18.362,18.362,18.362,18.36,18.36,18.358,18.359,18.358,18.357,18.356,18.356,18.355,18.355,18.355,18.355,18.355,18.353,18.354,18.352,18.351,18.35,18.349,18.348,18.348],"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>maker/taker\u003c/extra>","legendgroup":"maker/taker","legendrank":1000,"line":{"color":"#8a929b","width":2},"mode":"lines","name":"maker/taker","showlegend":true,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120],"y":[11.827,11.806,12.018,12.169,12.16,12.176,12.217,12.25,12.293,12.316,12.372,12.424,12.472,12.515,12.559,12.6,12.64,12.678,12.715,12.749,12.784,12.82,12.851,12.878,12.907,12.939,12.968,12.994,13.019,13.035,13.056,13.081,13.101,13.126,13.15,13.164,13.183,13.206,13.227,13.247,13.261,13.282,13.3,13.315,13.332,13.349,13.363,13.375,13.386,13.399,13.415,13.429,13.441,13.452,13.467,13.478,13.487,13.5,13.515,13.529,13.54,13.55,13.561,13.571,13.582,13.59,13.6,13.609,13.618,13.627,13.637,13.647,13.655,13.663,13.672,13.68,13.688,13.697,13.706,13.712,13.72,13.726,13.733,13.739,13.748,13.756,13.762,13.767,13.773,13.779,13.786,13.792,13.799,13.804,13.81,13.816,13.823,13.828,13.834,13.839,13.845,13.851,13.856,13.862,13.868,13.873,13.878,13.884,13.889,13.894,13.898,13.901,13.906,13.911,13.914,13.917,13.921,13.926,13.93,13.933],"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>maker/maker\u003c/extra>","legendgroup":"maker/maker","legendrank":1000,"line":{"color":"#8b5cf6","width":2},"mode":"lines","name":"maker/maker","showlegend":true,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120],"y":[73.842,74.396,74.644,74.845,75.058,75.175,75.253,75.353,75.447,75.522,75.603,75.681,75.743,75.798,75.849,75.904,75.947,75.991,76.028,76.057,76.095,76.124,76.152,76.181,76.208,76.227,76.248,76.268,76.282,76.297,76.318,76.334,76.351,76.362,76.377,76.386,76.404,76.415,76.425,76.435,76.443,76.454,76.465,76.475,76.489,76.495,76.505,76.511,76.52,76.526,76.532,76.538,76.55,76.555,76.563,76.57,76.577,76.585,76.589,76.595,76.6,76.604,76.61,76.617,76.621,76.623,76.627,76.633,76.636,76.641,76.647,76.652,76.656,76.663,76.667,76.671,76.676,76.679,76.682,76.686,76.69,76.693,76.695,76.7,76.703,76.705,76.709,76.713,76.717,76.719,76.72,76.722,76.724,76.727,76.728,76.731,76.733,76.735,76.737,76.74,76.741,76.744,76.745,76.748,76.75,76.751,76.753,76.756,76.758,76.76,76.761,76.764,76.767,76.769,76.77,76.775,76.777,76.78,76.783,76.785],"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>taker/taker\u003c/extra>","legendgroup":"taker/taker","legendrank":1000,"line":{"color":"#d64550","width":2},"mode":"lines","name":"taker/taker","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120],"y":[3.238,3.108,3.04,2.966,2.905,2.868,2.847,2.81,2.779,2.754,2.728,2.709,2.688,2.671,2.65,2.636,2.623,2.614,2.603,2.592,2.586,2.579,2.573,2.566,2.559,2.552,2.546,2.54,2.535,2.53,2.525,2.523,2.519,2.519,2.515,2.512,2.508,2.505,2.501,2.5,2.497,2.497,2.497,2.496,2.493,2.492,2.489,2.488,2.486,2.486,2.487,2.486,2.485,2.485,2.485,2.484,2.484,2.483,2.484,2.483,2.483,2.483,2.485,2.485,2.486,2.486,2.487,2.487,2.487,2.489,2.49,2.491,2.491,2.492,2.492,2.493,2.493,2.494,2.495,2.495,2.494,2.494,2.496,2.496,2.496,2.496,2.496,2.497,2.497,2.497,2.498,2.499,2.5,2.499,2.499,2.499,2.5,2.502,2.502,2.503,2.504,2.505,2.506,2.506,2.507,2.507,2.507,2.508,2.508,2.508,2.508,2.509,2.51,2.511,2.511,2.513,2.512,2.514,2.515,2.516],"type":"scatter","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>taker/maker\u003c/extra>","legendgroup":"taker/maker","legendrank":1000,"line":{"color":"#e8a33d","width":2},"mode":"lines","name":"taker/maker","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120],"y":[19.757,19.415,19.197,19.052,18.959,18.921,18.877,18.847,18.803,18.781,18.755,18.733,18.708,18.695,18.682,18.682,18.684,18.671,18.67,18.664,18.657,18.656,18.656,18.658,18.668,18.665,18.663,18.663,18.658,18.66,18.659,18.66,18.665,18.662,18.663,18.665,18.664,18.669,18.67,18.672,18.67,18.671,18.668,18.667,18.666,18.667,18.666,18.667,18.668,18.667,18.666,18.667,18.671,18.672,18.677,18.674,18.675,18.679,18.678,18.678,18.675,18.677,18.677,18.68,18.682,18.679,18.676,18.678,18.682,18.681,18.684,18.687,18.689,18.691,18.692,18.691,18.694,18.692,18.693,18.691,18.692,18.693,18.694,18.691,18.691,18.692,18.691,18.692,18.692,18.693,18.693,18.694,18.695,18.694,18.692,18.691,18.691,18.691,18.691,18.689,18.689,18.688,18.689,18.689,18.69,18.69,18.69,18.693,18.693,18.696,18.696,18.697,18.697,18.698,18.7,18.7,18.701,18.702,18.703,18.704],"type":"scatter","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>maker/taker\u003c/extra>","legendgroup":"maker/taker","legendrank":1000,"line":{"color":"#8a929b","width":2},"mode":"lines","name":"maker/taker","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120],"y":[11.91,12.139,12.561,12.796,12.852,12.929,12.996,13.068,13.136,13.208,13.268,13.324,13.386,13.442,13.49,13.534,13.577,13.633,13.684,13.726,13.769,13.812,13.853,13.893,13.929,13.969,14.002,14.034,14.066,14.099,14.13,14.158,14.185,14.214,14.237,14.261,14.289,14.314,14.339,14.362,14.39,14.411,14.435,14.46,14.481,14.504,14.527,14.551,14.572,14.591,14.61,14.629,14.644,14.66,14.676,14.692,14.707,14.724,14.741,14.757,14.774,14.789,14.804,14.82,14.834,14.846,14.864,14.876,14.885,14.9,14.912,14.927,14.938,14.952,14.964,14.978,14.99,15.001,15.009,15.016,15.028,15.036,15.047,15.059,15.07,15.08,15.091,15.101,15.111,15.122,15.131,15.137,15.145,15.154,15.164,15.173,15.182,15.19,15.2,15.208,15.214,15.222,15.231,15.239,15.249,15.258,15.266,15.273,15.281,15.288,15.296,15.302,15.309,15.316,15.321,15.329,15.334,15.341,15.347,15.355],"type":"scatter","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>maker/maker\u003c/extra>","legendgroup":"maker/maker","legendrank":1000,"line":{"color":"#8b5cf6","width":2},"mode":"lines","name":"maker/maker","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120],"y":[74.85,75.317,75.615,75.869,76.076,76.239,76.368,76.483,76.566,76.637,76.729,76.796,76.877,76.929,76.988,77.032,77.066,77.11,77.15,77.182,77.231,77.263,77.303,77.331,77.359,77.386,77.416,77.442,77.468,77.49,77.514,77.534,77.555,77.571,77.583,77.599,77.617,77.632,77.655,77.671,77.684,77.698,77.709,77.717,77.729,77.736,77.75,77.767,77.78,77.79,77.796,77.805,77.814,77.82,77.825,77.83,77.839,77.846,77.851,77.857,77.86,77.868,77.872,77.881,77.885,77.89,77.895,77.901,77.904,77.907,77.909,77.914,77.918,77.917,77.921,77.926,77.93,77.933,77.935,77.938,77.943,77.949,77.953,77.956,77.962,77.964,77.97,77.975,77.977,77.982,77.983,77.984,77.986,77.989,77.993,77.995,77.997,77.996,77.999,78.002,78.006,78.008,78.009,78.01,78.013,78.017,78.018,78.021,78.024,78.027,78.029,78.029,78.03,78.031,78.034,78.036,78.039,78.04,78.042,78.042],"type":"scatter","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>taker/taker\u003c/extra>","legendgroup":"taker/taker","legendrank":1000,"line":{"color":"#d64550","width":2},"mode":"lines","name":"taker/taker","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120],"y":[0.979,0.875,0.818,0.78,0.753,0.734,0.718,0.706,0.696,0.687,0.68,0.674,0.669,0.665,0.661,0.658,0.656,0.653,0.651,0.65,0.648,0.647,0.645,0.645,0.644,0.643,0.643,0.642,0.642,0.642,0.642,0.642,0.641,0.641,0.641,0.641,0.641,0.642,0.642,0.642,0.642,0.642,0.642,0.642,0.642,0.643,0.643,0.643,0.643,0.644,0.645,0.645,0.645,0.646,0.646,0.647,0.647,0.647,0.648,0.648,0.649,0.649,0.65,0.65,0.65,0.65,0.651,0.651,0.652,0.652,0.653,0.653,0.654,0.655,0.655,0.656,0.656,0.657,0.657,0.658,0.659,0.66,0.66,0.661,0.661,0.662,0.662,0.663,0.664,0.664,0.665,0.665,0.666,0.666,0.667,0.668,0.668,0.669,0.67,0.67,0.671,0.671,0.672,0.673,0.673,0.674,0.675,0.675,0.676,0.676,0.677,0.678,0.679,0.679,0.68,0.68,0.681,0.681,0.682,0.683],"type":"scatter","xaxis":"x3","yaxis":"y3"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>taker/maker\u003c/extra>","legendgroup":"taker/maker","legendrank":1000,"line":{"color":"#e8a33d","width":2},"mode":"lines","name":"taker/maker","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120],"y":[17.192,17.098,17.096,17.105,17.137,17.189,17.237,17.285,17.334,17.38,17.422,17.461,17.498,17.53,17.561,17.588,17.616,17.64,17.665,17.687,17.705,17.722,17.741,17.757,17.773,17.789,17.803,17.815,17.829,17.84,17.85,17.859,17.868,17.876,17.884,17.89,17.898,17.906,17.912,17.919,17.925,17.93,17.935,17.939,17.944,17.948,17.953,17.956,17.96,17.964,17.968,17.972,17.975,17.979,17.982,17.984,17.987,17.99,17.992,17.994,17.996,17.998,18.001,18.003,18.005,18.006,18.008,18.01,18.011,18.013,18.014,18.016,18.018,18.019,18.02,18.022,18.023,18.024,18.026,18.027,18.028,18.03,18.031,18.032,18.033,18.034,18.035,18.036,18.037,18.038,18.038,18.039,18.04,18.04,18.041,18.042,18.042,18.043,18.044,18.044,18.045,18.046,18.046,18.046,18.047,18.047,18.048,18.049,18.049,18.05,18.05,18.05,18.051,18.051,18.051,18.051,18.052,18.052,18.053,18.053],"type":"scatter","xaxis":"x3","yaxis":"y3"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>maker/taker\u003c/extra>","legendgroup":"maker/taker","legendrank":1000,"line":{"color":"#8a929b","width":2},"mode":"lines","name":"maker/taker","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120],"y":[6.801,6.85,6.897,6.938,6.973,6.991,7.008,7.026,7.039,7.051,7.06,7.065,7.071,7.076,7.08,7.082,7.086,7.088,7.09,7.092,7.093,7.095,7.097,7.098,7.1,7.103,7.104,7.105,7.107,7.108,7.109,7.111,7.112,7.113,7.114,7.115,7.116,7.118,7.119,7.12,7.121,7.122,7.123,7.124,7.125,7.126,7.128,7.129,7.13,7.131,7.132,7.133,7.134,7.135,7.136,7.137,7.138,7.139,7.14,7.141,7.142,7.143,7.143,7.144,7.145,7.146,7.147,7.148,7.149,7.15,7.151,7.152,7.153,7.154,7.155,7.156,7.157,7.157,7.158,7.159,7.16,7.161,7.162,7.163,7.163,7.164,7.165,7.165,7.166,7.167,7.168,7.169,7.169,7.17,7.171,7.172,7.172,7.173,7.174,7.175,7.176,7.176,7.177,7.178,7.179,7.18,7.18,7.18,7.181,7.182,7.182,7.183,7.184,7.184,7.185,7.186,7.187,7.187,7.188,7.189],"type":"scatter","xaxis":"x3","yaxis":"y3"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>maker/maker\u003c/extra>","legendgroup":"maker/maker","legendrank":1000,"line":{"color":"#8b5cf6","width":2},"mode":"lines","name":"maker/maker","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120],"y":[73.356,73.998,74.412,74.723,74.957,75.114,75.25,75.364,75.448,75.522,75.582,75.633,75.677,75.715,75.749,75.775,75.8,75.822,75.841,75.858,75.872,75.885,75.897,75.909,75.919,75.927,75.936,75.943,75.948,75.954,75.959,75.964,75.968,75.972,75.975,75.978,75.98,75.983,75.985,75.985,75.985,75.987,75.987,75.987,75.987,75.987,75.987,75.988,75.988,75.988,75.988,75.988,75.988,75.988,75.988,75.989,75.988,75.989,75.989,75.99,75.991,75.991,75.991,75.991,75.992,75.992,75.992,75.992,75.993,75.993,75.992,75.993,75.992,75.992,75.993,75.993,75.992,75.992,75.992,75.992,75.992,75.992,75.992,75.992,75.991,75.992,75.991,75.991,75.991,75.991,75.99,75.99,75.99,75.989,75.989,75.989,75.989,75.989,75.988,75.988,75.988,75.988,75.987,75.987,75.987,75.986,75.986,75.985,75.985,75.985,75.984,75.984,75.983,75.983,75.983,75.983,75.983,75.982,75.982,75.982],"type":"scatter","xaxis":"x3","yaxis":"y3"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>taker/taker\u003c/extra>","legendgroup":"taker/taker","legendrank":1000,"line":{"color":"#d64550","width":2},"mode":"lines","name":"taker/taker","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120],"y":[0.064,0.063,0.062,0.061,0.06,0.059,0.059,0.059,0.059,0.058,0.058,0.058,0.059,0.058,0.058,0.058,0.058,0.058,0.057,0.057,0.057,0.058,0.058,0.058,0.058,0.057,0.057,0.057,0.057,0.057,0.056,0.056,0.056,0.055,0.055,0.055,0.055,0.054,0.054,0.054,0.054,0.053,0.053,0.053,0.053,0.053,0.052,0.052,0.052,0.052,0.052,0.051,0.051,0.051,0.051,0.051,0.051,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.049,0.049,0.049,0.049,0.049,0.049,0.049,0.049,0.049,0.049,0.049,0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.048,0.047,0.047,0.047,0.047,0.047,0.047,0.047,0.047,0.047,0.047,0.047,0.047,0.047,0.047,0.047,0.047,0.047,0.047,0.047,0.047,0.047,0.047,0.047,0.047,0.047],"type":"scatter","xaxis":"x4","yaxis":"y4"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>taker/maker\u003c/extra>","legendgroup":"taker/maker","legendrank":1000,"line":{"color":"#e8a33d","width":2},"mode":"lines","name":"taker/maker","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120],"y":[10.543,10.481,10.473,10.471,10.492,10.504,10.51,10.525,10.541,10.555,10.575,10.59,10.606,10.619,10.63,10.642,10.651,10.658,10.664,10.671,10.675,10.677,10.683,10.689,10.69,10.697,10.7,10.705,10.709,10.713,10.716,10.719,10.721,10.723,10.726,10.729,10.732,10.735,10.736,10.738,10.74,10.74,10.742,10.742,10.742,10.743,10.744,10.744,10.746,10.747,10.746,10.746,10.748,10.749,10.749,10.751,10.752,10.752,10.751,10.752,10.753,10.753,10.754,10.755,10.756,10.756,10.757,10.758,10.759,10.759,10.759,10.759,10.76,10.76,10.76,10.76,10.761,10.761,10.761,10.762,10.762,10.763,10.764,10.764,10.764,10.764,10.765,10.765,10.766,10.767,10.767,10.767,10.767,10.768,10.768,10.768,10.769,10.77,10.77,10.77,10.771,10.771,10.77,10.771,10.771,10.771,10.771,10.771,10.77,10.77,10.769,10.77,10.769,10.769,10.769,10.769,10.769,10.769,10.769,10.769],"type":"scatter","xaxis":"x4","yaxis":"y4"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>maker/taker\u003c/extra>","legendgroup":"maker/taker","legendrank":1000,"line":{"color":"#8a929b","width":2},"mode":"lines","name":"maker/taker","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120],"y":[1.753,1.919,2.071,2.187,2.289,2.375,2.451,2.515,2.57,2.619,2.666,2.702,2.739,2.772,2.8,2.829,2.852,2.872,2.893,2.91,2.927,2.943,2.959,2.97,2.982,2.994,3.002,3.011,3.02,3.028,3.036,3.044,3.051,3.057,3.063,3.068,3.074,3.077,3.081,3.085,3.09,3.094,3.096,3.1,3.103,3.107,3.11,3.113,3.115,3.118,3.12,3.121,3.122,3.124,3.125,3.127,3.128,3.13,3.132,3.133,3.135,3.138,3.139,3.141,3.142,3.144,3.145,3.147,3.148,3.15,3.151,3.152,3.153,3.155,3.156,3.157,3.158,3.159,3.16,3.161,3.162,3.162,3.163,3.163,3.164,3.164,3.165,3.165,3.166,3.166,3.166,3.166,3.167,3.167,3.168,3.168,3.168,3.168,3.169,3.169,3.17,3.17,3.17,3.17,3.17,3.17,3.17,3.171,3.171,3.171,3.171,3.171,3.172,3.172,3.172,3.172,3.173,3.173,3.173,3.173],"type":"scatter","xaxis":"x4","yaxis":"y4"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>maker/maker\u003c/extra>","legendgroup":"maker/maker","legendrank":1000,"line":{"color":"#8b5cf6","width":2},"mode":"lines","name":"maker/maker","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120],"y":[74.98,75.409,75.826,76.279,76.679,76.996,77.301,77.565,77.798,78.021,78.218,78.402,78.568,78.719,78.861,78.995,79.123,79.231,79.335,79.437,79.519,79.607,79.685,79.755,79.819,79.884,79.944,80.002,80.053,80.104,80.155,80.201,80.24,80.279,80.316,80.35,80.381,80.413,80.442,80.47,80.496,80.522,80.546,80.571,80.592,80.614,80.635,80.654,80.673,80.691,80.706,80.722,80.738,80.752,80.768,80.784,80.797,80.811,80.825,80.837,80.849,80.861,80.873,80.883,80.892,80.902,80.911,80.921,80.93,80.938,80.947,80.956,80.965,80.972,80.98,80.988,80.995,81.002,81.009,81.015,81.022,81.028,81.034,81.04,81.044,81.05,81.054,81.061,81.066,81.072,81.077,81.082,81.086,81.091,81.096,81.101,81.105,81.11,81.114,81.12,81.125,81.129,81.132,81.137,81.141,81.146,81.15,81.152,81.156,81.162,81.167,81.17,81.173,81.177,81.18,81.184,81.187,81.192,81.195,81.198],"type":"scatter","xaxis":"x4","yaxis":"y4"}],"layout":{"xaxis":{"anchor":"y","domain":[0.0,0.22],"title":{"text":"Freshness F (s)"},"range":[0,120]},"yaxis":{"anchor":"x","domain":[0.0,1.0],"range":[0,100],"title":{"text":"% of observations positive after fees"}},"xaxis2":{"anchor":"y2","domain":[0.26,0.48],"title":{"text":"Freshness F (s)"},"range":[0,120]},"yaxis2":{"anchor":"x2","domain":[0.0,1.0],"matches":"y","showticklabels":false,"range":[0,100]},"xaxis3":{"anchor":"y3","domain":[0.52,0.74],"title":{"text":"Freshness F (s)"},"range":[0,120]},"yaxis3":{"anchor":"x3","domain":[0.0,1.0],"matches":"y","showticklabels":false,"range":[0,100]},"xaxis4":{"anchor":"y4","domain":[0.78,1.0],"title":{"text":"Freshness F (s)"},"range":[0,120]},"yaxis4":{"anchor":"x4","domain":[0.0,1.0],"matches":"y","showticklabels":false,"range":[0,100]},"annotations":[{"font":{"size":12},"showarrow":false,"text":"Premier League 2025/26\u003cbr>In play \u00b7 F = 60 s","x":0.11,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"Champions League 2025/26\u003cbr>In play \u00b7 F = 60 s","x":0.37,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"World Cup 2026\u003cbr>In play \u00b7 F = 5 s","x":0.63,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"World Cup 2026\u003cbr>Last pregame hour \u00b7 F = 10 s","x":0.89,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"}],"margin":{"l":72,"r":24,"t":118,"b":64},"font":{"family":"\"Source Sans 3\", \"Segoe UI\", Helvetica, Arial, sans-serif","size":12},"legend":{"title":{"text":""},"font":{"size":12},"orientation":"h","x":0,"xanchor":"left","y":1.238532110091743,"yanchor":"bottom"},"height":400,"hovermode":"closest","bargap":0.25,"shapes":[{"line":{"color":"#8a929b","dash":"dot"},"type":"line","x0":60,"x1":60,"xref":"x","y0":0,"y1":1,"yref":"y domain"},{"line":{"color":"#8a929b","dash":"dot"},"type":"line","x0":60,"x1":60,"xref":"x2","y0":0,"y1":1,"yref":"y2 domain"},{"line":{"color":"#8a929b","dash":"dot"},"type":"line","x0":5,"x1":5,"xref":"x3","y0":0,"y1":1,"yref":"y3 domain"},{"line":{"color":"#8a929b","dash":"dot"},"type":"line","x0":10,"x1":10,"xref":"x4","y0":0,"y1":1,"yref":"y4 domain"}]}}</script>
+<p class="chart-links">
+<a href="data/chart-22-0.csv" download="">Chart data (CSV)</a> · <a href="data/chart-22-0.json" download="">Figure (Plotly JSON)</a>
+</p>
+</div>
+<p>The curves are almost flat. In the Premier League, maker/maker is positive on 73.8% of observations at F = 1 s, 75.5% at 10 s, 76.6% at 60 s, 76.8% at 120 s and 76.9% at 300 s; taker/taker moves from 3.75% to 2.35%, taker/maker from 21.3% to 18.3%, and maker/taker from 11.8% to 14.3%. This is the fee-adjusted version of part 1 section 3.3: the cutoff decides how much of the clock is compared, not what the comparison finds.</p>
+<p>The slow rise of maker/maker with F, about three points from 1 s to 300 s, has one plausible reading that is not tested here: a looser cutoff admits quieter stretches, in which each venue’s own resting-side prices sit further apart, so two resting references overlap more often. Whatever its cause, a looser cutoff admits staler references without visibly changing the rate, which is a reason to keep F tight when the result is used.</p>
+</section>
+<section id="resting-on-both-venues-direction-and-freshness" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="resting-on-both-venues-direction-and-freshness">3. Resting on both venues: direction and freshness</h2>
+<p>Because F is swept here, each column is a competition × window and the selected cutoff plays no role. Each direction of maker/maker reads one taker-action pair: <code>PM YES + K NO</code> prices Polymarket’s resting YES bid from the Polymarket sell print and Kalshi’s resting NO bid from the Kalshi buy print (<code>PM sell / K buy</code>); <code>K YES + PM NO</code> reads <code>PM buy / K sell</code>; pooled sums both directions and uses the venue-level pair for the clock states.</p>
+<div class="column-screen-inset-right chart-block">
+<div class="chart-frame"><div id="chart-24-0" class="research-chart" style="height:1500px"></div></div>
+<script type="application/json" data-chart="chart-24-0">{"data":[{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Both fresh\u003c/extra>","legendgroup":"Both fresh","legendrank":1,"marker":{"color":"#8b5cf6"},"name":"Both fresh","showlegend":true,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[9.33,18.88,26.41,32.57,37.66,41.99,45.69,48.92,51.75,54.29,56.56,58.62],"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only Kalshi fresh\u003c/extra>","legendgroup":"Only Kalshi fresh","legendrank":2,"marker":{"color":"#1a9e6b"},"name":"Only Kalshi fresh","showlegend":true,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[32.6,40.18,42.34,42.45,41.72,40.58,39.31,37.98,36.67,35.37,34.13,32.94],"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only PM fresh\u003c/extra>","legendgroup":"Only PM fresh","legendrank":3,"marker":{"color":"#2f6fd6"},"name":"Only PM fresh","showlegend":true,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[5.86,5.94,5.48,4.98,4.52,4.13,3.8,3.51,3.27,3.05,2.86,2.7],"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Neither fresh\u003c/extra>","legendgroup":"Neither fresh","legendrank":4,"marker":{"color":"#b9c0c7"},"name":"Neither fresh","showlegend":true,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[52.21,35.0,25.77,20.0,16.09,13.29,11.2,9.58,8.31,7.29,6.45,5.75],"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Both fresh\u003c/extra>","legendgroup":"Both fresh","legendrank":1,"marker":{"color":"#8b5cf6"},"name":"Both fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[5.13,11.75,17.73,23.03,27.7,31.87,35.6,38.97,42.01,44.78,47.3,49.62],"type":"bar","xaxis":"x5","yaxis":"y5"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only Kalshi fresh\u003c/extra>","legendgroup":"Only Kalshi fresh","legendrank":2,"marker":{"color":"#1a9e6b"},"name":"Only Kalshi fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[10.17,12.99,13.97,14.18,14.07,13.77,13.4,12.97,12.55,12.11,11.69,11.28],"type":"bar","xaxis":"x5","yaxis":"y5"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only PM fresh\u003c/extra>","legendgroup":"Only PM fresh","legendrank":3,"marker":{"color":"#2f6fd6"},"name":"Only PM fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[13.9,19.24,21.78,23.12,23.73,23.93,23.85,23.62,23.3,22.91,22.47,22.02],"type":"bar","xaxis":"x5","yaxis":"y5"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Neither fresh\u003c/extra>","legendgroup":"Neither fresh","legendrank":4,"marker":{"color":"#b9c0c7"},"name":"Neither fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[70.8,56.01,46.51,39.67,34.5,30.42,27.15,24.43,22.15,20.21,18.54,17.08],"type":"bar","xaxis":"x5","yaxis":"y5"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Both fresh\u003c/extra>","legendgroup":"Both fresh","legendrank":1,"marker":{"color":"#8b5cf6"},"name":"Both fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[18.94,34.05,44.38,52.09,57.98,62.69,66.49,69.66,72.32,74.61,76.58,78.31],"type":"bar","xaxis":"x9","yaxis":"y9"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only Kalshi fresh\u003c/extra>","legendgroup":"Only Kalshi fresh","legendrank":2,"marker":{"color":"#1a9e6b"},"name":"Only Kalshi fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[28.74,30.85,29.72,27.74,25.73,23.8,22.07,20.5,19.11,17.84,16.71,15.68],"type":"bar","xaxis":"x9","yaxis":"y9"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only PM fresh\u003c/extra>","legendgroup":"Only PM fresh","legendrank":3,"marker":{"color":"#2f6fd6"},"name":"Only PM fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[9.59,8.67,7.4,6.34,5.49,4.81,4.26,3.81,3.44,3.13,2.86,2.63],"type":"bar","xaxis":"x9","yaxis":"y9"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Neither fresh\u003c/extra>","legendgroup":"Neither fresh","legendrank":4,"marker":{"color":"#b9c0c7"},"name":"Neither fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[42.73,26.44,18.5,13.83,10.8,8.7,7.18,6.03,5.13,4.42,3.85,3.38],"type":"bar","xaxis":"x9","yaxis":"y9"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"line":{"color":"#2f6fd6","width":2},"mode":"lines","name":"PM YES + K NO","showlegend":true,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[77.541,78.023,78.233,78.419,78.624,78.772,78.864,78.954,79.038,79.096,79.178,79.257,79.315,79.373,79.424,79.48,79.524,79.568,79.603,79.63,79.667,79.69,79.714,79.744,79.769,79.791,79.811,79.825,79.841,79.858,79.879,79.895,79.909,79.926,79.94,79.949,79.962,79.977,79.988,80.0,80.009,80.019,80.03,80.042,80.059,80.065,80.075,80.081,80.09,80.093,80.099,80.104,80.117,80.124,80.129,80.136,80.141,80.15,80.153,80.16],"type":"scatter","xaxis":"x13","yaxis":"y13"},{"hovertemplate":"F = %{x} s: %{y:.1f}% of clock\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"line":{"color":"#2f6fd6","width":2},"mode":"lines","name":"PM YES + K NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.712,2.269,3.906,5.706,7.384,9.095,10.669,12.236,13.678,15.107,16.422,17.726,18.929,20.124,21.23,22.33,23.356,24.371,25.321,26.26,27.144,28.016,28.839,29.653,30.421,31.183,31.904,32.62,33.298,33.97,34.606,35.238,35.838,36.431,36.998,37.558,38.094,38.626,39.134,39.64,40.123,40.604,41.064,41.523,41.963,42.4,42.82,43.238,43.641,44.04,44.426,44.809,45.179,45.547,45.901,46.255,46.596,46.936,47.264,47.59],"type":"scatter","xaxis":"x17","yaxis":"y17"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per print\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"line":{"color":"#2f6fd6","width":2},"mode":"lines","name":"PM YES + K NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[1.0886,1.11,1.1226,1.1296,1.1369,1.1388,1.142,1.1454,1.1484,1.1487,1.1504,1.1518,1.1534,1.1547,1.1559,1.1568,1.1575,1.1586,1.1594,1.1603,1.1612,1.162,1.1619,1.163,1.1635,1.1641,1.1646,1.1648,1.1655,1.1659,1.1665,1.1668,1.1668,1.167,1.1671,1.1676,1.1678,1.1681,1.1682,1.1683,1.1686,1.1695,1.1697,1.1698,1.1703,1.1704,1.1711,1.1713,1.1715,1.1714,1.1714,1.1716,1.172,1.172,1.1722,1.1725,1.1728,1.1733,1.1739,1.1742],"type":"scatter","xaxis":"x21","yaxis":"y21"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per fresh second\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"per fresh second (dashed)","legendrank":14,"line":{"color":"#2f6fd6","dash":"dash","width":1.4},"mode":"lines","name":"per fresh second (dashed)","showlegend":true,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[1.074,1.1087,1.1404,1.1614,1.1764,1.1873,1.1933,1.1985,1.2017,1.2048,1.2066,1.208,1.2091,1.2102,1.2113,1.2126,1.2137,1.2149,1.2158,1.2167,1.2177,1.2188,1.2197,1.2206,1.2215,1.2224,1.223,1.2238,1.2243,1.2248,1.2253,1.2257,1.2261,1.2265,1.2267,1.227,1.2271,1.2273,1.2276,1.2278,1.2279,1.2281,1.2284,1.2286,1.2288,1.229,1.2292,1.2295,1.2297,1.2299,1.2301,1.2302,1.2304,1.2306,1.2308,1.231,1.2311,1.2312,1.2314,1.2316],"type":"scatter","xaxis":"x21","yaxis":"y21"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"line":{"color":"#1a9e6b","width":2},"mode":"lines","name":"K YES + PM NO","showlegend":true,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[65.944,66.767,67.219,67.528,67.829,67.941,68.039,68.192,68.336,68.469,68.571,68.667,68.747,68.806,68.865,68.927,68.973,69.022,69.071,69.107,69.148,69.195,69.237,69.271,69.303,69.32,69.344,69.378,69.392,69.407,69.428,69.449,69.472,69.476,69.494,69.51,69.536,69.542,69.55,69.557,69.566,69.578,69.591,69.6,69.607,69.616,69.624,69.631,69.641,69.65,69.659,69.666,69.679,69.68,69.693,69.701,69.71,69.715,69.723,69.727],"type":"scatter","xaxis":"x13","yaxis":"y13"},{"hovertemplate":"F = %{x} s: %{y:.1f}% of clock\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"line":{"color":"#1a9e6b","width":2},"mode":"lines","name":"K YES + PM NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.267,0.934,1.703,2.62,3.525,4.5,5.437,6.411,7.336,8.281,9.178,10.089,10.95,11.821,12.642,13.47,14.253,15.04,15.79,16.54,17.257,17.972,18.658,19.342,20.0,20.656,21.285,21.914,22.518,23.121,23.701,24.278,24.835,25.388,25.921,26.451,26.964,27.474,27.969,28.46,28.934,29.405,29.862,30.317,30.759,31.197,31.622,32.045,32.455,32.863,33.259,33.653,34.035,34.416,34.785,35.154,35.511,35.868,36.215,36.559],"type":"scatter","xaxis":"x17","yaxis":"y17"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per print\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"line":{"color":"#1a9e6b","width":2},"mode":"lines","name":"K YES + PM NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.7394,0.7842,0.8013,0.8155,0.8313,0.8344,0.8387,0.8458,0.8514,0.8553,0.8598,0.8639,0.8683,0.8703,0.8721,0.8755,0.877,0.8791,0.8806,0.8819,0.8837,0.8861,0.8883,0.8898,0.8921,0.8935,0.8947,0.896,0.8968,0.8973,0.8988,0.8999,0.901,0.9012,0.9022,0.9035,0.9043,0.9054,0.9069,0.9073,0.9076,0.9083,0.9087,0.9092,0.9097,0.9099,0.91,0.9102,0.9109,0.912,0.9129,0.9132,0.9147,0.9151,0.9157,0.9161,0.917,0.9179,0.9184,0.9188],"type":"scatter","xaxis":"x21","yaxis":"y21"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per fresh second\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"per fresh second (dashed)","legendrank":14,"line":{"color":"#1a9e6b","dash":"dash","width":1.4},"mode":"lines","name":"per fresh second (dashed)","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.7018,0.7512,0.8165,0.8505,0.8763,0.8934,0.9049,0.9126,0.9184,0.9224,0.9251,0.9274,0.9298,0.9321,0.9334,0.9349,0.9361,0.9375,0.9389,0.9404,0.9416,0.9428,0.9438,0.945,0.9462,0.9475,0.9486,0.9499,0.9513,0.9526,0.9539,0.9551,0.9565,0.9578,0.9589,0.96,0.9609,0.962,0.9629,0.964,0.9649,0.9658,0.9667,0.9676,0.9684,0.9692,0.9699,0.9706,0.9713,0.9719,0.9727,0.9736,0.9743,0.9751,0.9759,0.9767,0.9775,0.9784,0.9792,0.98],"type":"scatter","xaxis":"x21","yaxis":"y21"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>pooled\u003c/extra>","legendgroup":"pooled","legendrank":13,"line":{"color":"#7d8791","width":2},"mode":"lines","name":"pooled","showlegend":true,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[73.842,74.396,74.644,74.845,75.058,75.175,75.253,75.353,75.447,75.522,75.603,75.681,75.743,75.798,75.849,75.904,75.947,75.991,76.028,76.057,76.095,76.124,76.152,76.181,76.208,76.227,76.248,76.268,76.282,76.297,76.318,76.334,76.351,76.362,76.377,76.386,76.404,76.415,76.425,76.435,76.443,76.454,76.465,76.475,76.489,76.495,76.505,76.511,76.52,76.526,76.532,76.538,76.55,76.555,76.563,76.57,76.577,76.585,76.589,76.595],"type":"scatter","xaxis":"x13","yaxis":"y13"},{"hovertemplate":"F = %{x} s: %{y:.1f}% of clock\u003cextra>pooled\u003c/extra>","legendgroup":"pooled","legendrank":13,"line":{"color":"#7d8791","width":2},"mode":"lines","name":"pooled","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.49,1.601,2.805,4.163,5.455,6.798,8.053,9.324,10.507,11.694,12.8,13.908,14.94,15.972,16.936,17.9,18.804,19.706,20.556,21.4,22.2,22.994,23.749,24.498,25.21,25.92,26.595,27.267,27.908,28.546,29.154,29.758,30.336,30.91,31.459,32.005,32.529,33.05,33.552,34.05,34.529,35.005,35.463,35.92,36.361,36.799,37.221,37.641,38.048,38.451,38.842,39.231,39.607,39.981,40.343,40.704,41.054,41.402,41.739,42.074],"type":"scatter","xaxis":"x17","yaxis":"y17"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per print\u003cextra>pooled\u003c/extra>","legendgroup":"pooled","legendrank":13,"line":{"color":"#7d8791","width":2},"mode":"lines","name":"pooled","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.9772,1.005,1.0179,1.0265,1.0359,1.0377,1.0408,1.0451,1.0488,1.05,1.0524,1.0546,1.057,1.0585,1.0598,1.0615,1.0624,1.0638,1.0648,1.0658,1.0669,1.0682,1.0689,1.0701,1.0711,1.072,1.0727,1.0733,1.074,1.0744,1.0753,1.0758,1.0762,1.0763,1.0767,1.0774,1.0779,1.0784,1.079,1.0792,1.0795,1.0803,1.0805,1.0808,1.0813,1.0814,1.0819,1.0821,1.0824,1.0828,1.0831,1.0833,1.0841,1.0842,1.0846,1.0849,1.0854,1.086,1.0866,1.0869],"type":"scatter","xaxis":"x21","yaxis":"y21"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per fresh second\u003cextra>pooled\u003c/extra>","legendgroup":"per fresh second (dashed)","legendrank":14,"line":{"color":"#7d8791","dash":"dash","width":1.4},"mode":"lines","name":"per fresh second (dashed)","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.9596,0.9921,1.0313,1.0535,1.07,1.081,1.0872,1.0916,1.0943,1.0964,1.0974,1.098,1.0986,1.0993,1.0996,1.1002,1.1007,1.1012,1.1017,1.1022,1.1027,1.1033,1.1037,1.1042,1.1048,1.1054,1.1058,1.1063,1.1068,1.1073,1.1077,1.1081,1.1086,1.1091,1.1094,1.1097,1.1099,1.1102,1.1104,1.1107,1.111,1.1112,1.1115,1.1118,1.1121,1.1123,1.1126,1.1128,1.113,1.1133,1.1135,1.1138,1.1141,1.1144,1.1147,1.115,1.1152,1.1156,1.1159,1.1162],"type":"scatter","xaxis":"x21","yaxis":"y21"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Both fresh\u003c/extra>","legendgroup":"Both fresh","legendrank":1,"marker":{"color":"#8b5cf6"},"name":"Both fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[9.89,17.87,23.85,28.7,32.73,36.21,39.21,41.88,44.27,46.43,48.38,50.18],"type":"bar","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only Kalshi fresh\u003c/extra>","legendgroup":"Only Kalshi fresh","legendrank":2,"marker":{"color":"#1a9e6b"},"name":"Only Kalshi fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[29.42,35.49,37.65,38.32,38.32,37.95,37.43,36.78,36.08,35.35,34.62,33.88],"type":"bar","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only PM fresh\u003c/extra>","legendgroup":"Only PM fresh","legendrank":3,"marker":{"color":"#2f6fd6"},"name":"Only PM fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[4.91,5.45,5.55,5.53,5.44,5.34,5.23,5.11,4.99,4.89,4.79,4.7],"type":"bar","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Neither fresh\u003c/extra>","legendgroup":"Neither fresh","legendrank":4,"marker":{"color":"#b9c0c7"},"name":"Neither fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[55.78,41.2,32.95,27.46,23.51,20.5,18.13,16.23,14.66,13.33,12.21,11.24],"type":"bar","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Both fresh\u003c/extra>","legendgroup":"Both fresh","legendrank":1,"marker":{"color":"#8b5cf6"},"name":"Both fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[6.27,12.82,18.23,22.84,26.8,30.31,33.41,36.2,38.73,41.03,43.15,45.11],"type":"bar","xaxis":"x6","yaxis":"y6"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only Kalshi fresh\u003c/extra>","legendgroup":"Only Kalshi fresh","legendrank":2,"marker":{"color":"#1a9e6b"},"name":"Only Kalshi fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[10.51,13.21,14.3,14.72,14.86,14.81,14.68,14.47,14.24,13.98,13.71,13.43],"type":"bar","xaxis":"x6","yaxis":"y6"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only PM fresh\u003c/extra>","legendgroup":"Only PM fresh","legendrank":3,"marker":{"color":"#2f6fd6"},"name":"Only PM fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[11.91,15.73,17.54,18.53,19.06,19.34,19.44,19.46,19.39,19.29,19.14,18.97],"type":"bar","xaxis":"x6","yaxis":"y6"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Neither fresh\u003c/extra>","legendgroup":"Neither fresh","legendrank":4,"marker":{"color":"#b9c0c7"},"name":"Neither fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[71.31,58.23,49.94,43.91,39.28,35.54,32.47,29.87,27.64,25.7,23.99,22.48],"type":"bar","xaxis":"x6","yaxis":"y6"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Both fresh\u003c/extra>","legendgroup":"Both fresh","legendrank":1,"marker":{"color":"#8b5cf6"},"name":"Both fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[18.91,31.12,39.36,45.66,50.62,54.73,58.17,61.12,63.67,65.91,67.89,69.68],"type":"bar","xaxis":"x10","yaxis":"y10"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only Kalshi fresh\u003c/extra>","legendgroup":"Only Kalshi fresh","legendrank":2,"marker":{"color":"#1a9e6b"},"name":"Only Kalshi fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[26.14,28.44,28.28,27.28,26.11,24.87,23.68,22.54,21.49,20.5,19.57,18.7],"type":"bar","xaxis":"x10","yaxis":"y10"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only PM fresh\u003c/extra>","legendgroup":"Only PM fresh","legendrank":3,"marker":{"color":"#2f6fd6"},"name":"Only PM fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[7.68,7.62,7.2,6.77,6.35,5.98,5.64,5.34,5.07,4.83,4.62,4.43],"type":"bar","xaxis":"x10","yaxis":"y10"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Neither fresh\u003c/extra>","legendgroup":"Neither fresh","legendrank":4,"marker":{"color":"#b9c0c7"},"name":"Neither fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[47.28,32.82,25.16,20.29,16.91,14.42,12.51,11.0,9.78,8.76,7.91,7.19],"type":"bar","xaxis":"x10","yaxis":"y10"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"line":{"color":"#2f6fd6","width":2},"mode":"lines","name":"PM YES + K NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[76.941,77.387,77.69,77.964,78.18,78.348,78.489,78.615,78.691,78.775,78.876,78.953,79.041,79.11,79.169,79.225,79.267,79.317,79.361,79.399,79.447,79.491,79.534,79.569,79.604,79.641,79.678,79.708,79.739,79.767,79.792,79.813,79.834,79.852,79.864,79.887,79.904,79.922,79.946,79.964,79.978,79.995,80.01,80.022,80.035,80.048,80.063,80.081,80.091,80.104,80.111,80.121,80.129,80.137,80.142,80.149,80.158,80.167,80.172,80.173],"type":"scatter","xaxis":"x14","yaxis":"y14"},{"hovertemplate":"F = %{x} s: %{y:.1f}% of clock\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"line":{"color":"#2f6fd6","width":2},"mode":"lines","name":"PM YES + K NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[1.01,2.89,4.541,6.267,7.74,9.224,10.527,11.829,12.994,14.155,15.204,16.247,17.198,18.146,19.017,19.884,20.687,21.487,22.233,22.975,23.671,24.366,25.02,25.669,26.283,26.893,27.471,28.048,28.593,29.137,29.652,30.166,30.657,31.147,31.613,32.077,32.522,32.966,33.392,33.816,34.223,34.629,35.02,35.409,35.783,36.156,36.515,36.874,37.218,37.562,37.894,38.225,38.545,38.865,39.174,39.482,39.781,40.079,40.367,40.653],"type":"scatter","xaxis":"x18","yaxis":"y18"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per print\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"line":{"color":"#2f6fd6","width":2},"mode":"lines","name":"PM YES + K NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[1.0096,1.0362,1.0501,1.0649,1.0776,1.084,1.0911,1.0973,1.1006,1.1045,1.1081,1.1122,1.1157,1.1194,1.1222,1.1258,1.1282,1.1312,1.1344,1.1379,1.14,1.1424,1.144,1.1459,1.1475,1.1511,1.1526,1.1537,1.1564,1.1584,1.1598,1.1619,1.1634,1.1654,1.1665,1.1691,1.1707,1.1715,1.1729,1.1747,1.1752,1.1769,1.1775,1.179,1.18,1.1808,1.1823,1.184,1.1853,1.1863,1.1878,1.1885,1.1894,1.1901,1.1913,1.1917,1.1926,1.1933,1.1933,1.1943],"type":"scatter","xaxis":"x22","yaxis":"y22"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per fresh second\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"per fresh second (dashed)","legendrank":14,"line":{"color":"#2f6fd6","dash":"dash","width":1.4},"mode":"lines","name":"per fresh second (dashed)","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.9807,1.0182,1.0643,1.0932,1.1179,1.1392,1.1544,1.1673,1.1783,1.1873,1.1955,1.2021,1.2078,1.2128,1.2171,1.2213,1.2249,1.2282,1.2318,1.2356,1.2394,1.2431,1.2465,1.2496,1.2523,1.2547,1.2575,1.2598,1.2617,1.2633,1.2649,1.2664,1.2683,1.27,1.2715,1.2729,1.2743,1.2756,1.2768,1.2781,1.2793,1.2806,1.2819,1.2832,1.2847,1.2861,1.2872,1.2882,1.2891,1.2901,1.291,1.2919,1.2929,1.2939,1.2949,1.2958,1.2967,1.2976,1.2985,1.2992],"type":"scatter","xaxis":"x22","yaxis":"y22"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"line":{"color":"#1a9e6b","width":2},"mode":"lines","name":"K YES + PM NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[70.7,71.336,71.68,71.944,72.163,72.337,72.454,72.56,72.663,72.712,72.789,72.842,72.908,72.932,72.993,73.018,73.035,73.067,73.098,73.12,73.168,73.18,73.214,73.229,73.243,73.253,73.27,73.287,73.303,73.312,73.334,73.351,73.368,73.383,73.392,73.396,73.412,73.421,73.441,73.451,73.46,73.466,73.469,73.467,73.476,73.472,73.48,73.494,73.51,73.516,73.52,73.524,73.533,73.536,73.54,73.539,73.546,73.548,73.554,73.567],"type":"scatter","xaxis":"x14","yaxis":"y14"},{"hovertemplate":"F = %{x} s: %{y:.1f}% of clock\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"line":{"color":"#1a9e6b","width":2},"mode":"lines","name":"K YES + PM NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.425,1.419,2.416,3.549,4.584,5.672,6.663,7.674,8.603,9.543,10.411,11.287,12.099,12.916,13.677,14.438,15.153,15.867,16.542,17.218,17.856,18.493,19.096,19.698,20.272,20.843,21.391,21.938,22.46,22.98,23.479,23.976,24.453,24.93,25.39,25.849,26.29,26.73,27.154,27.578,27.988,28.395,28.787,29.178,29.555,29.932,30.297,30.661,31.016,31.369,31.713,32.055,32.387,32.717,33.039,33.359,33.671,33.983,34.287,34.59],"type":"scatter","xaxis":"x18","yaxis":"y18"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per print\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"line":{"color":"#1a9e6b","width":2},"mode":"lines","name":"K YES + PM NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.8361,0.8562,0.8772,0.8956,0.909,0.9161,0.9199,0.925,0.9317,0.9362,0.9406,0.9451,0.9478,0.9508,0.9563,0.9585,0.9602,0.9619,0.9634,0.965,0.9668,0.9706,0.9741,0.977,0.9788,0.9808,0.9836,0.9862,0.9882,0.9891,0.9915,0.9942,0.9952,0.9973,0.998,0.9993,1.0006,1.0029,1.0034,1.0025,1.004,1.0034,1.0044,1.0049,1.0063,1.0068,1.0083,1.0095,1.0116,1.0124,1.0125,1.0131,1.0148,1.0156,1.0158,1.0168,1.0171,1.0183,1.0195,1.0213],"type":"scatter","xaxis":"x22","yaxis":"y22"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per fresh second\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"per fresh second (dashed)","legendrank":14,"line":{"color":"#1a9e6b","dash":"dash","width":1.4},"mode":"lines","name":"per fresh second (dashed)","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.8387,0.8526,0.8927,0.9186,0.943,0.9604,0.9735,0.9837,0.9913,0.9984,1.0055,1.0123,1.0178,1.023,1.0276,1.0326,1.0374,1.0419,1.0461,1.0504,1.0542,1.0577,1.0611,1.0646,1.0679,1.0713,1.0747,1.0782,1.0815,1.0848,1.0877,1.0908,1.0937,1.0965,1.0993,1.102,1.1047,1.1074,1.11,1.1124,1.1146,1.1168,1.1189,1.121,1.1229,1.1248,1.1267,1.1286,1.1306,1.1325,1.1345,1.1363,1.1382,1.14,1.1417,1.1433,1.1449,1.1466,1.1482,1.15],"type":"scatter","xaxis":"x22","yaxis":"y22"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>pooled\u003c/extra>","legendgroup":"pooled","legendrank":13,"line":{"color":"#7d8791","width":2},"mode":"lines","name":"pooled","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[74.85,75.317,75.615,75.869,76.076,76.239,76.368,76.483,76.566,76.637,76.729,76.796,76.877,76.929,76.988,77.032,77.066,77.11,77.15,77.182,77.231,77.263,77.303,77.331,77.359,77.386,77.416,77.442,77.468,77.49,77.514,77.534,77.555,77.571,77.583,77.599,77.617,77.632,77.655,77.671,77.684,77.698,77.709,77.717,77.729,77.736,77.75,77.767,77.78,77.79,77.796,77.805,77.814,77.82,77.825,77.83,77.839,77.846,77.851,77.857],"type":"scatter","xaxis":"x14","yaxis":"y14"},{"hovertemplate":"F = %{x} s: %{y:.1f}% of clock\u003cextra>pooled\u003c/extra>","legendgroup":"pooled","legendrank":13,"line":{"color":"#7d8791","width":2},"mode":"lines","name":"pooled","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.718,2.155,3.479,4.908,6.162,7.448,8.595,9.751,10.799,11.849,12.807,13.767,14.649,15.531,16.347,17.161,17.92,18.677,19.387,20.097,20.764,21.429,22.058,22.684,23.277,23.868,24.431,24.993,25.527,26.059,26.566,27.071,27.555,28.039,28.502,28.963,29.406,29.848,30.273,30.697,31.105,31.512,31.903,32.293,32.669,33.044,33.406,33.767,34.117,34.466,34.803,35.14,35.466,35.791,36.106,36.421,36.726,37.031,37.327,37.622],"type":"scatter","xaxis":"x18","yaxis":"y18"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per print\u003cextra>pooled\u003c/extra>","legendgroup":"pooled","legendrank":13,"line":{"color":"#7d8791","width":2},"mode":"lines","name":"pooled","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.9515,0.9746,0.9904,1.006,1.0187,1.0251,1.0309,1.0366,1.041,1.0452,1.049,1.0532,1.0564,1.0599,1.0636,1.0667,1.0689,1.0714,1.074,1.0768,1.0789,1.0818,1.0841,1.0863,1.088,1.091,1.093,1.0946,1.0971,1.0987,1.1004,1.1028,1.1041,1.1062,1.1071,1.1092,1.1108,1.1121,1.1132,1.114,1.115,1.1158,1.1166,1.1177,1.1189,1.1196,1.1211,1.1227,1.1243,1.1252,1.1262,1.1269,1.1281,1.1289,1.1297,1.1303,1.1311,1.1319,1.1324,1.1336],"type":"scatter","xaxis":"x22","yaxis":"y22"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per fresh second\u003cextra>pooled\u003c/extra>","legendgroup":"per fresh second (dashed)","legendrank":14,"line":{"color":"#7d8791","dash":"dash","width":1.4},"mode":"lines","name":"per fresh second (dashed)","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.9359,0.9606,1.0017,1.0272,1.0501,1.0683,1.0815,1.0923,1.101,1.1084,1.1154,1.1214,1.1265,1.131,1.135,1.1391,1.1428,1.1463,1.1498,1.1535,1.157,1.1603,1.1635,1.1665,1.1693,1.1719,1.1747,1.1774,1.1797,1.1819,1.184,1.1861,1.1883,1.1903,1.1922,1.1941,1.196,1.1978,1.1996,1.2013,1.2028,1.2044,1.206,1.2076,1.2092,1.2107,1.2121,1.2135,1.2148,1.2161,1.2175,1.2187,1.2201,1.2214,1.2227,1.2239,1.225,1.2262,1.2274,1.2285],"type":"scatter","xaxis":"x22","yaxis":"y22"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Both fresh\u003c/extra>","legendgroup":"Both fresh","legendrank":1,"marker":{"color":"#8b5cf6"},"name":"Both fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[54.64,71.81,80.12,84.84,87.83,89.86,91.26,92.28,93.06,93.67,94.15,94.53],"type":"bar","xaxis":"x3","yaxis":"y3"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only Kalshi fresh\u003c/extra>","legendgroup":"Only Kalshi fresh","legendrank":2,"marker":{"color":"#1a9e6b"},"name":"Only Kalshi fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[39.87,24.7,17.0,12.57,9.75,7.84,6.52,5.56,4.83,4.26,3.81,3.46],"type":"bar","xaxis":"x3","yaxis":"y3"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only PM fresh\u003c/extra>","legendgroup":"Only PM fresh","legendrank":3,"marker":{"color":"#2f6fd6"},"name":"Only PM fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[2.13,1.86,1.84,1.85,1.86,1.87,1.87,1.87,1.87,1.87,1.86,1.86],"type":"bar","xaxis":"x3","yaxis":"y3"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Neither fresh\u003c/extra>","legendgroup":"Neither fresh","legendrank":4,"marker":{"color":"#b9c0c7"},"name":"Neither fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[3.37,1.63,1.04,0.74,0.56,0.44,0.35,0.29,0.24,0.2,0.18,0.15],"type":"bar","xaxis":"x3","yaxis":"y3"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Both fresh\u003c/extra>","legendgroup":"Both fresh","legendrank":1,"marker":{"color":"#8b5cf6"},"name":"Both fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[53.98,72.82,80.95,85.17,87.65,89.2,90.23,90.96,91.48,91.86,92.14,92.36],"type":"bar","xaxis":"x7","yaxis":"y7"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only Kalshi fresh\u003c/extra>","legendgroup":"Only Kalshi fresh","legendrank":2,"marker":{"color":"#1a9e6b"},"name":"Only Kalshi fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[14.26,7.17,4.08,2.62,1.86,1.42,1.16,1.0,0.89,0.82,0.76,0.72],"type":"bar","xaxis":"x7","yaxis":"y7"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only PM fresh\u003c/extra>","legendgroup":"Only PM fresh","legendrank":3,"marker":{"color":"#2f6fd6"},"name":"Only PM fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[20.37,14.81,11.44,9.4,8.12,7.31,6.77,6.39,6.13,5.96,5.85,5.77],"type":"bar","xaxis":"x7","yaxis":"y7"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Neither fresh\u003c/extra>","legendgroup":"Neither fresh","legendrank":4,"marker":{"color":"#b9c0c7"},"name":"Neither fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[11.39,5.21,3.53,2.81,2.37,2.07,1.84,1.65,1.5,1.37,1.25,1.16],"type":"bar","xaxis":"x7","yaxis":"y7"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Both fresh\u003c/extra>","legendgroup":"Both fresh","legendrank":1,"marker":{"color":"#8b5cf6"},"name":"Both fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[83.23,93.24,96.14,97.32,97.93,98.3,98.54,98.71,98.85,98.96,99.05,99.13],"type":"bar","xaxis":"x11","yaxis":"y11"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only Kalshi fresh\u003c/extra>","legendgroup":"Only Kalshi fresh","legendrank":2,"marker":{"color":"#1a9e6b"},"name":"Only Kalshi fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[13.61,5.31,2.94,2.03,1.57,1.31,1.15,1.03,0.93,0.85,0.78,0.72],"type":"bar","xaxis":"x11","yaxis":"y11"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only PM fresh\u003c/extra>","legendgroup":"Only PM fresh","legendrank":3,"marker":{"color":"#2f6fd6"},"name":"Only PM fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[1.23,0.53,0.34,0.24,0.2,0.16,0.14,0.12,0.1,0.09,0.08,0.08],"type":"bar","xaxis":"x11","yaxis":"y11"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Neither fresh\u003c/extra>","legendgroup":"Neither fresh","legendrank":4,"marker":{"color":"#b9c0c7"},"name":"Neither fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[1.92,0.92,0.58,0.41,0.3,0.23,0.18,0.14,0.12,0.1,0.08,0.07],"type":"bar","xaxis":"x11","yaxis":"y11"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"line":{"color":"#2f6fd6","width":2},"mode":"lines","name":"PM YES + K NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[75.63,76.166,76.52,76.775,76.972,77.101,77.21,77.293,77.359,77.414,77.46,77.496,77.529,77.559,77.583,77.6,77.618,77.631,77.644,77.654,77.662,77.669,77.675,77.681,77.686,77.691,77.694,77.697,77.698,77.699,77.701,77.702,77.702,77.703,77.701,77.702,77.7,77.7,77.698,77.695,77.692,77.69,77.687,77.684,77.681,77.678,77.676,77.674,77.671,77.669,77.667,77.665,77.663,77.661,77.66,77.659,77.657,77.657,77.656,77.655],"type":"scatter","xaxis":"x15","yaxis":"y15"},{"hovertemplate":"F = %{x} s: %{y:.1f}% of clock\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"line":{"color":"#2f6fd6","width":2},"mode":"lines","name":"PM YES + K NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[12.129,23.615,31.792,37.318,42.015,45.94,48.92,51.552,53.86,55.707,57.383,58.883,60.134,61.287,62.339,63.231,64.059,64.823,65.484,66.102,66.673,67.173,67.643,68.084,68.476,68.846,69.194,69.506,69.801,70.078,70.325,70.561,70.783,70.985,71.176,71.357,71.522,71.68,71.831,71.969,72.102,72.23,72.347,72.459,72.567,72.666,72.763,72.856,72.943,73.027,73.108,73.183,73.256,73.326,73.392,73.455,73.516,73.573,73.628,73.681],"type":"scatter","xaxis":"x19","yaxis":"y19"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per print\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"line":{"color":"#2f6fd6","width":2},"mode":"lines","name":"PM YES + K NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.61,0.6182,0.6225,0.6257,0.6279,0.6294,0.6306,0.6316,0.6322,0.6327,0.6331,0.6331,0.6333,0.6334,0.6334,0.6334,0.6334,0.6333,0.6332,0.6331,0.633,0.6329,0.6328,0.6327,0.6327,0.6326,0.6325,0.6325,0.6324,0.6323,0.6322,0.6321,0.6321,0.632,0.6319,0.6318,0.6317,0.6317,0.6316,0.6315,0.6314,0.6313,0.6313,0.6312,0.6311,0.631,0.6309,0.6309,0.6309,0.6308,0.6307,0.6307,0.6307,0.6306,0.6306,0.6306,0.6305,0.6305,0.6305,0.6304],"type":"scatter","xaxis":"x23","yaxis":"y23"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per fresh second\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"per fresh second (dashed)","legendrank":14,"line":{"color":"#2f6fd6","dash":"dash","width":1.4},"mode":"lines","name":"per fresh second (dashed)","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.6071,0.6078,0.6142,0.6175,0.6198,0.6216,0.6229,0.6238,0.6246,0.625,0.6253,0.6256,0.6256,0.6257,0.6256,0.6256,0.6256,0.6255,0.6254,0.6253,0.6252,0.625,0.6249,0.6248,0.6247,0.6246,0.6245,0.6244,0.6243,0.6242,0.6241,0.624,0.6239,0.6238,0.6237,0.6236,0.6235,0.6234,0.6232,0.6231,0.623,0.623,0.6229,0.6228,0.6227,0.6226,0.6225,0.6224,0.6223,0.6223,0.6222,0.6222,0.6221,0.6221,0.622,0.622,0.6219,0.6219,0.6218,0.6218],"type":"scatter","xaxis":"x23","yaxis":"y23"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"line":{"color":"#1a9e6b","width":2},"mode":"lines","name":"K YES + PM NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[70.584,71.336,71.781,72.111,72.343,72.496,72.632,72.751,72.831,72.904,72.958,73.009,73.048,73.078,73.111,73.137,73.159,73.181,73.198,73.215,73.227,73.241,73.254,73.267,73.277,73.284,73.296,73.303,73.31,73.316,73.322,73.328,73.336,73.341,73.346,73.351,73.356,73.36,73.365,73.368,73.37,73.374,73.376,73.379,73.381,73.384,73.386,73.39,73.393,73.394,73.397,73.399,73.399,73.401,73.403,73.403,73.404,73.406,73.406,73.408],"type":"scatter","xaxis":"x15","yaxis":"y15"},{"hovertemplate":"F = %{x} s: %{y:.1f}% of clock\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"line":{"color":"#1a9e6b","width":2},"mode":"lines","name":"K YES + PM NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[8.441,19.475,28.108,34.216,39.438,43.741,47.024,49.879,52.325,54.292,56.015,57.519,58.766,59.88,60.873,61.72,62.487,63.177,63.774,64.319,64.816,65.253,65.653,66.019,66.344,66.643,66.918,67.167,67.397,67.612,67.807,67.99,68.16,68.314,68.46,68.599,68.727,68.847,68.959,69.063,69.16,69.251,69.335,69.414,69.488,69.557,69.622,69.683,69.74,69.795,69.847,69.895,69.941,69.984,70.024,70.063,70.1,70.135,70.168,70.201],"type":"scatter","xaxis":"x19","yaxis":"y19"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per print\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"line":{"color":"#1a9e6b","width":2},"mode":"lines","name":"K YES + PM NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.4969,0.5115,0.5192,0.5246,0.5283,0.5305,0.5325,0.5342,0.5351,0.536,0.5368,0.5375,0.5379,0.5383,0.5386,0.5389,0.5392,0.5394,0.5396,0.5398,0.5399,0.5401,0.5402,0.5404,0.5405,0.5406,0.5407,0.5408,0.5408,0.5409,0.541,0.541,0.5411,0.5412,0.5413,0.5413,0.5414,0.5414,0.5415,0.5416,0.5416,0.5417,0.5417,0.5418,0.5418,0.5419,0.5419,0.5419,0.542,0.542,0.5421,0.5421,0.5421,0.5422,0.5422,0.5422,0.5422,0.5423,0.5423,0.5423],"type":"scatter","xaxis":"x23","yaxis":"y23"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per fresh second\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"per fresh second (dashed)","legendrank":14,"line":{"color":"#1a9e6b","dash":"dash","width":1.4},"mode":"lines","name":"per fresh second (dashed)","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.4897,0.4983,0.5171,0.5291,0.5382,0.5454,0.5505,0.5549,0.5586,0.5614,0.564,0.5663,0.5682,0.5698,0.5713,0.5725,0.5736,0.5746,0.5754,0.5762,0.5769,0.5775,0.5781,0.5786,0.5791,0.5795,0.5799,0.5803,0.5806,0.5809,0.5812,0.5815,0.5818,0.582,0.5822,0.5824,0.5826,0.5828,0.583,0.5832,0.5833,0.5835,0.5836,0.5837,0.5839,0.584,0.5841,0.5842,0.5843,0.5844,0.5845,0.5845,0.5846,0.5847,0.5847,0.5848,0.5849,0.5849,0.585,0.585],"type":"scatter","xaxis":"x23","yaxis":"y23"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>pooled\u003c/extra>","legendgroup":"pooled","legendrank":13,"line":{"color":"#7d8791","width":2},"mode":"lines","name":"pooled","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[73.356,73.998,74.412,74.723,74.957,75.114,75.25,75.364,75.448,75.522,75.582,75.633,75.677,75.715,75.749,75.775,75.8,75.822,75.841,75.858,75.872,75.885,75.897,75.909,75.919,75.927,75.936,75.943,75.948,75.954,75.959,75.964,75.968,75.972,75.975,75.978,75.98,75.983,75.985,75.985,75.985,75.987,75.987,75.987,75.987,75.987,75.987,75.988,75.988,75.988,75.988,75.988,75.988,75.988,75.988,75.989,75.988,75.989,75.989,75.99],"type":"scatter","xaxis":"x15","yaxis":"y15"},{"hovertemplate":"F = %{x} s: %{y:.1f}% of clock\u003cextra>pooled\u003c/extra>","legendgroup":"pooled","legendrank":13,"line":{"color":"#7d8791","width":2},"mode":"lines","name":"pooled","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[10.285,21.545,29.95,35.767,40.726,44.841,47.972,50.715,53.092,54.999,56.699,58.201,59.45,60.584,61.606,62.476,63.273,64.0,64.629,65.211,65.744,66.213,66.648,67.051,67.41,67.745,68.056,68.337,68.599,68.845,69.066,69.275,69.472,69.649,69.818,69.978,70.124,70.263,70.395,70.516,70.631,70.74,70.841,70.936,71.028,71.112,71.192,71.269,71.342,71.411,71.477,71.539,71.598,71.655,71.708,71.759,71.808,71.854,71.898,71.941],"type":"scatter","xaxis":"x19","yaxis":"y19"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per print\u003cextra>pooled\u003c/extra>","legendgroup":"pooled","legendrank":13,"line":{"color":"#7d8791","width":2},"mode":"lines","name":"pooled","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.559,0.5703,0.5766,0.5812,0.5845,0.5867,0.5886,0.5902,0.5912,0.5921,0.5929,0.5934,0.5939,0.5943,0.5946,0.5948,0.595,0.5951,0.5953,0.5954,0.5954,0.5955,0.5956,0.5957,0.5957,0.5958,0.5958,0.5959,0.5959,0.5959,0.5959,0.5959,0.5959,0.596,0.596,0.596,0.596,0.596,0.596,0.596,0.596,0.596,0.5959,0.5959,0.5959,0.5959,0.5959,0.5959,0.5959,0.5959,0.5959,0.5959,0.5959,0.5959,0.5959,0.5959,0.5959,0.5959,0.5959,0.5959],"type":"scatter","xaxis":"x23","yaxis":"y23"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per fresh second\u003cextra>pooled\u003c/extra>","legendgroup":"per fresh second (dashed)","legendrank":14,"line":{"color":"#7d8791","dash":"dash","width":1.4},"mode":"lines","name":"per fresh second (dashed)","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.5569,0.5565,0.5672,0.574,0.5793,0.5835,0.5866,0.5892,0.5914,0.593,0.5944,0.5957,0.5967,0.5976,0.5983,0.5989,0.5995,0.6,0.6004,0.6007,0.601,0.6013,0.6015,0.6017,0.6019,0.6021,0.6023,0.6024,0.6025,0.6026,0.6027,0.6028,0.6029,0.603,0.6031,0.6031,0.6032,0.6032,0.6033,0.6033,0.6033,0.6034,0.6034,0.6034,0.6034,0.6035,0.6035,0.6035,0.6035,0.6035,0.6035,0.6035,0.6036,0.6036,0.6036,0.6036,0.6036,0.6036,0.6036,0.6036],"type":"scatter","xaxis":"x23","yaxis":"y23"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Both fresh\u003c/extra>","legendgroup":"Both fresh","legendrank":1,"marker":{"color":"#8b5cf6"},"name":"Both fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[25.06,40.51,51.11,58.89,64.92,69.68,73.45,76.54,79.13,81.34,83.23,84.86],"type":"bar","xaxis":"x4","yaxis":"y4"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only Kalshi fresh\u003c/extra>","legendgroup":"Only Kalshi fresh","legendrank":2,"marker":{"color":"#1a9e6b"},"name":"Only Kalshi fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[69.97,58.04,48.3,40.82,34.92,30.22,26.49,23.42,20.85,18.65,16.76,15.13],"type":"bar","xaxis":"x4","yaxis":"y4"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only PM fresh\u003c/extra>","legendgroup":"Only PM fresh","legendrank":3,"marker":{"color":"#2f6fd6"},"name":"Only PM fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[0.79,0.35,0.18,0.11,0.06,0.04,0.03,0.02,0.02,0.01,0.01,0.01],"type":"bar","xaxis":"x4","yaxis":"y4"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Neither fresh\u003c/extra>","legendgroup":"Neither fresh","legendrank":4,"marker":{"color":"#b9c0c7"},"name":"Neither fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[4.18,1.09,0.41,0.19,0.1,0.06,0.03,0.02,0.01,0.01,0.0,0.0],"type":"bar","xaxis":"x4","yaxis":"y4"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Both fresh\u003c/extra>","legendgroup":"Both fresh","legendrank":1,"marker":{"color":"#8b5cf6"},"name":"Both fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[22.56,40.87,52.95,61.27,67.36,71.95,75.54,78.47,80.88,82.91,84.63,86.11],"type":"bar","xaxis":"x8","yaxis":"y8"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only Kalshi fresh\u003c/extra>","legendgroup":"Only Kalshi fresh","legendrank":2,"marker":{"color":"#1a9e6b"},"name":"Only Kalshi fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[8.32,6.43,4.65,3.4,2.55,1.96,1.55,1.25,1.02,0.84,0.7,0.59],"type":"bar","xaxis":"x8","yaxis":"y8"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only PM fresh\u003c/extra>","legendgroup":"Only PM fresh","legendrank":3,"marker":{"color":"#2f6fd6"},"name":"Only PM fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[41.27,40.08,35.67,31.35,27.58,24.42,21.76,19.47,17.53,15.84,14.36,13.07],"type":"bar","xaxis":"x8","yaxis":"y8"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Neither fresh\u003c/extra>","legendgroup":"Neither fresh","legendrank":4,"marker":{"color":"#b9c0c7"},"name":"Neither fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[27.85,12.62,6.74,3.99,2.51,1.66,1.14,0.81,0.58,0.42,0.31,0.23],"type":"bar","xaxis":"x8","yaxis":"y8"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Both fresh\u003c/extra>","legendgroup":"Both fresh","legendrank":1,"marker":{"color":"#8b5cf6"},"name":"Both fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[67.91,85.06,91.84,95.05,96.79,97.8,98.42,98.83,99.12,99.31,99.45,99.55],"type":"bar","xaxis":"x12","yaxis":"y12"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only Kalshi fresh\u003c/extra>","legendgroup":"Only Kalshi fresh","legendrank":2,"marker":{"color":"#1a9e6b"},"name":"Only Kalshi fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[27.49,13.66,7.66,4.71,3.08,2.13,1.53,1.14,0.86,0.67,0.54,0.44],"type":"bar","xaxis":"x12","yaxis":"y12"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Only PM fresh\u003c/extra>","legendgroup":"Only PM fresh","legendrank":3,"marker":{"color":"#2f6fd6"},"name":"Only PM fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[2.33,0.86,0.39,0.2,0.11,0.07,0.04,0.03,0.02,0.01,0.01,0.0],"type":"bar","xaxis":"x12","yaxis":"y12"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>Neither fresh\u003c/extra>","legendgroup":"Neither fresh","legendrank":4,"marker":{"color":"#b9c0c7"},"name":"Neither fresh","showlegend":false,"width":3.6,"x":[5,10,15,20,25,30,35,40,45,50,55,60],"y":[2.27,0.42,0.11,0.04,0.01,0.0,0.0,0.0,0.0,0.0,-0.0,0.0],"type":"bar","xaxis":"x12","yaxis":"y12"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"line":{"color":"#2f6fd6","width":2},"mode":"lines","name":"PM YES + K NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[84.41,84.699,84.954,85.201,85.379,85.511,85.645,85.763,85.878,85.99,86.076,86.165,86.235,86.298,86.362,86.42,86.473,86.523,86.564,86.604,86.633,86.67,86.699,86.726,86.751,86.773,86.795,86.816,86.831,86.848,86.867,86.881,86.892,86.902,86.914,86.921,86.928,86.938,86.945,86.952,86.959,86.965,86.973,86.978,86.981,86.985,86.99,86.991,86.994,86.995,86.996,86.998,87.001,87.003,87.005,87.01,87.011,87.014,87.016,87.017],"type":"scatter","xaxis":"x16","yaxis":"y16"},{"hovertemplate":"F = %{x} s: %{y:.1f}% of clock\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"line":{"color":"#2f6fd6","width":2},"mode":"lines","name":"PM YES + K NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[4.499,9.491,13.93,17.657,21.108,24.284,27.078,29.691,32.117,34.291,36.355,38.317,40.103,41.807,43.429,44.908,46.328,47.687,48.944,50.156,51.32,52.399,53.442,54.444,55.375,56.273,57.14,57.952,58.736,59.492,60.193,60.871,61.526,62.143,62.741,63.323,63.87,64.402,64.92,65.408,65.883,66.346,66.786,67.216,67.636,68.038,68.432,68.817,69.181,69.537,69.884,70.216,70.54,70.858,71.161,71.458,71.748,72.026,72.297,72.562],"type":"scatter","xaxis":"x20","yaxis":"y20"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per print\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"line":{"color":"#2f6fd6","width":2},"mode":"lines","name":"PM YES + K NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.7657,0.7704,0.7753,0.7798,0.7835,0.7863,0.789,0.7915,0.7936,0.7956,0.7972,0.7986,0.7998,0.8008,0.8017,0.8026,0.8033,0.8039,0.8043,0.8048,0.8051,0.8054,0.8057,0.806,0.8062,0.8064,0.8066,0.8067,0.8068,0.807,0.8071,0.8072,0.8072,0.8073,0.8073,0.8073,0.8072,0.8072,0.8072,0.8071,0.807,0.8069,0.8068,0.8067,0.8066,0.8065,0.8064,0.8062,0.8061,0.8059,0.8058,0.8057,0.8055,0.8055,0.8053,0.8052,0.8051,0.805,0.8049,0.8048],"type":"scatter","xaxis":"x24","yaxis":"y24"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per fresh second\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"per fresh second (dashed)","legendrank":14,"line":{"color":"#2f6fd6","dash":"dash","width":1.4},"mode":"lines","name":"per fresh second (dashed)","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.7756,0.7566,0.7524,0.7514,0.7514,0.7517,0.7522,0.7532,0.7543,0.7554,0.7564,0.7572,0.7578,0.7582,0.7586,0.7589,0.7592,0.7594,0.7596,0.7597,0.7598,0.7599,0.7599,0.7599,0.7598,0.7598,0.7598,0.7597,0.7597,0.7596,0.7596,0.7595,0.7594,0.7593,0.7592,0.759,0.7589,0.7587,0.7586,0.7584,0.7582,0.7581,0.7579,0.7577,0.7575,0.7573,0.7571,0.7569,0.7567,0.7565,0.7563,0.7561,0.7559,0.7557,0.7555,0.7554,0.7552,0.755,0.7549,0.7547],"type":"scatter","xaxis":"x24","yaxis":"y24"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"line":{"color":"#1a9e6b","width":2},"mode":"lines","name":"K YES + PM NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[58.396,59.491,60.098,60.716,61.206,61.578,61.924,62.194,62.424,62.639,62.823,62.997,63.155,63.291,63.432,63.557,63.685,63.774,63.869,63.972,64.051,64.138,64.21,64.275,64.331,64.393,64.451,64.509,64.562,64.616,64.667,64.72,64.765,64.81,64.848,64.892,64.929,64.967,65.004,65.038,65.067,65.097,65.123,65.155,65.182,65.211,65.237,65.266,65.295,65.32,65.343,65.367,65.387,65.407,65.434,65.455,65.469,65.491,65.513,65.531],"type":"scatter","xaxis":"x16","yaxis":"y16"},{"hovertemplate":"F = %{x} s: %{y:.1f}% of clock\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"line":{"color":"#1a9e6b","width":2},"mode":"lines","name":"K YES + PM NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[1.375,4.405,7.855,11.075,14.292,17.363,20.114,22.737,25.192,27.418,29.517,31.491,33.286,34.977,36.567,38.028,39.407,40.703,41.903,43.044,44.126,45.132,46.089,46.996,47.847,48.659,49.429,50.151,50.84,51.5,52.126,52.726,53.301,53.851,54.379,54.889,55.375,55.843,56.294,56.726,57.143,57.546,57.933,58.307,58.67,59.019,59.357,59.685,60.005,60.314,60.615,60.904,61.185,61.458,61.722,61.979,62.227,62.468,62.702,62.93],"type":"scatter","xaxis":"x20","yaxis":"y20"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per print\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"line":{"color":"#1a9e6b","width":2},"mode":"lines","name":"K YES + PM NO","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.2446,0.2634,0.2746,0.2847,0.2931,0.2992,0.3046,0.3091,0.3127,0.3161,0.319,0.3216,0.3243,0.3264,0.3286,0.3304,0.3324,0.3338,0.3353,0.3367,0.3379,0.3393,0.3403,0.3413,0.3422,0.3431,0.344,0.3448,0.3456,0.3464,0.3471,0.3478,0.3484,0.349,0.3497,0.3504,0.351,0.3515,0.3521,0.3526,0.353,0.3534,0.3538,0.3543,0.3547,0.3552,0.3556,0.356,0.3564,0.3568,0.3571,0.3575,0.3578,0.3581,0.3586,0.3589,0.3592,0.3595,0.3598,0.3601],"type":"scatter","xaxis":"x24","yaxis":"y24"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per fresh second\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"per fresh second (dashed)","legendrank":14,"line":{"color":"#1a9e6b","dash":"dash","width":1.4},"mode":"lines","name":"per fresh second (dashed)","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.2224,0.2519,0.285,0.3103,0.3307,0.3479,0.3617,0.3737,0.3842,0.393,0.4009,0.4081,0.4144,0.4201,0.4253,0.4298,0.434,0.4378,0.4411,0.4443,0.4471,0.4497,0.4521,0.4543,0.4564,0.4583,0.4602,0.4619,0.4635,0.465,0.4665,0.4678,0.4691,0.4703,0.4714,0.4725,0.4735,0.4744,0.4753,0.4762,0.477,0.4778,0.4786,0.4794,0.4801,0.4808,0.4815,0.4821,0.4828,0.4834,0.484,0.4846,0.4851,0.4856,0.4862,0.4867,0.4872,0.4877,0.4881,0.4886],"type":"scatter","xaxis":"x24","yaxis":"y24"},{"hovertemplate":"F = %{x} s: %{y:.1f}%\u003cextra>pooled\u003c/extra>","legendgroup":"pooled","legendrank":13,"line":{"color":"#7d8791","width":2},"mode":"lines","name":"pooled","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[74.98,75.409,75.826,76.279,76.679,76.996,77.301,77.565,77.798,78.021,78.218,78.402,78.568,78.719,78.861,78.995,79.123,79.231,79.335,79.437,79.519,79.607,79.685,79.755,79.819,79.884,79.944,80.002,80.053,80.104,80.155,80.201,80.24,80.279,80.316,80.35,80.381,80.413,80.442,80.47,80.496,80.522,80.546,80.571,80.592,80.614,80.635,80.654,80.673,80.691,80.706,80.722,80.738,80.752,80.768,80.784,80.797,80.811,80.825,80.837],"type":"scatter","xaxis":"x16","yaxis":"y16"},{"hovertemplate":"F = %{x} s: %{y:.1f}% of clock\u003cextra>pooled\u003c/extra>","legendgroup":"pooled","legendrank":13,"line":{"color":"#7d8791","width":2},"mode":"lines","name":"pooled","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[2.937,6.948,10.892,14.366,17.7,20.823,23.596,26.214,28.655,30.854,32.936,34.904,36.695,38.392,39.998,41.468,42.867,44.195,45.423,46.6,47.723,48.765,49.765,50.72,51.611,52.466,53.285,54.052,54.788,55.496,56.159,56.798,57.414,57.997,58.56,59.106,59.622,60.122,60.607,61.067,61.513,61.946,62.359,62.761,63.153,63.529,63.894,64.251,64.593,64.926,65.25,65.56,65.863,66.158,66.441,66.718,66.987,67.247,67.5,67.746],"type":"scatter","xaxis":"x20","yaxis":"y20"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per print\u003cextra>pooled\u003c/extra>","legendgroup":"pooled","legendrank":13,"line":{"color":"#7d8791","width":2},"mode":"lines","name":"pooled","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.5768,0.5835,0.5914,0.5994,0.607,0.613,0.6186,0.6237,0.6279,0.632,0.6356,0.6388,0.6418,0.6445,0.647,0.6492,0.6514,0.6532,0.6549,0.6565,0.6579,0.6593,0.6606,0.6617,0.6628,0.6638,0.6647,0.6656,0.6665,0.6672,0.668,0.6687,0.6693,0.6699,0.6705,0.671,0.6714,0.6719,0.6723,0.6726,0.673,0.6733,0.6736,0.6739,0.6741,0.6744,0.6747,0.6749,0.6751,0.6753,0.6754,0.6756,0.6758,0.676,0.6762,0.6763,0.6765,0.6766,0.6768,0.6769],"type":"scatter","xaxis":"x24","yaxis":"y24"},{"hovertemplate":"F = %{x} s: %{y:.2f} c per fresh second\u003cextra>pooled\u003c/extra>","legendgroup":"per fresh second (dashed)","legendrank":14,"line":{"color":"#7d8791","dash":"dash","width":1.4},"mode":"lines","name":"per fresh second (dashed)","showlegend":false,"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60],"y":[0.6031,0.5553,0.5475,0.5488,0.552,0.5564,0.5608,0.5652,0.5695,0.5734,0.577,0.5805,0.5835,0.5863,0.589,0.5913,0.5934,0.5954,0.5972,0.5988,0.6004,0.6017,0.603,0.6042,0.6053,0.6063,0.6073,0.6082,0.6091,0.61,0.6107,0.6114,0.6121,0.6127,0.6132,0.6138,0.6143,0.6147,0.6151,0.6155,0.6159,0.6163,0.6166,0.617,0.6173,0.6176,0.6179,0.6181,0.6184,0.6186,0.6189,0.6191,0.6193,0.6195,0.6197,0.62,0.6202,0.6203,0.6205,0.6207],"type":"scatter","xaxis":"x24","yaxis":"y24"}],"layout":{"xaxis":{"anchor":"y","domain":[0.0,0.22],"matches":"x21","showticklabels":false,"range":[0,63]},"yaxis":{"anchor":"x","domain":[0.8708333333333333,1.0],"range":[0,100],"title":{"text":"\u003cb>PM YES + K NO\u003c/b>\u003cbr>clock states (%)"}},"xaxis2":{"anchor":"y2","domain":[0.26,0.48],"matches":"x22","showticklabels":false,"range":[0,63]},"yaxis2":{"anchor":"x2","domain":[0.8708333333333333,1.0],"range":[0,100]},"xaxis3":{"anchor":"y3","domain":[0.52,0.74],"matches":"x23","showticklabels":false,"range":[0,63]},"yaxis3":{"anchor":"x3","domain":[0.8708333333333333,1.0],"range":[0,100]},"xaxis4":{"anchor":"y4","domain":[0.78,1.0],"matches":"x24","showticklabels":false,"range":[0,63]},"yaxis4":{"anchor":"x4","domain":[0.8708333333333333,1.0],"range":[0,100]},"xaxis5":{"anchor":"y5","domain":[0.0,0.22],"matches":"x21","showticklabels":false,"range":[0,63]},"yaxis5":{"anchor":"x5","domain":[0.6966666666666668,0.8258333333333334],"range":[0,100],"title":{"text":"\u003cb>K YES + PM NO\u003c/b>\u003cbr>clock states (%)"}},"xaxis6":{"anchor":"y6","domain":[0.26,0.48],"matches":"x22","showticklabels":false,"range":[0,63]},"yaxis6":{"anchor":"x6","domain":[0.6966666666666668,0.8258333333333334],"range":[0,100]},"xaxis7":{"anchor":"y7","domain":[0.52,0.74],"matches":"x23","showticklabels":false,"range":[0,63]},"yaxis7":{"anchor":"x7","domain":[0.6966666666666668,0.8258333333333334],"range":[0,100]},"xaxis8":{"anchor":"y8","domain":[0.78,1.0],"matches":"x24","showticklabels":false,"range":[0,63]},"yaxis8":{"anchor":"x8","domain":[0.6966666666666668,0.8258333333333334],"range":[0,100]},"xaxis9":{"anchor":"y9","domain":[0.0,0.22],"matches":"x21","showticklabels":false,"range":[0,63]},"yaxis9":{"anchor":"x9","domain":[0.5225000000000001,0.6516666666666667],"range":[0,100],"title":{"text":"\u003cb>Pooled\u003c/b>\u003cbr>clock states (%)"}},"xaxis10":{"anchor":"y10","domain":[0.26,0.48],"matches":"x22","showticklabels":false,"range":[0,63]},"yaxis10":{"anchor":"x10","domain":[0.5225000000000001,0.6516666666666667],"range":[0,100]},"xaxis11":{"anchor":"y11","domain":[0.52,0.74],"matches":"x23","showticklabels":false,"range":[0,63]},"yaxis11":{"anchor":"x11","domain":[0.5225000000000001,0.6516666666666667],"range":[0,100]},"xaxis12":{"anchor":"y12","domain":[0.78,1.0],"matches":"x24","showticklabels":false,"range":[0,63]},"yaxis12":{"anchor":"x12","domain":[0.5225000000000001,0.6516666666666667],"range":[0,100]},"xaxis13":{"anchor":"y13","domain":[0.0,0.22],"matches":"x21","showticklabels":false,"range":[0,63]},"yaxis13":{"anchor":"x13","domain":[0.3483333333333334,0.47750000000000004],"range":[0,100],"title":{"text":"\u003cb>Positive rate\u003c/b>\u003cbr>P(net edge > 0 | fresh obs.)"}},"xaxis14":{"anchor":"y14","domain":[0.26,0.48],"matches":"x22","showticklabels":false,"range":[0,63]},"yaxis14":{"anchor":"x14","domain":[0.3483333333333334,0.47750000000000004],"range":[0,100]},"xaxis15":{"anchor":"y15","domain":[0.52,0.74],"matches":"x23","showticklabels":false,"range":[0,63]},"yaxis15":{"anchor":"x15","domain":[0.3483333333333334,0.47750000000000004],"range":[0,100]},"xaxis16":{"anchor":"y16","domain":[0.78,1.0],"matches":"x24","showticklabels":false,"range":[0,63]},"yaxis16":{"anchor":"x16","domain":[0.3483333333333334,0.47750000000000004],"range":[0,100]},"xaxis17":{"anchor":"y17","domain":[0.0,0.22],"matches":"x21","showticklabels":false,"range":[0,63]},"yaxis17":{"anchor":"x17","domain":[0.1741666666666667,0.30333333333333334],"range":[0,100],"title":{"text":"\u003cb>Positive standing\u003c/b>\u003cbr>positive fresh s / clock s"}},"xaxis18":{"anchor":"y18","domain":[0.26,0.48],"matches":"x22","showticklabels":false,"range":[0,63]},"yaxis18":{"anchor":"x18","domain":[0.1741666666666667,0.30333333333333334],"range":[0,100]},"xaxis19":{"anchor":"y19","domain":[0.52,0.74],"matches":"x23","showticklabels":false,"range":[0,63]},"yaxis19":{"anchor":"x19","domain":[0.1741666666666667,0.30333333333333334],"range":[0,100]},"xaxis20":{"anchor":"y20","domain":[0.78,1.0],"matches":"x24","showticklabels":false,"range":[0,63]},"yaxis20":{"anchor":"x20","domain":[0.1741666666666667,0.30333333333333334],"range":[0,100]},"xaxis21":{"anchor":"y21","domain":[0.0,0.22],"title":{"text":"Freshness F (s)"},"range":[0,63]},"yaxis21":{"anchor":"x21","domain":[0.0,0.12916666666666668],"range":[0,1.4551103020411444],"title":{"text":"\u003cb>Mean net edge\u003c/b>\u003cbr>cents after fees"}},"xaxis22":{"anchor":"y22","domain":[0.26,0.48],"title":{"text":"Freshness F (s)"},"range":[0,63]},"yaxis22":{"anchor":"x22","domain":[0.0,0.12916666666666668],"range":[0,1.4551103020411444]},"xaxis23":{"anchor":"y23","domain":[0.52,0.74],"title":{"text":"Freshness F (s)"},"range":[0,63]},"yaxis23":{"anchor":"x23","domain":[0.0,0.12916666666666668],"range":[0,1.4551103020411444]},"xaxis24":{"anchor":"y24","domain":[0.78,1.0],"title":{"text":"Freshness F (s)"},"range":[0,63]},"yaxis24":{"anchor":"x24","domain":[0.0,0.12916666666666668],"range":[0,1.4551103020411444]},"annotations":[{"font":{"size":12},"showarrow":false,"text":"Premier League 2025/26\u003cbr>In play","x":0.11,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"Champions League 2025/26\u003cbr>In play","x":0.37,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"World Cup 2026\u003cbr>In play","x":0.63,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"World Cup 2026\u003cbr>Last pregame hour","x":0.89,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"}],"margin":{"l":72,"r":24,"t":118,"b":64},"font":{"family":"\"Source Sans 3\", \"Segoe UI\", Helvetica, Arial, sans-serif","size":12},"legend":{"title":{"text":""},"font":{"size":12},"orientation":"h","x":0,"xanchor":"left","y":1.039453717754173,"yanchor":"bottom"},"height":1500,"hovermode":"closest","bargap":0.25,"barmode":"stack","shapes":[{"line":{"color":"#8a929b","width":1},"type":"line","x0":0,"x1":1,"xref":"x21 domain","y0":0,"y1":0,"yref":"y21"},{"line":{"color":"#8a929b","width":1},"type":"line","x0":0,"x1":1,"xref":"x22 domain","y0":0,"y1":0,"yref":"y22"},{"line":{"color":"#8a929b","width":1},"type":"line","x0":0,"x1":1,"xref":"x23 domain","y0":0,"y1":0,"yref":"y23"},{"line":{"color":"#8a929b","width":1},"type":"line","x0":0,"x1":1,"xref":"x24 domain","y0":0,"y1":0,"yref":"y24"}]}}</script>
+<p class="chart-links">
+<a href="data/chart-24-0.csv" download="">Chart data (CSV)</a> · <a href="data/chart-24-0.json" download="">Figure (Plotly JSON)</a>
+</p>
+</div>
+<p>The six rows share the freshness axis:</p>
+<ul>
+<li><strong>Clock states</strong> (rows 1–3): the four states of part 1 section 2.2 for the pair each direction reads, at F = 5, 10, …, 60 s. In the Premier League, <code>PM YES + K NO</code> has both legs fresh on 58.6% of the in-play clock at 60 s and <code>K YES + PM NO</code> on 49.6%; at 10 s the first direction is at 18.9%.</li>
+<li><strong>Positive rate</strong> (row 4): <code>Positive rate = P(maker/maker net reference edge &gt; 0 | fresh print observation)</code>. It is flat in F, and the direction order is stable within each group: <code>PM YES + K NO</code> above <code>K YES + PM NO</code> in the club groups and in the World Cup in play, and by a wide margin in the World Cup’s last hour (86.0% against 62.6% at 10 s).</li>
+<li><strong>Positive standing</strong> (row 5): <code>Positive standing = positive fresh seconds / total clock seconds</code>, the product of “both legs fresh” and “positive given fresh”. It rises with F because the first factor does: in the Premier League, <code>PM YES + K NO</code> stands positive for 15.1% of the clock at 10 s and 47.6% at 60 s; in the World Cup in play, 42.0% already at 5 s and 73.7% at 60 s.</li>
+<li><strong>Mean net edge</strong> (row 6): cents after fees per fresh print (solid) and per fresh second (dashed). Club groups sit around 1 c and the World Cup around 0.6 c in play; the per-second line is slightly higher, meaning positive references last a little longer than negative ones.</li>
+</ul>
+<p>A positive edge here says that the two venues’ resting-side prints overlapped after fees. It says nothing about whether either resting order would have filled, and a resting order that fills is the one on the wrong side of the next move more often than not. That adverse selection is unmeasured here.</p>
+</section>
+<section id="price-level" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="price-level">4. Price level</h2>
+<p>The maker/maker positive share by the YES reference price on the venue holding YES, at each group’s F, outcomes pooled. Each rate is positives divided by all observations <strong>in that bucket</strong>, not the share of positives contributed by the bucket.</p>
+<div class="column-screen-inset-right chart-block">
+<div class="chart-frame"><div id="chart-28-0" class="research-chart" style="height:400px"></div></div>
+<script type="application/json" data-chart="chart-28-0">{"data":[{"customdata":[91522.0,136325.0,129908.0,111828.0,94427.0,99290.0,70852.0,51017.0,40444.0,29556.0],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata:,.0f}\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":true,"x":["0-10c","10-20c","20-30c","30-40c","40-50c","50-60c","60-70c","70-80c","80-90c","90-100c"],"y":[80.69,74.787,73.571,77.951,83.004,84.754,86.129,86.687,87.103,81.036],"type":"bar","xaxis":"x","yaxis":"y"},{"customdata":[53128.0,66157.0,59480.0,47831.0,41072.0,44882.0,37963.0,31192.0,30221.0,31937.0],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata:,.0f}\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":true,"x":["0-10c","10-20c","20-30c","30-40c","40-50c","50-60c","60-70c","70-80c","80-90c","90-100c"],"y":[82.87,80.079,77.034,71.029,62.982,58.93,55.53,58.797,55.736,75.502],"type":"bar","xaxis":"x","yaxis":"y"},{"customdata":[144650.0,202482.0,189388.0,159659.0,135499.0,144172.0,108815.0,82209.0,70665.0,61493.0],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata:,.0f}\u003cextra>Pooled\u003c/extra>","legendgroup":"Pooled","legendrank":13,"marker":{"color":"#7d8791"},"name":"Pooled","showlegend":true,"x":["0-10c","10-20c","20-30c","30-40c","40-50c","50-60c","60-70c","70-80c","80-90c","90-100c"],"y":[81.49,76.516,74.658,75.877,76.935,76.715,75.454,76.105,73.689,78.162],"type":"bar","xaxis":"x","yaxis":"y"},{"customdata":[69242.0,76355.0,85395.0,63469.0,49770.0,40439.0,41489.0,32001.0,20592.0,20111.0],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata:,.0f}\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["0-10c","10-20c","20-30c","30-40c","40-50c","50-60c","60-70c","70-80c","80-90c","90-100c"],"y":[85.08,81.291,76.958,79.384,82.536,76.894,74.866,81.46,83.168,81.761],"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":[36981.0,39034.0,41239.0,30474.0,22154.0,20225.0,22367.0,18942.0,14726.0,23168.0],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata:,.0f}\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["0-10c","10-20c","20-30c","30-40c","40-50c","50-60c","60-70c","70-80c","80-90c","90-100c"],"y":[82.818,77.066,76.811,71.592,65.749,69.686,71.977,66.788,62.746,74.547],"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":[106223.0,115389.0,126634.0,93943.0,71924.0,60664.0,63856.0,50943.0,35318.0,43279.0],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata:,.0f}\u003cextra>Pooled\u003c/extra>","legendgroup":"Pooled","legendrank":13,"marker":{"color":"#7d8791"},"name":"Pooled","showlegend":false,"x":["0-10c","10-20c","20-30c","30-40c","40-50c","50-60c","60-70c","70-80c","80-90c","90-100c"],"y":[84.292,79.862,76.91,76.856,77.365,74.491,73.854,76.005,74.653,77.899],"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":[190449.0,141082.0,179078.0,140786.0,109545.0,68293.0,52691.0,48704.0,53501.0,53915.0],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata:,.0f}\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["0-10c","10-20c","20-30c","30-40c","40-50c","50-60c","60-70c","70-80c","80-90c","90-100c"],"y":[85.904,75.342,70.969,70.919,74.694,75.94,78.214,80.751,82.0,81.755],"type":"bar","xaxis":"x3","yaxis":"y3"},{"customdata":[119682.0,110135.0,134774.0,108183.0,90167.0,55436.0,42312.0,38840.0,45161.0,55463.0],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata:,.0f}\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["0-10c","10-20c","20-30c","30-40c","40-50c","50-60c","60-70c","70-80c","80-90c","90-100c"],"y":[83.41,78.874,76.147,69.416,65.532,56.921,55.315,59.104,69.983,82.635],"type":"bar","xaxis":"x3","yaxis":"y3"},{"customdata":[310131.0,251217.0,313852.0,248969.0,199712.0,123729.0,95003.0,87544.0,98662.0,109378.0],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata:,.0f}\u003cextra>Pooled\u003c/extra>","legendgroup":"Pooled","legendrank":13,"marker":{"color":"#7d8791"},"name":"Pooled","showlegend":false,"x":["0-10c","10-20c","20-30c","30-40c","40-50c","50-60c","60-70c","70-80c","80-90c","90-100c"],"y":[84.942,76.89,73.192,70.266,70.557,67.419,68.016,71.147,76.5,82.201],"type":"bar","xaxis":"x3","yaxis":"y3"},{"customdata":[36208.0,64859.0,77940.0,38619.0,31341.0,54359.0,42087.0,24862.0,17055.0,4443.0],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata:,.0f}\u003cextra>PM YES + K NO\u003c/extra>","legendgroup":"PM YES + K NO","legendrank":11,"marker":{"color":"#2f6fd6"},"name":"PM YES + K NO","showlegend":false,"x":["0-10c","10-20c","20-30c","30-40c","40-50c","50-60c","60-70c","70-80c","80-90c","90-100c"],"y":[93.949,89.856,79.824,76.659,88.986,88.427,91.175,84.502,90.249,45.87],"type":"bar","xaxis":"x4","yaxis":"y4"},{"customdata":[10396.0,28039.0,36166.0,16106.0,18403.0,34309.0,29757.0,14097.0,12795.0,2903.0],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata:,.0f}\u003cextra>K YES + PM NO\u003c/extra>","legendgroup":"K YES + PM NO","legendrank":12,"marker":{"color":"#1a9e6b"},"name":"K YES + PM NO","showlegend":false,"x":["0-10c","10-20c","20-30c","30-40c","40-50c","50-60c","60-70c","70-80c","80-90c","90-100c"],"y":[76.241,78.38,75.604,64.2,32.679,54.376,54.249,61.878,63.681,64.382],"type":"bar","xaxis":"x4","yaxis":"y4"},{"customdata":[46604.0,92898.0,114106.0,54725.0,49744.0,88668.0,71844.0,38959.0,29850.0,7346.0],"hovertemplate":"%{x}: %{y:.1f}% of %{customdata:,.0f}\u003cextra>Pooled\u003c/extra>","legendgroup":"Pooled","legendrank":13,"marker":{"color":"#7d8791"},"name":"Pooled","showlegend":false,"x":["0-10c","10-20c","20-30c","30-40c","40-50c","50-60c","60-70c","70-80c","80-90c","90-100c"],"y":[89.999,86.393,78.487,72.992,68.155,75.251,75.881,76.316,78.861,53.185],"type":"bar","xaxis":"x4","yaxis":"y4"}],"layout":{"xaxis":{"anchor":"y","domain":[0.0,0.22],"title":{"text":"YES reference price"}},"yaxis":{"anchor":"x","domain":[0.0,1.0],"range":[0,100],"title":{"text":"% positive within bucket (maker/maker)"}},"xaxis2":{"anchor":"y2","domain":[0.26,0.48],"title":{"text":"YES reference price"}},"yaxis2":{"anchor":"x2","domain":[0.0,1.0],"matches":"y","showticklabels":false,"range":[0,100]},"xaxis3":{"anchor":"y3","domain":[0.52,0.74],"title":{"text":"YES reference price"}},"yaxis3":{"anchor":"x3","domain":[0.0,1.0],"matches":"y","showticklabels":false,"range":[0,100]},"xaxis4":{"anchor":"y4","domain":[0.78,1.0],"title":{"text":"YES reference price"}},"yaxis4":{"anchor":"x4","domain":[0.0,1.0],"matches":"y","showticklabels":false,"range":[0,100]},"annotations":[{"font":{"size":12},"showarrow":false,"text":"Premier League 2025/26\u003cbr>In play \u00b7 F = 60 s","x":0.11,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"Champions League 2025/26\u003cbr>In play \u00b7 F = 60 s","x":0.37,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"World Cup 2026\u003cbr>In play \u00b7 F = 5 s","x":0.63,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"World Cup 2026\u003cbr>Last pregame hour \u00b7 F = 10 s","x":0.89,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"}],"margin":{"l":72,"r":24,"t":118,"b":64},"font":{"family":"\"Source Sans 3\", \"Segoe UI\", Helvetica, Arial, sans-serif","size":12},"legend":{"title":{"text":""},"font":{"size":12},"orientation":"h","x":0,"xanchor":"left","y":1.238532110091743,"yanchor":"bottom"},"height":400,"hovermode":"closest","bargap":0.25,"barmode":"group"}}</script>
+<p class="chart-links">
+<a href="data/chart-28-0.csv" download="">Chart data (CSV)</a> · <a href="data/chart-28-0.json" download="">Figure (Plotly JSON)</a>
+</p>
+</div>
+<p>The fee curve peaks at 50 c, but the penalty falls on one direction. For <code>K YES + PM NO</code> the positive share is 82.9% below 10 c, 62.5% at 30–70 c and 57.3% at 70–90 c in the Premier League; 82.8%, 69.9% and 65.0% in the Champions League; 83.4%, 63.9% and 65.0% in the World Cup in play. <code>PM YES + K NO</code> never falls below 70.9% in any bucket of the in-play groups: 80.7%, 82.6% and 86.9% in the Premier League, 85.1%, 78.7% and 82.1% in the Champions League, 85.9%, 74.0% and 81.4% in the World Cup in play. The one exception is the World Cup’s last pregame hour, where <code>PM YES + K NO</code> drops to 45.9% for legs priced at 90 c or more.</p>
+<p>Observations behind each bar:</p>
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+Group
+</th>
+<th>
+Direction
+</th>
+<th>
+0-10 c
+</th>
+<th>
+10-20 c
+</th>
+<th>
+20-30 c
+</th>
+<th>
+30-40 c
+</th>
+<th>
+40-50 c
+</th>
+<th>
+50-60 c
+</th>
+<th>
+60-70 c
+</th>
+<th>
+70-80 c
+</th>
+<th>
+80-90 c
+</th>
+<th>
+90-100 c
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Premier League 2025/26 · in play · F = 60 s
+</td>
+<td>
+PM YES + K NO
+</td>
+<td>
+91,522
+</td>
+<td>
+136,325
+</td>
+<td>
+129,908
+</td>
+<td>
+111,828
+</td>
+<td>
+94,427
+</td>
+<td>
+99,290
+</td>
+<td>
+70,852
+</td>
+<td>
+51,017
+</td>
+<td>
+40,444
+</td>
+<td>
+29,556
+</td>
+</tr>
+<tr>
+<td>
+Premier League 2025/26 · in play · F = 60 s
+</td>
+<td>
+K YES + PM NO
+</td>
+<td>
+53,128
+</td>
+<td>
+66,157
+</td>
+<td>
+59,480
+</td>
+<td>
+47,831
+</td>
+<td>
+41,072
+</td>
+<td>
+44,882
+</td>
+<td>
+37,963
+</td>
+<td>
+31,192
+</td>
+<td>
+30,221
+</td>
+<td>
+31,937
+</td>
+</tr>
+<tr>
+<td>
+Champions League 2025/26 · in play · F = 60 s
+</td>
+<td>
+PM YES + K NO
+</td>
+<td>
+69,242
+</td>
+<td>
+76,355
+</td>
+<td>
+85,395
+</td>
+<td>
+63,469
+</td>
+<td>
+49,770
+</td>
+<td>
+40,439
+</td>
+<td>
+41,489
+</td>
+<td>
+32,001
+</td>
+<td>
+20,592
+</td>
+<td>
+20,111
+</td>
+</tr>
+<tr>
+<td>
+Champions League 2025/26 · in play · F = 60 s
+</td>
+<td>
+K YES + PM NO
+</td>
+<td>
+36,981
+</td>
+<td>
+39,034
+</td>
+<td>
+41,239
+</td>
+<td>
+30,474
+</td>
+<td>
+22,154
+</td>
+<td>
+20,225
+</td>
+<td>
+22,367
+</td>
+<td>
+18,942
+</td>
+<td>
+<b>14,726</b>
+</td>
+<td>
+23,168
+</td>
+</tr>
+<tr>
+<td>
+World Cup 2026 · in play · F = 5 s
+</td>
+<td>
+PM YES + K NO
+</td>
+<td>
+190,449
+</td>
+<td>
+141,082
+</td>
+<td>
+179,078
+</td>
+<td>
+140,786
+</td>
+<td>
+109,545
+</td>
+<td>
+68,293
+</td>
+<td>
+52,691
+</td>
+<td>
+48,704
+</td>
+<td>
+53,501
+</td>
+<td>
+53,915
+</td>
+</tr>
+<tr>
+<td>
+World Cup 2026 · in play · F = 5 s
+</td>
+<td>
+K YES + PM NO
+</td>
+<td>
+119,682
+</td>
+<td>
+110,135
+</td>
+<td>
+134,774
+</td>
+<td>
+108,183
+</td>
+<td>
+90,167
+</td>
+<td>
+55,436
+</td>
+<td>
+42,312
+</td>
+<td>
+38,840
+</td>
+<td>
+45,161
+</td>
+<td>
+55,463
+</td>
+</tr>
+<tr>
+<td>
+World Cup 2026 · last pregame hour · F = 10 s
+</td>
+<td>
+PM YES + K NO
+</td>
+<td>
+36,208
+</td>
+<td>
+64,859
+</td>
+<td>
+77,940
+</td>
+<td>
+38,619
+</td>
+<td>
+31,341
+</td>
+<td>
+54,359
+</td>
+<td>
+42,087
+</td>
+<td>
+24,862
+</td>
+<td>
+17,055
+</td>
+<td>
+<b>4,443</b>
+</td>
+</tr>
+<tr>
+<td>
+World Cup 2026 · last pregame hour · F = 10 s
+</td>
+<td>
+K YES + PM NO
+</td>
+<td>
+<b>10,396</b>
+</td>
+<td>
+28,039
+</td>
+<td>
+36,166
+</td>
+<td>
+16,106
+</td>
+<td>
+18,403
+</td>
+<td>
+34,309
+</td>
+<td>
+29,757
+</td>
+<td>
+<b>14,097</b>
+</td>
+<td>
+<b>12,795</b>
+</td>
+<td>
+<b>2,903</b>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Most bars rest on 16,106 to several hundred thousand observations. The cells in bold have fewer than 15,000:</p>
+<ul>
+<li><p>World Cup 2026 · last pregame hour · F = 10 s, K YES + PM NO, 90-100 c (2,903 observations)</p></li>
+<li><p>World Cup 2026 · last pregame hour · F = 10 s, PM YES + K NO, 90-100 c (4,443 observations)</p></li>
+<li><p>World Cup 2026 · last pregame hour · F = 10 s, K YES + PM NO, 0-10 c (10,396 observations)</p></li>
+<li><p>World Cup 2026 · last pregame hour · F = 10 s, K YES + PM NO, 80-90 c (12,795 observations)</p></li>
+<li><p>World Cup 2026 · last pregame hour · F = 10 s, K YES + PM NO, 70-80 c (14,097 observations)</p></li>
+<li><p>Champions League 2025/26 · in play · F = 60 s, K YES + PM NO, 80-90 c (14,726 observations)</p></li>
+</ul>
+<p>Those are the least precise rates on the page; the last-hour exception above is one of them.</p>
+</section>
+<section id="how-often-and-for-how-long" class="level2">
+<h2 class="anchored" data-anchor-id="how-often-and-for-how-long">5. How often, and for how long</h2>
+<p>The frequency of maker/maker positives per group at its F: positive observations per fixture-hour (fixtures × window length as the denominator) and the time-weighted share of the clock during which a fresh, positive reference is standing. The whole-clock share uses six clocks per fixture (three outcomes × two directions); the fresh-clock share counts only seconds with a fresh pair.</p>
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+Group
+</th>
+<th>
+Fixtures
+</th>
+<th>
+Fresh observations
+</th>
+<th>
+Positive per fixture-hour
+</th>
+<th>
+Standing: % of fresh clock
+</th>
+<th>
+Standing: % of whole clock
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Premier League 2025/26 · in play · F = 60 s
+</td>
+<td>
+339
+</td>
+<td>
+1,299,032
+</td>
+<td>
+1,677
+</td>
+<td>
+77.8%
+</td>
+<td>
+42.1%
+</td>
+</tr>
+<tr>
+<td>
+Champions League 2025/26 · in play · F = 60 s
+</td>
+<td>
+189
+</td>
+<td>
+768,173
+</td>
+<td>
+1,808
+</td>
+<td>
+79.0%
+</td>
+<td>
+37.6%
+</td>
+</tr>
+<tr>
+<td>
+World Cup 2026 · in play · F = 5 s
+</td>
+<td>
+104
+</td>
+<td>
+1,838,197
+</td>
+<td>
+7,571
+</td>
+<td>
+75.0%
+</td>
+<td>
+40.7%
+</td>
+</tr>
+<tr>
+<td>
+World Cup 2026 · last pregame hour · F = 10 s
+</td>
+<td>
+104
+</td>
+<td>
+594,744
+</td>
+<td>
+4,462
+</td>
+<td>
+75.8%
+</td>
+<td>
+30.9%
+</td>
+</tr>
+</tbody>
+</table>
+<p>Positives are frequent and spread out rather than concentrated: every fixture in every group shows at least one, and the ten busiest fixtures account for 9.8%–22.0% of the total. A positive resting-side overlap stands for 42.1% of the Premier League in-play clock, 37.6% in the Champions League, 40.7% in the World Cup in play and 30.9% in its last pregame hour, and for 77.8%–79.0% of the seconds in which a fresh pair exists. Several observations can belong to one continuing overlap, so these are not counts of independent trades.</p>
+</section>
+<section id="where-to-look-first" class="level2">
+<h2 class="anchored" data-anchor-id="where-to-look-first">6. Where to look first</h2>
+<p>Parts 1 and 2 read together, as a ranking of what the tape supports most clearly. Every line is a hindsight description of reference prices, not a result.</p>
+<ul>
+<li><strong>Rest on both venues.</strong> Maker/maker is the only route positive on more than half of its observations, in every group, outcome and direction; every route that crosses a book has a negative mean net edge everywhere (section 1).</li>
+<li><strong>Hold YES on Polymarket for team wins.</strong> <code>PM YES + K NO</code> leads <code>K YES + PM NO</code> by 10–30 points in every group (81.3% against 68.2% in the Premier League, 88.7% against 59.0% in the World Cup’s last hour), because Polymarket’s bid side sits furthest below Kalshi’s ask side (part 1 section 4).</li>
+<li><strong>Hold YES on Kalshi for draws.</strong> <code>K YES + PM NO</code> carries the larger mean net edge on draws in every group (+1.40 against +1.08 c in the Premier League, +1.67 against +0.91 c in the Champions League), because on draws the wider cross-venue spread is the other one.</li>
+<li><strong>Put the higher-priced leg on Polymarket’s YES side.</strong> The mid-price fee penalty is <code>K YES + PM NO</code>’s: it falls to 62.5% at 30–70 c in the Premier League while <code>PM YES + K NO</code> holds 82.6% there and 86.9% at 70–90 c (section 4).</li>
+<li><strong>It is not rare.</strong> A positive resting-side overlap stands for 37.6%–42.1% of the in-play clock, in every fixture, with the ten busiest fixtures holding at most 22.0% of positives (section 5).</li>
+<li><strong>Club in play against the World Cup in play is a trade-off, not a ranking.</strong> The club groups carry about twice the mean net edge per observation (+1.17 c against +0.63 c for <code>PM YES + K NO</code>) but need a 60 s cutoff to keep the clock comparable, which is the single-leg exposure of part 1 section 3.3; the World Cup is thinner and near-instant.</li>
+<li><strong>Not known.</strong> Whether either resting leg fills, what one leg alone costs when the other does not, and where the price goes after the observation. Part 3 measures these on the same observations.</li>
+</ul>
+</section>
+<section id="what-is-not-measured" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-not-measured">What is not measured</h2>
+<p>Everything above is a description of the trade tape. It establishes where the two venues’ references overlap after fees, in which direction, at which price, and for how long. It does not establish that any of it could be captured:</p>
+<ul>
+<li>There are no historical order books, so available size and queue position at the reference prices are unknown.</li>
+<li>A maker/maker positive assumes both passive legs fill. The tape does not give the joint fill probability, and the resting leg that fills is exposed to the next move.</li>
+<li>The price after each observation is part 3’s subject. Whether a gap persists, closes toward one venue, or reverses is not examined here, nor are markouts on the resting leg.</li>
+<li>Fees are the venues’ current published schedules applied to historical trades; no rebates or tier discounts are assumed.</li>
+<li>No confidence intervals or fixture-clustered uncertainty are supplied. Comparisons are descriptive for this sample.</li>
+</ul>
+</section>
+<section id="data-methods-and-updates" class="level2">
+<h2 class="anchored" data-anchor-id="data-methods-and-updates">Data, methods and updates</h2>
+<p>This is a dated static snapshot. The page contains <strong>5 interactive charts</strong>, each with its plotted aggregates downloadable as CSV and Plotly JSON, and a <a href="data/manifest.json">snapshot manifest</a> with source hashes and the fixture date range. The <a href="source/02.1_cross_venue_gaps_by_competition.ipynb">source notebook</a> is available without outputs; it requires the local research modules and curated inputs, so on its own it does not recreate the pipeline. The <a href="source/README.md">publication notes</a> describe the build.</p>
+<p>Method notes:</p>
+<ul>
+<li>The sample, fixture linkage, freshness rule and group selection are those of part 1 (1,973 fixtures, four qualifying groups).</li>
+<li>Route observations occur when either route leg prints and the other is fresh. Time weights use the duration until the next print, capped by the remaining freshness allowance.</li>
+<li>Fee scenarios are frozen analysis inputs. Kalshi fees are computed on 100-contract lots with the venue’s rounding.</li>
+<li>The freshness sweep uses the same route series and fee model as the main screen at every integer cutoff from 1 to 300 s.</li>
+<li>The matchup label is the shared fixture label of part 1 section 3.2, joined on the fixture only.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>Zehao Zhou · Historical trade research · Polymarket &amp; Kalshi</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

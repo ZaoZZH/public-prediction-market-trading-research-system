@@ -1,6 +1,6 @@
 {
-  "built_at_utc": "2026-09-22T02:50:46.996994+00:00",
-  "part": "soccer_1x2_gaps_1",
+  "built_at_utc": "2026-09-22T02:50:53.939186+00:00",
+  "part": "soccer_1x2_gaps_2",
   "fixture_count": 1973,
   "first_kickoff": "2025-09-12 18:45:00+00:00",
   "last_kickoff": "2026-08-11 19:00:00+00:00",
@@ -59,59 +59,29 @@
   ],
   "charts": [
     {
-      "id": "chart-03-0",
-      "rows": 10,
-      "notebook_cell": 3
+      "id": "chart-21-0",
+      "rows": 96,
+      "notebook_cell": 21
     },
     {
-      "id": "chart-05-0",
-      "rows": 13500,
-      "notebook_cell": 5
+      "id": "chart-21-1",
+      "rows": 30,
+      "notebook_cell": 21
     },
     {
-      "id": "chart-07-0",
-      "rows": 108,
-      "notebook_cell": 7
+      "id": "chart-22-0",
+      "rows": 1920,
+      "notebook_cell": 22
     },
     {
-      "id": "chart-09-0",
-      "rows": 736,
-      "notebook_cell": 9
+      "id": "chart-24-0",
+      "rows": 720,
+      "notebook_cell": 24
     },
     {
-      "id": "chart-11-0",
-      "rows": 20,
-      "notebook_cell": 11
-    },
-    {
-      "id": "chart-13-0",
-      "rows": 480,
-      "notebook_cell": 13
-    },
-    {
-      "id": "chart-16-0",
-      "rows": 216,
-      "notebook_cell": 16
-    },
-    {
-      "id": "chart-16-1",
-      "rows": 270,
-      "notebook_cell": 16
-    },
-    {
-      "id": "chart-16-2",
-      "rows": 12,
-      "notebook_cell": 16
-    },
-    {
-      "id": "chart-18-0",
-      "rows": 108,
-      "notebook_cell": 18
-    },
-    {
-      "id": "chart-18-1",
-      "rows": 135,
-      "notebook_cell": 18
+      "id": "chart-28-0",
+      "rows": 120,
+      "notebook_cell": 28
     }
   ],
   "note": "Trade-reference research. Public data contain chart aggregates only. Raw inputs remain local."

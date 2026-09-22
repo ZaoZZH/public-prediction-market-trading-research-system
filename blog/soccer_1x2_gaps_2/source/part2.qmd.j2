@@ -1,0 +1,160 @@
+---
+title: "What survives fees"
+subtitle: "Kalshi vs Polymarket in soccer 1X2 markets, part 2 of 3: which way of pairing the two tapes, taking or resting on each venue, leaves anything after both fee curves; how that changes with freshness and price; and how often it stands."
+author: "Zehao Zhou"
+date: "{{ date }}"
+description: "Part 2 of a trade-tape study of soccer 1X2 markets on Kalshi and Polymarket: fee-adjusted route screens on last-trade references, direction by outcome and matchup, the freshness sweep, price levels, frequency, and where to look first."
+---
+
+[Part 1](../soccer_1x2_gaps_1/index.html) established where the two tapes can be compared and how far apart their last trades print: Polymarket prints below Kalshi except on draws, the sign follows the taker side each print came from, and the size of the gap does not depend on the freshness cutoff. This part asks what is left once each print is given a role and charged its venue's fee: which pairing of the two tapes screens positive, in which direction, at which price, and for how much of the clock. Part 3 will ask what the prices did next.
+
+Like part 1, this is a backward look. Each observation compares two prints that had already happened; a positive number here is a property of reference prices, not a fill.
+
+## Summary
+
+::: {.summary-list}
+
+1. **Crossing both venues never pays; resting on both usually does.** Taker/taker is positive on at most {{ k.route_range.taker_taker.hi }} of observations in any group, with a mean net result of {{ k.screen.tt_pl_all_1_net }} c per contract pair in the Premier League. Maker/maker is positive on {{ k.route_range.maker_maker.lo }}–{{ k.route_range.maker_maker.hi }} with a mean net edge of {{ k.route_range.maker_maker.net_lo }} to {{ k.route_range.maker_maker.net_hi }} c. Seen after the fact, the two venues' resting-side references overlap after fees on most observations: there is spread-capture room in the reference prices. Both resting legs have to fill, and the tape does not say how often they would.
+
+2. **Which venue holds YES depends on the outcome.** Team wins: YES on Polymarket, NO on Kalshi ({{ k.screen.mm_pl_team_1 }} against {{ k.screen.mm_pl_team_2 }} positive in the Premier League). Draws: the reverse (mean net edge {{ k.screen.mm_pl_draw_2_net }} against {{ k.screen.mm_pl_draw_1_net }} c).
+
+3. **The freshness cutoff hardly moves any rate.** Maker/maker in the Premier League is positive on {{ k.sweep.maker_maker_pl_1 }} of observations at F = 1 s and {{ k.sweep.maker_maker_pl_300 }} at 300 s; the taker routes move by about a point.
+
+4. **The mid-price fee penalty falls on one direction.** With YES on Kalshi, the positive share drops from {{ k.price.pl_2_low }} below 10 c to {{ k.price.pl_2_mid }} at 30–70 c in the Premier League; with YES on Polymarket it stays at {{ k.price.pl_1_mid }} in the same bucket.
+
+5. **A positive resting-side overlap is standing for much of the match.** {{ k.freq.pl_clock }} of the Premier League in-play clock, {{ k.freq.wc_clock }} of the World Cup's, in {{ k.freq.all_have }} fixture; the ten busiest fixtures hold {{ k.freq.top10_min }}–{{ k.freq.top10_max }} of the total.
+
+:::
+
+## Definitions added in this part
+
+The vocabulary of part 1 carries over: a print is one venue's fills within one second on one outcome and one taker side; a pair is fresh when both venues' latest prints are at most F seconds old; an observation is a print on either leg while the other leg is fresh. Two additions:
+
+| Term | Meaning here |
+| --- | --- |
+| Route | A direction (which venue holds YES: `PM YES + K NO` or `K YES + PM NO`) and a role for each leg: a **taker** crosses, a **maker** rests. Route names give the Polymarket role first, then the Kalshi role. A taker leg is priced from the print on the side it would hit; a resting leg from the print on the side that would fill it, so a taker-sell print is the reference for a resting bid. |
+| Reference net edge | `1 − Polymarket cost − Kalshi cost − fees` per contract pair, both legs priced from their latest prints at an observation. Positive means the two references overlapped after fees. It does not mean either leg would have filled. |
+
+Each route reads one of part 1's taker-action pairs, one print per venue:
+
+| Route (PM role / Kalshi role) | `PM YES + K NO` reads | `K YES + PM NO` reads |
+| --- | --- | --- |
+| taker/taker | PM buy / K sell | PM sell / K buy |
+| taker/maker | PM buy / K buy | PM sell / K sell |
+| maker/taker | PM sell / K sell | PM buy / K buy |
+| maker/maker | PM sell / K buy | PM buy / K sell |
+
+The gross edge before fees is that pair's signed gap from part 1, read in the route's favour: Kalshi minus Polymarket for `PM YES + K NO`, Polymarket minus Kalshi for `K YES + PM NO`. The maker/maker pairs are the cross-side ones, so what that route reads is the cross-venue bid–ask spread.
+
+### Fees
+
+Neither venue charges a flat fee. Both charge `rate × p × (1 − p)` per contract, largest at 50 c and zero at the extremes, where p is the price of the leg being bought (a NO leg pays on 1 − p; the curve is symmetric). Rates are the venues' published schedules, not historical billing, and no rebates are assumed:
+
+{{ rates }}
+
+Two taker fees at 50 c cost {{ k.fee_round_trip }} c per contract pair, against a mean absolute gap of {{ k.gap.pl.abs }}–{{ k.gap.ucl.abs }} c in the club groups (part 1). A maker/maker pair pays {{ k.fee_mm }} c.
+
+## 1. What survives fees
+
+At every route-leg print with the other leg fresh, both legs are priced from their latest prints and the fee model is subtracted, at each group's cutoff from part 1 (60 s for the club groups, 5 s for the World Cup in play, 10 s for its last pregame hour).
+
+{{ chart('21:0') }}
+
+Bars show the share of fresh observations whose reference net edge is above zero. **The remainder, 100% minus the bar, is at or below zero.** For the three routes with a taker leg, that is the large majority in every group, outcome and direction: taker/taker is positive on {{ k.screen.tt_pl_all_1 }} of Premier League in-play observations for `PM YES + K NO` and {{ k.screen.tt_pl_all_2 }} for `K YES + PM NO`, with a mean net result of {{ k.screen.tt_pl_all_1_net }} c; in the World Cup in play {{ k.screen.tt_wc_all_1 }} and {{ k.screen.tt_wc_all_1_net }} c; in its last pregame hour {{ k.screen.tt_wcpre_all_1 }}. The one-taker routes are positive on {{ k.route_range.taker_maker.lo }}–{{ k.route_range.taker_maker.hi }} (taker/maker) and {{ k.route_range.maker_taker.lo }}–{{ k.route_range.maker_taker.hi }} (maker/taker) of observations, and their mean net edge is negative in every cell ({{ k.route_range.taker_maker.net_lo }} to {{ k.route_range.taker_maker.net_hi }} c and {{ k.route_range.maker_taker.net_lo }} to {{ k.route_range.maker_taker.net_hi }} c). After the fee curve, any route that crosses a book loses money on most last-trade observations.
+
+Maker/maker is the only route positive on more than half of its observations: {{ k.screen.mm_pl_all_1 }} (`PM YES + K NO`) and {{ k.screen.mm_pl_all_2 }} (`K YES + PM NO`) in the Premier League, {{ k.screen.mm_ucl_all_1 }} and {{ k.screen.mm_ucl_all_2 }} in the Champions League, {{ k.screen.mm_wc_all_1 }} and {{ k.screen.mm_wc_all_2 }} in the World Cup in play, {{ k.screen.mm_wcpre_all_1 }} and {{ k.screen.mm_wcpre_all_2 }} in its last pregame hour, with a mean net edge of {{ k.screen.mm_pl_all_1_net }} c and {{ k.screen.mm_pl_all_2_net }} c in the Premier League and {{ k.screen.mm_wc_all_1_net }} c and {{ k.screen.mm_wc_all_2_net }} c in the World Cup in play. What this route reads is the cross-venue bid–ask spread of part 1 section 4: a bid-side print on one venue against an ask-side print on the other, which sat 1–1.5 c apart in the club groups. Seen after the fact, those two resting-side references overlap after fees on most observations. It has the shape of a cross-venue market-making position, not an arbitrage: both resting orders have to fill, and the tape does not say how often they would.
+
+Within maker/maker, the direction follows the outcome. For team wins, `PM YES + K NO` is ahead in every group: {{ k.screen.mm_pl_team_1 }} against {{ k.screen.mm_pl_team_2 }} in the Premier League, {{ k.screen.mm_ucl_team_1 }} against {{ k.screen.mm_ucl_team_2 }} in the Champions League, {{ k.screen.mm_wc_team_1 }} against {{ k.screen.mm_wc_team_2 }} in the World Cup in play and {{ k.screen.mm_wcpre_team_1 }} against {{ k.screen.mm_wcpre_team_2 }} in its last hour. For draws, `K YES + PM NO` carries the larger mean net edge in every group ({{ k.screen.mm_pl_draw_2_net }} against {{ k.screen.mm_pl_draw_1_net }} c in the Premier League, {{ k.screen.mm_ucl_draw_2_net }} against {{ k.screen.mm_ucl_draw_1_net }} c in the Champions League, {{ k.screen.mm_wc_draw_2_net }} against {{ k.screen.mm_wc_draw_1_net }} c in the World Cup in play) and the higher positive share in three of them ({{ k.screen.mm_ucl_draw_2 }} against {{ k.screen.mm_ucl_draw_1 }}, {{ k.screen.mm_wc_draw_2 }} against {{ k.screen.mm_wc_draw_1 }}, {{ k.screen.mm_wcpre_draw_2 }} against {{ k.screen.mm_wcpre_draw_1 }}); the Premier League is level ({{ k.screen.mm_pl_draw_2 }} against {{ k.screen.mm_pl_draw_1 }}). Part 1 section 4 is the reason: for team wins the wider cross-venue spread is Polymarket's bid side against Kalshi's ask side, which `PM YES + K NO` reads; on draws the wider one is the other.
+
+### By matchup class and team role
+
+{{ chart('21:1') }}
+
+Maker/maker by the pregame fixture label of part 1 section 3.2, in-play groups only. The direction result holds in every class: `PM YES + K NO` is ahead on both team-win rows of every group, `K YES + PM NO` on both draw rows. The favourite is not a clearer cell after fees. Its larger gross gap (part 1 section 4) does carry into the mean net edge of `PM YES + K NO`: {{ k.role.pl_strong_1_net }} c on the strong side against {{ k.role.pl_weak_1_net }} c on the weak side in the Premier League, {{ k.role.ucl_strong_1_net }} against {{ k.role.ucl_weak_1_net }} c in the Champions League and {{ k.role.wc_strong_1_net }} against {{ k.role.wc_weak_1_net }} c in the World Cup. It does not carry into the positive share: {{ k.role.pl_strong_1 }} against {{ k.role.pl_weak_1 }} in the Premier League, but {{ k.role.ucl_strong_1 }} against {{ k.role.ucl_weak_1 }} in the Champions League and {{ k.role.wc_strong_1 }} against {{ k.role.wc_weak_1 }} in the World Cup. The favourite's extra edge sits in the tail of wide gaps, not in how often the two references overlap.
+
+## 2. Across the freshness cutoff
+
+The same screen at every cutoff from 1 to {{ sweep_max }} s (the export runs to 300 s; the curves are flat long before). The dotted line marks each group's F.
+
+{{ chart('22:0') }}
+
+The curves are almost flat. In the Premier League, maker/maker is positive on {{ k.sweep.maker_maker_pl_1 }} of observations at F = 1 s, {{ k.sweep.maker_maker_pl_10 }} at 10 s, {{ k.sweep.maker_maker_pl_60 }} at 60 s, {{ k.sweep.maker_maker_pl_120 }} at 120 s and {{ k.sweep.maker_maker_pl_300 }} at 300 s; taker/taker moves from {{ k.sweep.taker_taker_pl_1 }} to {{ k.sweep.taker_taker_pl_300 }}, taker/maker from {{ k.sweep.taker_maker_pl_1 }} to {{ k.sweep.taker_maker_pl_300 }}, and maker/taker from {{ k.sweep.maker_taker_pl_1 }} to {{ k.sweep.maker_taker_pl_300 }}. This is the fee-adjusted version of part 1 section 3.3: the cutoff decides how much of the clock is compared, not what the comparison finds.
+
+The slow rise of maker/maker with F, about three points from 1 s to 300 s, has one plausible reading that is not tested here: a looser cutoff admits quieter stretches, in which each venue's own resting-side prices sit further apart, so two resting references overlap more often. Whatever its cause, a looser cutoff admits staler references without visibly changing the rate, which is a reason to keep F tight when the result is used.
+
+## 3. Resting on both venues: direction and freshness
+
+Because F is swept here, each column is a competition × window and the selected cutoff plays no role. Each direction of maker/maker reads one taker-action pair: `PM YES + K NO` prices Polymarket's resting YES bid from the Polymarket sell print and Kalshi's resting NO bid from the Kalshi buy print (`PM sell / K buy`); `K YES + PM NO` reads `PM buy / K sell`; pooled sums both directions and uses the venue-level pair for the clock states.
+
+{{ chart('24:0') }}
+
+The six rows share the freshness axis:
+
+- **Clock states** (rows 1–3): the four states of part 1 section 2.2 for the pair each direction reads, at F = 5, 10, …, 60 s. In the Premier League, `PM YES + K NO` has both legs fresh on {{ k.mm.pl_both_1_60 }} of the in-play clock at 60 s and `K YES + PM NO` on {{ k.mm.pl_both_2_60 }}; at 10 s the first direction is at {{ k.mm.pl_both_1_10 }}.
+- **Positive rate** (row 4): `Positive rate = P(maker/maker net reference edge > 0 | fresh print observation)`. It is flat in F, and the direction order is stable within each group: `PM YES + K NO` above `K YES + PM NO` in the club groups and in the World Cup in play, and by a wide margin in the World Cup's last hour ({{ k.mm.wcpre_pos_1_10 }} against {{ k.mm.wcpre_pos_2_10 }} at 10 s).
+- **Positive standing** (row 5): `Positive standing = positive fresh seconds / total clock seconds`, the product of "both legs fresh" and "positive given fresh". It rises with F because the first factor does: in the Premier League, `PM YES + K NO` stands positive for {{ k.mm.pl_open_1_10 }} of the clock at 10 s and {{ k.mm.pl_open_1_60 }} at 60 s; in the World Cup in play, {{ k.mm.wc_open_1_5 }} already at 5 s and {{ k.mm.wc_open_1_60 }} at 60 s.
+- **Mean net edge** (row 6): cents after fees per fresh print (solid) and per fresh second (dashed). Club groups sit around 1 c and the World Cup around 0.6 c in play; the per-second line is slightly higher, meaning positive references last a little longer than negative ones.
+
+A positive edge here says that the two venues' resting-side prints overlapped after fees. It says nothing about whether either resting order would have filled, and a resting order that fills is the one on the wrong side of the next move more often than not. That adverse selection is unmeasured here.
+
+## 4. Price level
+
+The maker/maker positive share by the YES reference price on the venue holding YES, at each group's F, outcomes pooled. Each rate is positives divided by all observations **in that bucket**, not the share of positives contributed by the bucket.
+
+{{ chart('28:0') }}
+
+The fee curve peaks at 50 c, but the penalty falls on one direction. For `K YES + PM NO` the positive share is {{ k.price.pl_2_low }} below 10 c, {{ k.price.pl_2_mid }} at 30–70 c and {{ k.price.pl_2_high }} at 70–90 c in the Premier League; {{ k.price.ucl_2_low }}, {{ k.price.ucl_2_mid }} and {{ k.price.ucl_2_high }} in the Champions League; {{ k.price.wc_2_low }}, {{ k.price.wc_2_mid }} and {{ k.price.wc_2_high }} in the World Cup in play. `PM YES + K NO` never falls below {{ k.price.d1_inplay_min }} in any bucket of the in-play groups: {{ k.price.pl_1_low }}, {{ k.price.pl_1_mid }} and {{ k.price.pl_1_high }} in the Premier League, {{ k.price.ucl_1_low }}, {{ k.price.ucl_1_mid }} and {{ k.price.ucl_1_high }} in the Champions League, {{ k.price.wc_1_low }}, {{ k.price.wc_1_mid }} and {{ k.price.wc_1_high }} in the World Cup in play. The one exception is the World Cup's last pregame hour, where `PM YES + K NO` drops to {{ k.price.wcpre_1_top }} for legs priced at 90 c or more.
+
+Observations behind each bar:
+
+{{ price_counts }}
+
+Most bars rest on {{ k.bucket_n_min_large }} to several hundred thousand observations. The cells in bold have fewer than {{ k.small_n }}:
+
+{% for b in k.small_buckets %}
+- {{ b }}
+{% endfor %}
+
+Those are the least precise rates on the page; the last-hour exception above is one of them.
+
+## 5. How often, and for how long
+
+The frequency of maker/maker positives per group at its F: positive observations per fixture-hour (fixtures × window length as the denominator) and the time-weighted share of the clock during which a fresh, positive reference is standing. The whole-clock share uses six clocks per fixture (three outcomes × two directions); the fresh-clock share counts only seconds with a fresh pair.
+
+{{ frequency }}
+
+Positives are frequent and spread out rather than concentrated: {{ k.freq.all_have }} fixture in every group shows at least one, and the ten busiest fixtures account for {{ k.freq.top10_min }}–{{ k.freq.top10_max }} of the total. A positive resting-side overlap stands for {{ k.freq.pl_clock }} of the Premier League in-play clock, {{ k.freq.ucl_clock }} in the Champions League, {{ k.freq.wc_clock }} in the World Cup in play and {{ k.freq.wcpre_clock }} in its last pregame hour, and for {{ k.freq.pl_fresh }}–{{ k.freq.ucl_fresh }} of the seconds in which a fresh pair exists. Several observations can belong to one continuing overlap, so these are not counts of independent trades.
+
+## 6. Where to look first
+
+Parts 1 and 2 read together, as a ranking of what the tape supports most clearly. Every line is a hindsight description of reference prices, not a result.
+
+- **Rest on both venues.** Maker/maker is the only route positive on more than half of its observations, in every group, outcome and direction; every route that crosses a book has a negative mean net edge everywhere (section 1).
+- **Hold YES on Polymarket for team wins.** `PM YES + K NO` leads `K YES + PM NO` by 10–30 points in every group ({{ k.screen.mm_pl_team_1 }} against {{ k.screen.mm_pl_team_2 }} in the Premier League, {{ k.screen.mm_wcpre_team_1 }} against {{ k.screen.mm_wcpre_team_2 }} in the World Cup's last hour), because Polymarket's bid side sits furthest below Kalshi's ask side (part 1 section 4).
+- **Hold YES on Kalshi for draws.** `K YES + PM NO` carries the larger mean net edge on draws in every group ({{ k.screen.mm_pl_draw_2_net }} against {{ k.screen.mm_pl_draw_1_net }} c in the Premier League, {{ k.screen.mm_ucl_draw_2_net }} against {{ k.screen.mm_ucl_draw_1_net }} c in the Champions League), because on draws the wider cross-venue spread is the other one.
+- **Put the higher-priced leg on Polymarket's YES side.** The mid-price fee penalty is `K YES + PM NO`'s: it falls to {{ k.price.pl_2_mid }} at 30–70 c in the Premier League while `PM YES + K NO` holds {{ k.price.pl_1_mid }} there and {{ k.price.pl_1_high }} at 70–90 c (section 4).
+- **It is not rare.** A positive resting-side overlap stands for {{ k.freq.inplay_clock_lo }}–{{ k.freq.inplay_clock_hi }} of the in-play clock, in {{ k.freq.all_have }} fixture, with the ten busiest fixtures holding at most {{ k.freq.top10_max }} of positives (section 5).
+- **Club in play against the World Cup in play is a trade-off, not a ranking.** The club groups carry about twice the mean net edge per observation ({{ k.screen.mm_pl_all_1_net }} c against {{ k.screen.mm_wc_all_1_net }} c for `PM YES + K NO`) but need a 60 s cutoff to keep the clock comparable, which is the single-leg exposure of part 1 section 3.3; the World Cup is thinner and near-instant.
+- **Not known.** Whether either resting leg fills, what one leg alone costs when the other does not, and where the price goes after the observation. Part 3 measures these on the same observations.
+
+## What is not measured
+
+Everything above is a description of the trade tape. It establishes where the two venues' references overlap after fees, in which direction, at which price, and for how long. It does not establish that any of it could be captured:
+
+- There are no historical order books, so available size and queue position at the reference prices are unknown.
+- A maker/maker positive assumes both passive legs fill. The tape does not give the joint fill probability, and the resting leg that fills is exposed to the next move.
+- The price after each observation is part 3's subject. Whether a gap persists, closes toward one venue, or reverses is not examined here, nor are markouts on the resting leg.
+- Fees are the venues' current published schedules applied to historical trades; no rebates or tier discounts are assumed.
+- No confidence intervals or fixture-clustered uncertainty are supplied. Comparisons are descriptive for this sample.
+
+## Data, methods and updates
+
+This is a dated static snapshot. The page contains **{{ chart_count }} interactive charts**, each with its plotted aggregates downloadable as CSV and Plotly JSON, and a [snapshot manifest](data/manifest.json) with source hashes and the fixture date range. The [source notebook](source/02.1_cross_venue_gaps_by_competition.ipynb) is available without outputs; it requires the local research modules and curated inputs, so on its own it does not recreate the pipeline. The [publication notes](source/README.md) describe the build.
+
+Method notes:
+
+- The sample, fixture linkage, freshness rule and group selection are those of part 1 ({{ fixtures }} fixtures, four qualifying groups).
+- Route observations occur when either route leg prints and the other is fresh. Time weights use the duration until the next print, capped by the remaining freshness allowance.
+- Fee scenarios are frozen analysis inputs. Kalshi fees are computed on 100-contract lots with the venue's rounding.
+- The freshness sweep uses the same route series and fee model as the main screen at every integer cutoff from 1 to 300 s.
+- The matchup label is the shared fixture label of part 1 section 3.2, joined on the fixture only.
