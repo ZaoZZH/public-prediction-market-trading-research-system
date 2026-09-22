@@ -86,9 +86,23 @@ li { margin: 16px 0; }
 .posts a:hover { text-decoration: underline; }
 .posts .note { display: block; margin-top: 6px; line-height: 1.5; }
 
+.about h1 { margin-bottom: 20px; }
+.contact-links, .personal-links { display: flex; flex-wrap: wrap; gap: 24px; font-size: .9rem; }
+.contact-links a, .personal-links a { text-decoration: none; }
+.contact-links a:hover, .personal-links a:hover { text-decoration: underline; }
+.about section { margin-top: 48px; }
+.about h2 { font-size: 1.25rem; font-weight: 600; color: var(--heading); margin: 0 0 8px; }
+.resume-list { list-style: none; padding: 0; margin: 0; }
+.resume-list li { display: grid; grid-template-columns: 12rem minmax(0, 1fr); gap: 24px; padding: 20px 0; margin: 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
+.resume-date { color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
+.resume-list h3 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--heading); }
+.resume-list p { margin: 4px 0 0; color: var(--muted); font-size: .92rem; }
+.personal-links { margin-top: 40px; }
+
 @media (max-width: 640px) {
   :root { font-size: 16px; }
   main { margin: 40px auto; }
   .desktop-break { display: none; }
   .posts li { grid-template-columns: 5.5rem minmax(0, 1fr); gap: 12px; }
+  .resume-list li { grid-template-columns: 1fr; gap: 6px; }
 }
