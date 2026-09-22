@@ -12,7 +12,7 @@
     const href = path => new URL(path, root).href;
     const header = document.createElement('header');
     header.className = 'site-bar';
-    header.innerHTML = `<button class="menu-trigger" aria-label="Open menu" aria-controls="site-menu" aria-expanded="false">☰</button><a class="site-wordmark" href="${href('index.html')}">Gerald<span> / Prediction markets</span></a>${home ? '<button class="theme-switch" role="switch" aria-checked="false" aria-label="Dark mode"><span>Dark mode</span><i aria-hidden="true"></i></button>' : ''}`;
+    header.innerHTML = `<button class="menu-trigger" aria-label="Open menu" aria-controls="site-menu" aria-expanded="false">☰</button><a class="site-wordmark" href="${href('index.html')}">Gerald's Prediction Market<br>Trading Research &amp; System</a>${home ? '<button class="theme-switch" role="switch" aria-checked="false" aria-label="Dark mode"><span>Dark mode</span><i aria-hidden="true"></i></button>' : ''}`;
     const drawer = document.createElement('dialog');
     drawer.id = 'site-menu';
     drawer.className = 'site-drawer';
