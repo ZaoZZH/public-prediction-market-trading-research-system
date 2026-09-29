@@ -1,4 +1,9 @@
-"""Execute notebook 02.1 locally once and render each published part of the series as its own Quarto/Plotly snapshot."""
+"""Execute notebooks 02.1 (parts 1-2) and 02.2.1 (part 3) locally once each and render each published part
+of the series as its own Quarto/Plotly snapshot.
+
+    python public/blog/soccer_1x2_gaps/build.py [--parts soccer_1x2_gaps_3 ...]
+"""
+import argparse
 from contextlib import redirect_stdout
 from datetime import datetime, timezone
 import hashlib
@@ -20,23 +25,39 @@ from jinja2 import Environment, StrictUndefined
 from plotly.offline import get_plotlyjs
 
 from charts import F_ROBUST, F_SWEEP_MAX, FONT, cell_label, competition, price_levels, readable, views
+import part3
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 ANALYSIS = ROOT / 'research/soccer_1x2_analysis'
 OUT = ANALYSIS / 'outputs/gap_analysis'
 BUILD = HERE / '.build'
-NOTEBOOK = ANALYSIS / 'notebooks/02.1_cross_venue_gaps_by_competition.ipynb'
-INPUTS = ['availability.csv', 'trade_waits.parquet', 'gap_cents.csv', 'screen_sweep.csv', 'market_type_share.csv', 'matches.parquet',
-          'audit.parquet', 'screen.parquet', 'conditions.parquet', 'manifest.json']
-# A changed notebook needs review of the presentation mapping before publication.
-EXPECTED = {3: 'cov = m.merge', 5: 'PH5 =', 7: 'STATE_COLS =', 9: 'SCREEN_GRID =', 11: 'PURE =', 13: 'wait4 =',
-            16: 'OUTCOME_SEL =', 18: 'ORDER =', 20: 'fee_p =', 21: 'scr = export', 22: '# Last-print positive',
-            24: 'MM_DIRS =', 26: 'cd = export', 28: 'plot_price_conditions()', 30: 'ph = screen_rates'}
-NOTEBOOK_PLOTS = {3: 1, 5: 1, 7: 3, 9: 1, 11: 1, 13: 1, 16: 2, 18: 2, 21: 1, 22: 1, 24: 1, 28: 1, 30: 1}   # 16/18: outcome split, then matchup x role split
-# Published parts: hosted directory name -> narrative template and the notebook cells whose views it shows.
-PARTS = {'soccer_1x2_gaps_1': {'template': 'part1.qmd.j2', 'cells': [3, 5, 7, 9, 11, 13, 16, 18]},
-         'soccer_1x2_gaps_2': {'template': 'part2.qmd.j2', 'cells': [21, 22, 24, 28]}}
+# Each notebook: its inputs, and the cell layout / plot count the presentation mapping was written against.
+# A changed notebook needs review of that mapping before publication.
+NOTEBOOKS = {
+    '02.1': dict(path=ANALYSIS / 'notebooks/02.1_cross_venue_gaps_by_competition.ipynb', n_cells=32,
+                 inputs=['availability.csv', 'trade_waits.parquet', 'gap_cents.csv', 'screen_sweep.csv', 'market_type_share.csv', 'matches.parquet',
+                         'audit.parquet', 'screen.parquet', 'conditions.parquet', 'manifest.json'],
+                 expected={3: 'cov = m.merge', 5: 'PH5 =', 7: 'STATE_COLS =', 9: 'SCREEN_GRID =', 11: 'PURE =', 13: 'wait4 =',
+                           16: 'OUTCOME_SEL =', 18: 'ORDER =', 20: 'fee_p =', 21: 'scr = export', 22: '# Last-print positive',
+                           24: 'MM_DIRS =', 26: 'cd = export', 28: 'plot_price_conditions()', 30: 'ph = screen_rates'},
+                 plots={3: 1, 5: 1, 7: 3, 9: 1, 11: 1, 13: 1, 16: 2, 18: 2, 21: 1, 22: 1, 24: 1, 28: 1, 30: 1},   # 16/18: outcome, then matchup x role
+                 sources=['charts.py']),
+    '02.2.1': dict(path=ANALYSIS / 'notebooks/02.2.1_maker_maker.ipynb', n_cells=27,
+                   inputs=['conditions.parquet', 'matches.parquet', 'gap_cents.csv', 'gap_cents_price.csv', 'fused_spread.csv', 'pm_vs_cross.csv',
+                           'hy_lead_lag.parquet', 'leg_waits.parquet', 'mm_sim_summary.parquet', 'mm_sim_fills.parquet',
+                           'mm_sim_pairs.parquet', 'mm_sim_grid.csv'],
+                   expected={1: 'from pathlib import Path', 3: 'COLS =', 6: 'cents = pd.read_csv', 9: 'gp = pd.read_csv',
+                             12: 'from matplotlib.patches', 15: 'pc = pd.read_csv', 18: 'hy = pd.read_parquet', 21: 'lw = pd.read_parquet',
+                             24: 'sim = pd.read_parquet'},
+                   plots={3: 3, 6: 1, 9: 3, 12: 3, 15: 2, 18: 2, 21: 2, 24: 3},
+                   sources=['charts.py', 'part3.py']),
+}
+# Published parts: hosted directory -> notebook, narrative template, the cells whose views it shows, and a fixed
+# page date (a rebuild must not re-date a published part).
+PARTS = {'soccer_1x2_gaps_1': {'notebook': '02.1', 'template': 'part1.qmd.j2', 'cells': [3, 5, 7, 9, 11, 13, 16, 18], 'date': '2026-09-22'},
+         'soccer_1x2_gaps_2': {'notebook': '02.1', 'template': 'part2.qmd.j2', 'cells': [21, 22, 24, 28], 'date': '2026-09-22'},
+         'soccer_1x2_gaps_3': {'notebook': '02.2.1', 'template': 'part3.qmd.j2', 'cells': [3, 6, 9, 12, 15, 18, 21, 24], 'date': '2026-09-29'}}
 D1, D2 = 'PM YES + K NO', 'K YES + PM NO'
 SMALL_BUCKET = 15_000   # price-level bars with fewer maker/maker observations are named in the text as the least precise
 PL, UCL, WC = 'Premier League 2025/26', 'UEFA Champions League 2025/26', 'World Cup 2026/27'
@@ -72,10 +93,11 @@ def plain(obj):
     return obj
 
 
-def run_notebook(nb):
-    """Execute the code cells in one namespace; count the notebook's own plots to catch mapping drift."""
-    state = {'__name__': '__publication__', '__file__': str(NOTEBOOK)}
-    shown, current, tables = [], [0], {}
+def run_notebook(nb, path, plots):
+    """Execute the code cells in one namespace; count the notebook's own plots to catch mapping drift.
+    Returns the final namespace and a shallow copy of it after every code cell (later cells reuse names)."""
+    state = {'__name__': '__publication__', '__file__': str(path)}
+    shown, current, tables, snaps = [], [0], {}, {}
 
     def capture_display(value):
         if not isinstance(value, (pd.DataFrame, pd.Series)):
@@ -92,13 +114,14 @@ def run_notebook(nb):
             current[0] = i
             source = cell.source.replace('from IPython.display import display', 'display = publication_display')
             with redirect_stdout(io.StringIO()):
-                exec(compile(source, f'{NOTEBOOK.name}:cell-{i}', 'exec'), state)
-            if shown.count(i) != NOTEBOOK_PLOTS.get(i, 0):
-                raise ValueError(f'Cell {i}: {shown.count(i)} notebook plots, expected {NOTEBOOK_PLOTS.get(i, 0)}')
+                exec(compile(source, f'{path.name}:cell-{i}', 'exec'), state)
+            if shown.count(i) != plots.get(i, 0):
+                raise ValueError(f'{path.name} cell {i}: {shown.count(i)} notebook plots, expected {plots.get(i, 0)}')
             plt.close('all')
+            snaps[i] = dict(state)
     finally:
         plt.show = old_show
-    return state, tables
+    return state, snaps
 
 
 def pct(x, d=None):
@@ -346,14 +369,44 @@ def chart_block(name, fig, payload):
             f'<a href="data/{name}.json" download>Figure (Plotly JSON)</a></p>\n:::\n')
 
 
-def build_part(slug, spec, nb, state, k, quarto):
+
+def context_02_1(state):
+    """Template variables of parts 1-2 (notebook 02.1)."""
+    m = state['m']
+    return dict(fixtures=f'{len(m):,}', competitions=m.combo.nunique(),
+                first=m.kickoff_iso.min().strftime('%B %d, %Y'), last=m.kickoff_iso.max().strftime('%B %d, %Y'),
+                candidates=candidate_table(state), share=share_table(state), concentration=concentration_table(state),
+                rates=rate_table(state), frequency=frequency_table(state), price_counts=price_count_table(state), sweep_max=F_SWEEP_MAX)
+
+
+def run(key):
+    """Execute one notebook; returns what its parts need: chart views, quoted numbers, template variables."""
+    spec = NOTEBOOKS[key]
+    missing = [name for name in spec['inputs'] if not (OUT / name).is_file()]
+    if missing:
+        raise SystemExit(f'Rebuild the local analysis exports first: {missing}')
+    nb = nbformat.read(spec['path'], as_version=4)
+    if len(nb.cells) != spec['n_cells'] or any(not nb.cells[i].source.startswith(start) for i, start in spec['expected'].items()):
+        raise SystemExit(f'Notebook {key} structure changed. Review the chart mapping and build.py before rebuilding.')
+    os.chdir(ROOT)   # the notebooks locate the repository from the working directory
+    state, snaps = run_notebook(nb, spec['path'], spec['plots'])
+    for cell in nb.cells:
+        if cell.cell_type == 'code':
+            cell.outputs, cell.execution_count = [], None
+    if key == '02.1':
+        return dict(nb=nb, views=lambda i: views(i, state), k=key_numbers(state), context=context_02_1(state), fixtures=state['m'])
+    return dict(nb=nb, views=lambda i: part3.views(i, snaps), k=part3.key_numbers(snaps), context=part3.tables(snaps), fixtures=state['m'])
+
+
+def build_part(slug, spec, run_, quarto):
+    nb_spec = NOTEBOOKS[spec['notebook']]
     dest = BUILD / slug
     shutil.rmtree(dest, ignore_errors=True)   # no files from earlier builds survive into the bundle
     for folder in ['assets', 'data', 'source']:
         (dest / folder).mkdir(parents=True, exist_ok=True)
     figures, charts_meta = {}, []
     for i in spec['cells']:
-        for j, (fig, data) in enumerate(views(i, state)):
+        for j, (fig, data) in enumerate(run_['views'](i)):
             name = f'chart-{i:02d}-{j}'
             # Public files carry plotted aggregates only: no trade rows, no account data.
             data.to_csv(dest / 'data' / f'{name}.csv', index=False)
@@ -363,15 +416,9 @@ def build_part(slug, spec, nb, state, k, quarto):
             figures[f'{i}:{j}'] = chart_block(name, fig, json.dumps(fig_dict, separators=(',', ':')).replace('<', '\\u003c'))
             charts_meta.append({'id': name, 'rows': len(data), 'notebook_cell': i})
             print(f'{slug} cell {i}: chart {name} ({len(data)} rows)', flush=True)
-    m = state['m']
     env = Environment(undefined=StrictUndefined)
     text = env.from_string((HERE / spec['template']).read_text(encoding='utf-8')).render(
-        chart=lambda key: figures[key], fixtures=f'{len(m):,}', competitions=m.combo.nunique(),
-        first=m.kickoff_iso.min().strftime('%B %d, %Y'), last=m.kickoff_iso.max().strftime('%B %d, %Y'),
-        date=datetime.now(timezone.utc).strftime('%Y-%m-%d'), candidates=candidate_table(state), share=share_table(state),
-        concentration=concentration_table(state), rates=rate_table(state), frequency=frequency_table(state),
-        price_counts=price_count_table(state), sweep_max=F_SWEEP_MAX, k=k, chart_count=len(charts_meta),
-    )
+        chart=lambda key: figures[key], date=spec['date'], k=run_['k'], chart_count=len(charts_meta), **run_['context'])
     (dest / 'index.qmd').write_text(text, encoding='utf-8')
     for name in ['_quarto.yml', 'styles.css', 'theme-light.scss', 'theme-dark.scss']:
         shutil.copy2(HERE / name, dest / name)
@@ -380,17 +427,22 @@ def build_part(slug, spec, nb, state, k, quarto):
         '/*TEMPLATES*/', 'const TEMPLATES = ' + json.dumps({key: template(v) for key, v in TEMPLATES.items()}) + ';')
     (dest / 'assets/charts.js').write_text(charts_js, encoding='utf-8')
     # Source download is deliberately limited to this study and its presentation layer.
-    nbformat.write(nb, dest / 'source' / NOTEBOOK.name)
-    for name in ['charts.py', 'charts.js', 'build.py', spec['template'], 'README.md']:
+    path = nb_spec['path']
+    nbformat.write(run_['nb'], dest / 'source' / path.name)
+    for name in nb_spec['sources'] + ['charts.js', 'build.py', spec['template'], 'README.md']:
         shutil.copy2(HERE / name, dest / 'source' / name)
+    m = run_['fixtures']
     manifest = {
-        'built_at_utc': datetime.now(timezone.utc).isoformat(), 'part': slug,
-        'fixture_count': len(m), 'first_kickoff': str(m.kickoff_iso.min()), 'last_kickoff': str(m.kickoff_iso.max()),
-        'notebook_sha256': hashlib.sha256(NOTEBOOK.read_bytes()).hexdigest(),
-        'inputs': [{'file': n, 'bytes': (OUT / n).stat().st_size, 'sha256': hashlib.sha256((OUT / n).read_bytes()).hexdigest()} for n in INPUTS],
+        'built_at_utc': datetime.now(timezone.utc).isoformat(), 'part': slug, 'notebook': path.name,
+        'fixture_count': len(m),
+        'notebook_sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
+        'inputs': [{'file': n, 'bytes': (OUT / n).stat().st_size, 'sha256': hashlib.sha256((OUT / n).read_bytes()).hexdigest()}
+                   for n in nb_spec['inputs']],
         'charts': charts_meta,
         'note': 'Trade-reference research. Public data contain chart aggregates only. Raw inputs remain local.',
     }
+    if 'kickoff_iso' in m:
+        manifest.update(first_kickoff=str(m.kickoff_iso.min()), last_kickoff=str(m.kickoff_iso.max()))
     (dest / 'data/manifest.json').write_text(json.dumps(manifest, indent=2), encoding='utf-8')
     subprocess.run([quarto, 'render', str(dest)], check=True, cwd=ROOT)
     (dest / '_site/.nojekyll').touch()
@@ -398,21 +450,16 @@ def build_part(slug, spec, nb, state, k, quarto):
 
 
 def build():
-    missing = [name for name in INPUTS if not (OUT / name).is_file()]
-    if missing:
-        raise SystemExit(f'Rebuild the local analysis exports first: {missing}')
-    nb = nbformat.read(NOTEBOOK, as_version=4)
-    if len(nb.cells) != 32 or any(not nb.cells[i].source.startswith(start) for i, start in EXPECTED.items()):
-        raise SystemExit('Notebook structure changed. Review charts.py and build.py before rebuilding.')
-    os.chdir(ROOT)   # the notebook locates the repository from the working directory
-    state, _ = run_notebook(nb)
-    k = key_numbers(state)
-    for cell in nb.cells:
-        if cell.cell_type == 'code':
-            cell.outputs, cell.execution_count = [], None
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument('--parts', nargs='+', choices=list(PARTS), default=list(PARTS), help='parts to rebuild (default: all)')
+    args = ap.parse_args()
     quarto = shutil.which('quarto') or str(Path.home() / '.local/opt/quarto-1.10.18/bin/quarto')
-    for slug, spec in PARTS.items():
-        build_part(slug, spec, nb, state, k, quarto)
+    runs = {}
+    for slug in args.parts:
+        spec = PARTS[slug]
+        if spec['notebook'] not in runs:
+            runs[spec['notebook']] = run(spec['notebook'])
+        build_part(slug, spec, runs[spec['notebook']], quarto)
 
 
 if __name__ == '__main__':

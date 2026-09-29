@@ -1,17 +1,23 @@
 # Kalshi vs Polymarket in soccer 1X2 markets (series)
 
-Quarto + Plotly, part of the [public website](../../README.md). One builder, one notebook
-execution, one hosted directory per part:
+Quarto + Plotly, part of the [public website](../../README.md). One builder, one execution per
+notebook, one hosted directory per part:
 
-| Part | Template | Hosted at | Notebook cells |
-| --- | --- | --- | --- |
-| 1. Two tapes, one fixture | `part1.qmd.j2` | `blog/soccer_1x2_gaps_1/` | 02.1 §1–4 (cells 3–18) |
-| 2. What survives fees | `part2.qmd.j2` | `blog/soccer_1x2_gaps_2/` | 02.1 §5–8 (cells 21–30) |
-| 3. What happens next | not written yet | `blog/soccer_1x2_gaps_3/` | 02.2 |
+| Part | Template | Hosted at | Notebook cells | Page date |
+| --- | --- | --- | --- | --- |
+| 1. Two tapes, one fixture | `part1.qmd.j2` | `blog/soccer_1x2_gaps_1/` | 02.1 §1–4 (cells 3–18) | 2026-09-22 |
+| 2. What survives fees | `part2.qmd.j2` | `blog/soccer_1x2_gaps_2/` | 02.1 §5–8 (cells 21–30) | 2026-09-22 |
+| 3. Resting on both venues | `part3.qmd.j2` | `blog/soccer_1x2_gaps_3/` | [02.2.1](../../../research/soccer_1x2_analysis/notebooks/02.2.1_maker_maker.ipynb) §1–7 (cells 3–24) | 2026-09-29 |
+
+Page dates are fixed in `PARTS` (`build.py`), so rebuilding a part does not re-date it.
+`charts.py` holds the views of notebook 02.1; `part3.py` holds part 3's views, quoted numbers and
+tables. Part 3's views read the notebook namespace as it stood right after the cell they show,
+because notebook 02.2.1 reuses short names across sections. `--parts` rebuilds a subset:
+`python public/blog/soccer_1x2_gaps/build.py --parts soccer_1x2_gaps_3`.
 
 This series supersedes the single article in [`../soccer_1x2_analysis/`](../soccer_1x2_analysis/README.md),
-which stays until part 2 is published and is then deleted together with its copies of the
-presentation files (`charts.js`, `styles.css`, `theme-*.scss`).
+which is archived: still hosted with a notice pointing here, no longer updated. It keeps its own
+copies of the presentation files (`charts.js`, `styles.css`, `theme-*.scss`).
 
 ## Design
 
@@ -49,8 +55,10 @@ python public/build.py
 The builder requires `availability.csv`, `trade_waits.parquet`, `gap_cents.csv`,
 `screen_sweep.csv`, `market_type_share.csv`, `matches.parquet`, `audit.parquet`,
 `screen.parquet`, `conditions.parquet` and `manifest.json` under
-`research/soccer_1x2_analysis/outputs/gap_analysis/`. It fails if any is missing and never
-launches acquisition. Each part renders to `public/blog/soccer_1x2_gaps/.build/<part>/_site/`;
+`research/soccer_1x2_analysis/outputs/gap_analysis/`; part 3 additionally needs `gap_cents_price.csv`,
+`fused_spread.csv`, `pm_vs_cross.csv`, `hy_lead_lag.parquet`, `leg_waits.parquet` and `mm_sim_*`
+(from `gap_cents.py --by-price`, `fused_spread.py [--paired]`, `hy_lead_lag.py`, `leg_waits.py`,
+`mm_sim.py`). It fails if any is missing and never launches acquisition. Each part renders to `public/blog/soccer_1x2_gaps/.build/<part>/_site/`;
 the complete site is `public/_site/`.
 
 For local review, serve `public/_site/` as described in the public website README.

@@ -1,0 +1,323 @@
+---
+title: "Resting on both venues"
+subtitle: "Kalshi vs Polymarket in soccer 1X2 markets, part 3 of 3: where the resting pair's edge sits, where each venue's book sits, which venue moves first, how soon the second order trades, and a replay of three resting orders against recorded order books."
+author: "Zehao Zhou"
+date: "{{ date }}"
+description: "Part 3 of a trade-tape study of soccer 1X2 markets on Kalshi and Polymarket: the maker/maker pair by price and outcome, same-side book offsets, one venue against two, Hayashi–Yoshida lead–lag, fill waiting times, an order-book replay, and a strategy outline for a real-money test."
+---
+
+[Part 1](../soccer_1x2_gaps_1/index.html) measured where the two tapes can be compared and how far apart their last trades print. [Part 2](../soccer_1x2_gaps_2/index.html) charged each venue's fees and found one pairing that screens positive on most observations: a resting order on each venue, **maker/maker**, with YES on Polymarket for team wins and YES on Kalshi for draws. This part asks whether that finding points to something executable.
+
+It moves in three steps:
+
+- **Sections 1–3** refine where the pair's edge sits: by price, by where each venue's book sits on the same side, and against quoting a single venue.
+- **Sections 4–5** look forward in time: which venue moves first, and how soon the second order of a pair trades once the first has filled.
+- **Section 6** replaces trade references with the recorded order books of both venues and replays three resting orders against the tape.
+
+Section 7 turns the results into a strategy outline, which is the subject of a real-money test.
+
+Sections 1–3 use the trade references and the four groups of parts 1 and 2: Premier League and Champions League 2025/26 in play at a 60 s cutoff, and the World Cup 2026 in play at 5 s and in its last pregame hour at 10 s. Sections 4–6 study team wins in play, across every competition with enough data.
+
+## Summary
+
+::: {.summary-list}
+
+1. **The direction of the pair depends on price as well as outcome.**
+   - Team wins: YES on Polymarket with NO on Kalshi (`PM YES + K NO`) leads at 40–80 c. There it is {{ k.s1.team_mid_1_pos }} positive and {{ k.s1.team_mid_1_net }} c net, against {{ k.s1.team_mid_2_pos }} and {{ k.s1.team_mid_2_net }} c for the reverse pair (Premier League and World Cup in play). Below 30 c the two directions are within {{ k.s1.team_low_maxdiff }} c of each other.
+   - Club draws: the reverse pair wins below 30 c, with the largest edges in the study ({{ k.s1.club_draw_low_net }} c), and loses from 40–50 c.
+
+2. **Fees do not decide the direction.** The Kalshi maker fee is at most {{ k.s1.fee_max }} c per contract, and both directions pay the same fee at the same price. Part 2's mid-price penalty on `K YES + PM NO` comes from where each venue's prices sit, not from the fee curve.
+
+3. **For team wins, Kalshi's ask sits a tick above Polymarket's.** Polymarket's ask-side print is exactly one tick below Kalshi's on {{ k.s2.team_ask_below }} of fresh prints, and one tick above on only {{ k.s2.team_ask_above }}. In club play the offset follows the price: Polymarket trades higher than Kalshi on cheap outcomes and lower on expensive ones.
+
+4. **Two venues do not make a wider spread.** A resting Polymarket YES bid nets about the same whether it is paired with a Polymarket YES ask or a Kalshi NO bid: {{ k.s4.pl_pm }} against {{ k.s4.pl_k }} c in the Premier League. What the Kalshi leg adds is flow.
+
+5. **Kalshi's ask moves first, by 3–6 seconds.** The Hayashi–Yoshida lead–lag between Polymarket's bid and Kalshi's ask peaks at {{ k.s5.wc_peak }} s in the World Cup, and at {{ k.s5.club_peak }} s in every club competition. Polymarket's bid follows Kalshi's ask, and never the reverse.
+
+6. **After a Polymarket bid fills, Kalshi's ask trades first.** In the Premier League, within 10 s of such a fill:
+   - a Kalshi ask trade follows on {{ k.s6.pl_k_ask_10 }};
+   - a Polymarket ask trade follows on {{ k.s6.pl_pm_ask_10 }};
+   - one of the two follows on {{ k.s6.pl_either_ask_10 }}.
+
+7. **A replay against recorded order books is positive even at the back of the queue.** The replay uses both venues' books and 100-contract orders. Its queue model fills an order only after everything displayed ahead of it has traded. The best configuration makes {{ k.s7.best }} per club fixture (95% interval {{ k.s7.best_lo }}–{{ k.s7.best_hi[1:] }}), with a standard deviation of {{ k.s7.best_sd }} per fixture; {{ k.s7.best_lose }} of fixtures lose.
+
+:::
+
+### A strategy, in outline
+
+The results point to one concrete design, to be tested with real orders:
+
+- **Leg 1.** Rest a Polymarket YES bid at Polymarket's best bid.
+- **Leg 2.** Rest two exits at the same time: a Polymarket YES ask at Polymarket's best ask, and a Kalshi YES ask (a Kalshi NO bid) at Kalshi's best ask. Keep whichever fills and cut the other back.
+- **Size by inventory.** The bid is sized L − q and each ask L + q. Here q is YES held on Polymarket minus NO held on either venue, and L is the order size.
+- **Guard with the other venue.** Pull the Polymarket bid when it reaches Kalshi's best ask, and the Polymarket ask when it reaches Kalshi's best bid. Kalshi moves first, so its book is the early warning.
+- **Start narrow.** Team wins, club competitions, in play. Draws need the direction chosen by price band (section 1) and come later.
+
+Section 7 lists the evidence behind each rule and what is still unknown.
+
+## Definitions added in this part
+
+The vocabulary of parts 1 and 2 carries over. In particular, buy and sell always mean the taker's action, so a YES bid rests on the side that taker sells hit.
+
+| Term | Meaning here |
+| --- | --- |
+| Resting order | An order that waits in the book: a maker order. Its fill is proxied by the taker trade that would hit it. A YES bid is filled by a taker sell, a YES ask by a taker buy. |
+| `pm_yes`, `pm_no`, `k_no` | The three orders of the strategy. `pm_yes`: Polymarket YES bid (leg 1). `pm_no`: Polymarket YES ask, the same as a Polymarket NO bid (leg 2). `k_no`: Kalshi YES ask, the same as a Kalshi NO bid (leg 2). |
+| Inventory q | Polymarket YES held minus NO held on either venue, in contracts. One YES and one NO are worth $1: at once on Polymarket (a merge), and at settlement across venues. |
+| Same-side gap | Polymarket minus Kalshi on the same side of the book: ask-side prints (`buy/buy`) or bid-side prints (`sell/sell`). |
+| Two-sided spread | A taker-buy price minus a taker-sell price, on one venue or across both, after maker fees. It is what a maker quoting both sides earns per round trip. |
+| Lead–lag θ | The time shift at which the two venues' price changes correlate most. Negative means Kalshi moves first. |
+| Queue share ρ | In the replay, the share of the displayed size at our price that must trade before our order fills. ρ = 1 is the back of the queue with no cancellations ahead. |
+| Markout | The price move after a fill, measured against Kalshi's mid, in cents per contract. Positive means the fill was on the right side of the next move. |
+
+## 1. Where the pair's edge sits: price, outcome and direction
+
+Part 2 pooled the three outcomes inside each price bucket. Draws trade mostly at 10–40 c, while team wins span the whole range, so that chart mixed an outcome effect with a price effect. Here each outcome is split out and both directions are shown.
+
+- **Bucket:** the YES reference price on the venue holding YES, at each group's cutoff.
+- **Faded, hatched bars** fail at least one of three thresholds: 10,000 observations per outcome, 60% positive, 0.5 c mean net edge.
+- **The net-edge axis is clipped at −1.5 c**, because one two-observation bucket sits at −31 c.
+
+{{ chart('3:0') }}
+
+*Team wins.* `PM YES + K NO` is flat across prices, and its advantage over the reverse pair sits at 40–80 c. At 50–60 c in the Premier League it makes {{ k.s1.pl_team_5060_1 }} c against {{ k.s1.pl_team_5060_2 }} c. Below 30 c the two directions are within {{ k.s1.team_low_maxdiff }} c in every group.
+
+*Draws.* In the club groups, the reverse pair (`K YES + PM NO`) is right below 30 c and wrong from 40–50 c:
+
+- Premier League, 0–20 c: `K YES + PM NO` is {{ k.s1.pl_draw_low_2_pos }} positive and makes {{ k.s1.pl_draw_low_2_net }} c.
+- Premier League, 50–70 c: it falls to {{ k.s1.pl_draw_high_2_net }} c, while `PM YES + K NO` makes {{ k.s1.pl_draw_high_1_net }} c.
+- World Cup in play: `K YES + PM NO` leads at every price, {{ k.s1.wc_draw_2_net }} c against {{ k.s1.wc_draw_1_net }} c.
+
+*Fees are not the explanation.* The Kalshi maker fee is at most {{ k.s1.fee_max }} c per contract, and both directions pay it on the same p(1 − p) at the same price. Yet within one bucket the two directions differ by more than a cent: Premier League draws at 60–70 c make {{ k.s1.pl_draw_6070_2 }} c in one direction and {{ k.s1.pl_draw_6070_1 }} c in the other. Part 2 section 4 attributed the mid-price drop of `K YES + PM NO` to the fee curve. That attribution was wrong: the drop is gross edge, and section 2 shows where it comes from.
+
+*The better price often has the thinner flow.* `K YES + PM NO` needs Kalshi taker sells to fill its Kalshi order, and Kalshi's flow is mostly buys (part 1). In the Premier League it has {{ k.s1.pl_draw_n_2 }} draw observations against {{ k.s1.pl_draw_n_1 }} for the other direction, and {{ k.s1.pl_team_n_2 }} against {{ k.s1.pl_team_n_1 }} per team-win outcome. The richest bars of the chart are club draws below 20 c, at {{ k.s1.club_draw_low_net }} c and {{ k.s1.club_draw_low_pos }} positive. They rest on {{ k.s1.pl_draw_low_2_n }} Premier League observations, against {{ k.s1.pl_team_low_1_n }} per team-win outcome for `PM YES + K NO` at the same prices.
+
+## 2. Where each venue's book sits
+
+Section 1 pairs a bid-side print on one venue with an ask-side print on the other. Where to place each order is a separate question: **on the same side of the book, which venue is higher?** The chart shows the two sides that carry the effect, as signed whole-cent buckets of Polymarket minus Kalshi. `(−2, −1]` and `[1, 2)` hold exact one-tick gaps.
+
+{{ chart('6:0') }}
+
+*Team wins, ask side.* Polymarket's ask-side print is exactly one tick below Kalshi's on {{ k.s2.team_ask_below }} of fresh prints, and one tick above on {{ k.s2.team_ask_above }}. The mean is {{ k.s2.team_ask_mean }} c in every group. This is a level difference between the two books, not an artefact of same-second averaging. A Kalshi NO bid is a Kalshi YES ask, so `PM YES + K NO` collects that tick.
+
+*Draws, bid side.* The mirror image, weaker: Polymarket's bid-side print is one tick above Kalshi's on {{ k.s2.draw_bid_above }} of prints and one tick below on {{ k.s2.draw_bid_below }}, with a mean of {{ k.s2.draw_bid_mean }} c. A Kalshi YES bid at Kalshi's own level is therefore usually a tick cheaper than Polymarket's, which is the `K YES + PM NO` draw edge.
+
+By price, both sides together:
+
+{{ chart('9:0') }}
+
+In the club groups the offset follows the price, for team wins and draws alike:
+
+- Premier League team-win ask side: {{ k.s2.pl_team_ask_low }} c below 30 c, and {{ k.s2.pl_team_ask_high }} c at 40–90 c.
+- Premier League draw bid side: {{ k.s2.pl_draw_bid_low }} c below 40 c.
+
+Polymarket trades higher than Kalshi on cheap outcomes and lower on expensive ones. This is where section 1's crossover comes from:
+
+- where Polymarket trades lower, buying YES on Polymarket and NO on Kalshi collects the offset;
+- where it trades higher, the reverse pair does.
+
+The World Cup differs: in play, draws trade higher on Polymarket at almost every price. That is why `K YES + PM NO` wins there at every draw price.
+
+## 3. One venue or two
+
+A maker quoting both sides of a single book earns the taker-buy price minus the taker-sell price, less maker fees. The chart compares three books by price:
+
+- Polymarket alone;
+- Kalshi alone;
+- **fused**: the same prices quoted on both venues, with the Kalshi fee charged on Kalshi's share of the fills.
+
+{{ chart('12:0') }}
+
+- **Polymarket's own book leaves the most per round trip**, because its maker fee is zero: {{ k.s3.pm_club }} c net in the club groups and {{ k.s3.pm_wc }} c in the World Cup.
+- **Kalshi's gross spread is wider**, {{ k.s3.k_gross_club }} c in the club groups, but it pays two maker fees. In the World Cup in play it nets only {{ k.s3.k_net_wc }} c.
+- **Quoting the same prices on both venues does not widen the spread.** Fused makes {{ k.s3.fused_pl }} c in the Premier League and {{ k.s3.fused_wc }} c in the World Cup in play; it only adds Kalshi's fee.
+
+### Pairing a Polymarket bid
+
+The same comparison for the pair: one resting Polymarket YES bid, completed either by a Polymarket YES ask or by a Kalshi NO bid. Each observation is taken when all three legs are fresh, and both completions are scored from each leg's latest print. This compares the two pairings at the same moment; neither leg has to fill first.
+
+{{ chart('15:0') }}
+
+**The same mean, a different shape.** The two pairings net about the same: {{ k.s4.pl_pm }} against {{ k.s4.pl_k }} c in the Premier League, and {{ k.s4.wc_pm }} against {{ k.s4.wc_k }} c in the World Cup in play.
+
+- **Polymarket completion:** concentrated on one tick, with {{ k.s4.one_tick_pm }} of observations in `(0.5, 1]`; it is positive on {{ k.s4.pos_pm }}.
+- **Kalshi completion:** it moves with the same-side offset of section 2. It earns two ticks less the fee when Kalshi's ask is a tick higher ({{ k.s4.two_tick_k }} of observations in `(1.5, 2]`), and nothing when it is a tick lower ({{ k.s4.zero_tick_k }} in `(−0.5, 0]`). It is positive on {{ k.s4.pos_k }}.
+
+So the Kalshi leg does not add edge on average. What it can add is flow: Kalshi prints roughly twice as often as Polymarket (part 1). Sections 4 and 5 measure what that flow does in time.
+
+## 4. Which venue moves first
+
+The pair's two decisive orders are a resting Polymarket YES bid, filled by Polymarket taker sells, and a resting Kalshi YES ask, filled by Kalshi taker buys. If Kalshi's ask moves first, a Polymarket bid fill tends to arrive after Kalshi has already repriced, and the pair's edge is gone at the fill.
+
+**Method.** The two venues print at irregular, different times, so the comparison uses the Hayashi–Yoshida covariance, which needs no synchronisation ([Hoffmann, Rosenbaum & Yoshida, 2013](https://arxiv.org/abs/1303.4871)):
+
+- Each series' return is the price change between its consecutive prints.
+- At lag θ, every Polymarket return is multiplied by every Kalshi return whose interval, shifted θ seconds, overlaps it.
+- Sums are pooled over fixtures (never pairing returns across fixtures) and normalised to a correlation.
+- The lead–lag estimate is the θ with the highest correlation. Negative θ means Kalshi moves first.
+- Bands and intervals come from 500 fixture-bootstrap resamples.
+
+The sample is team wins in play, every competition with at least 30 fixtures, plus two pools. Goals are not removed.
+
+{{ chart('18:0') }}
+
+{{ lead_lag_table }}
+
+**Kalshi's ask moves first in every group.**
+
+- **World Cup:** a sharp peak at {{ k.s5.wc_peak }} s. The correlation is {{ k.s5.wc_rho_peak }} there and {{ k.s5.wc_rho_0 }} at θ = 0. Almost all of it sits on the side where Kalshi leads: the lead–lag ratio of [Huth & Abergel](https://arxiv.org/abs/1111.7103) is {{ k.s5.wc_llr }}.
+- **Club competitions:** peaks at {{ k.s5.club_peak }} s, and {{ k.s5.pooled_peak }} s for all clubs pooled (interval {{ k.s5.pooled_lo }} to {{ k.s5.pooled_hi }} s).
+
+The club curves are broad because Polymarket's bid prints only every {{ k.s5.club_pm_every }} s per outcome on average, against every {{ k.s5.wc_pm_every }} s in the World Cup. A long Polymarket return overlaps Kalshi returns across many lags. The width reflects that sparse sampling, and the peak location is the estimate.
+
+The same fact cuts both ways:
+
+- **Risk:** the Polymarket bid tends to be hit a few seconds after Kalshi's ask has already moved against it.
+- **Signal:** Kalshi's book warns 3–6 seconds ahead. That is the basis of the guard in sections 6 and 7.
+
+## 5. After one order fills
+
+For every trade that would fill one order of the pair, how soon does the other side trade? The chart shows the share of fills followed by a trade strictly within H seconds.
+
+- **Top row:** the Polymarket bid fills first, followed by a Polymarket ask trade, a Kalshi ask trade, or either.
+- **Bottom row:** the other order fills first, and the Polymarket bid is the second leg.
+
+{{ chart('21:0') }}
+
+**When the Polymarket bid fills first, Kalshi's ask is the faster exit, and resting both exits is faster still.** Pooled over the club competitions, the share of fills followed within 5 / 10 / 60 s:
+
+| second leg | within 5 / 10 / 60 s |
+| --- | --- |
+| Kalshi ask | {{ k.s6.clubs_k_ask_5 }} / {{ k.s6.clubs_k_ask_10 }} / {{ k.s6.clubs_k_ask_60 }} |
+| Polymarket ask | {{ k.s6.clubs_pm_ask_5 }} / {{ k.s6.clubs_pm_ask_10 }} / {{ k.s6.clubs_pm_ask_60 }} |
+| either ask | {{ k.s6.clubs_either_ask_5 }} / {{ k.s6.clubs_either_ask_10 }} / {{ k.s6.clubs_either_ask_60 }} |
+
+Trades in the same second as the fill are not counted as following, and they are frequent: one of the two asks trades in the same second as {{ k.s6.clubs_same_either }} of club fills, Kalshi's ask alone in {{ k.s6.clubs_same_k }}. The World Cup is near-instant on every path.
+
+**The reverse order is slow.** After a Kalshi ask fill, a Polymarket bid trade follows within 10 s on only {{ k.s6.clubs_k_ask_first_10 }} of club fills ({{ k.s6.wc_k_ask_first_10 }} in the World Cup). This is section 4 again: after Kalshi moves, Polymarket takes seconds to follow. Kalshi ask fills are also far more common, {{ k.s6.clubs_k_fills_m }} million against {{ k.s6.clubs_pmbid_fills_m }} million Polymarket bid fills in the club competitions. A pair that starts on Kalshi starts often and completes slowly.
+
+Two cautions:
+
+- Any trade counts here, at any price. A resting order fills only on a trade at or through its price, which section 6 models.
+- Polymarket timestamps come from blocks about 2 s apart, so Polymarket-to-Polymarket curves are unreliable at H = 1 s.
+
+## 6. A replay against recorded order books
+
+Sections 1–5 describe trade references. The replay places real prices and queues on them:
+
+- **Books:** full-depth snapshots of both venues. Polymarket arrives about every 3 s in club play, Kalshi from its websocket in under a second. Both exist for {{ k.s7.fixtures_clubs }} club fixtures and {{ k.s7.fixtures_wc }} World Cup fixtures.
+- **Sample:** team wins, 0–105 minutes after kickoff.
+- **Timing:** 1-second steps, the resolution of the trade tape. In each second, that second's taker trades hit the orders that were live since the previous second. Orders are then cancelled, resized or placed with the book known at the end of the second, and are live from the next second.
+
+| Order | Price | Filled by | Size |
+| --- | --- | --- | --- |
+| `pm_yes`: Polymarket YES bid (leg 1) | Polymarket best bid | Polymarket taker sells at or below it | L − q |
+| `pm_no`: Polymarket YES ask (leg 2) | Polymarket best ask | Polymarket taker buys at or above it | L + q |
+| `k_no`: Kalshi YES ask (leg 2) | Kalshi best ask, or Polymarket best ask (tested) | Kalshi taker buys at or above it | L + q |
+
+L is 100 contracts. The model:
+
+- **Queue.** An order joins behind ρ × the displayed size at its price. Only trades at that price move it forward, so ρ = 1 is the worst case: the back of the displayed queue with nobody ahead cancelling. A trade at a worse price for the taker means the level is gone, and it fills the order up to its volume. Our orders do not change the tape.
+- **Resizing.** Each leg is a stack of child orders at one price.
+  - Too small: a new child joins the back of the queue.
+  - Too large: the youngest children are cancelled first. Kalshi can decrease an order and keep its place. Polymarket cannot amend an order, so the child is cancelled and the remainder re-posted at the back.
+- **When to quote.** An order rests only while:
+  - both books are valid and at most 10 s old;
+  - Polymarket's mid is 5–95 c;
+  - the 105-minute window has more than 60 s left.
+
+  The Kalshi order also needs its price above Kalshi's best bid, so it cannot cross, and a positive pair edge after the Kalshi fee. When its target price moves, a leg is cancelled and re-placed.
+- **Guard (tested on and off).** The Polymarket bid rests only while it is below Kalshi's best ask, and the Polymarket ask only while it is above Kalshi's best bid.
+- **Grid.** ρ ∈ {1, 0.5, 0.25, 0} × the two Kalshi order prices × guard on or off.
+
+P&L per fixture is cash plus residual inventory marked to the last Kalshi mid, summed over both team-win outcomes.
+
+{{ chart('24:0') }}
+
+Club competitions, P&L per fixture with 95% fixture-bootstrap interval:
+
+{{ pnl_table }}
+
+**Positive even in the worst case.** At ρ = 1 all four club variants make {{ k.s7.club_rho1 }} per fixture. The best, Kalshi order at Kalshi's ask with the guard on, makes {{ k.s7.best }}: {{ k.s7.best_real }} realized from matched YES/NO pairs and {{ k.s7.best_inv }} from inventory. Shorter queues scale it up, to {{ k.s7.rho25_best }} at ρ = 0.25 and {{ k.s7.rho0_best }} at ρ = 0. The World Cup made {{ k.s7.wc }} per fixture, but that tournament is over.
+
+**Rest the Kalshi order at Kalshi's own ask.** It is better in every club run: by {{ k.s7.kask_adv_1 }} per fixture at ρ = 1, {{ k.s7.kask_adv_mid }} at ρ = 0.5–0.25, and {{ k.s7.kask_adv_0 }} at ρ = 0. Pricing it at Polymarket's ask instead makes it the best price on Kalshi whenever Polymarket's ask is lower. That wins fills: {{ k.s7.improved_share }} of that variant's Kalshi contracts at ρ = 1. But those fills sell a tick too cheap. The 60-second markout of the Kalshi order is {{ k.s7.mo_k_pmask }} c at Polymarket's ask, against {{ k.s7.mo_k_kask }} c at Kalshi's.
+
+**The guard pays in club play.**
+
+- **Effect:** {{ k.s7.guard_gain }} per club fixture at ρ = 1–0.25, in every variant.
+- **Better bid fills:** it removes the Polymarket bid when Kalshi has already moved below it, and the bid's markout at the fill rises from {{ k.s7.mo_bid_off }} c to {{ k.s7.mo_bid_on }} c per contract.
+- **Fewer double fills:** fixtures where both asks filled together fall from {{ k.s7.double_off }} to {{ k.s7.double_on }}.
+{% if k.s7.guard_wc_all_negative %}- **Not at the World Cup:** it cost money in every run there, where the two venues move within about 3 s of each other and the guard mostly removes fills.{% endif %}
+
+{{ chart('24:1') }}
+
+**Fill quality.** At ρ = 1, {{ k.s7.thru_pm }} of Polymarket contracts and {{ k.s7.thru_k }} of Kalshi contracts fill because the price ran through the order. That is the expected cost of joining the back of a queue that is typically thousands of contracts deep. The markouts stay positive nonetheless.
+
+The four variants at the worst-case queue:
+
+{{ worst_case_table }}
+
+By competition, at ρ = 1: {{ k.s7.by_league }}. {{ k.s7.weakest }} is the weakest in every variant.
+
+{{ league_table }}
+
+**Risk.** In the best configuration:
+
+- the standard deviation is {{ k.s7.best_sd }} per fixture;
+- {{ k.s7.best_lose }} of fixtures lose, and 1 in 20 loses {{ k.s7.best_p5[1:] }} or more;
+- inventory is non-zero for {{ k.s7.best_qnz }} of the in-play clock, and the median matched contract waits {{ k.s7.best_pair_s }} s for its pair.
+
+If the replay is right, a live test needs about {{ k.s7.best_n }} club fixtures (ρ = 1) to {{ k.s7.rho25_n }} (ρ = 0.25) for a 95% interval that excludes zero.
+
+## 7. What a strategy could look like
+
+| Rule | Setting | Evidence |
+| --- | --- | --- |
+| Scope | Team-win 1X2, club competitions, in play | Sections 1 and 6. The World Cup is over. Draws need the direction chosen by price band. |
+| Leg 1 | Polymarket YES bid at Polymarket's best bid, size L − q | Sections 1–2: YES on Polymarket for team wins. Section 6: join the touch. |
+| Leg 2 | Polymarket YES ask at Polymarket's best ask and Kalshi YES ask at Kalshi's best ask, each size L + q | Section 3: same mean edge. Section 5: fastest completion with both. Section 6: Kalshi at its own ask. |
+| Guard | Bid only below Kalshi's best ask; Polymarket ask only above Kalshi's best bid | Section 4: Kalshi leads by 3–6 s. Section 6: +{{ k.s7.guard_gain }} per fixture. |
+| Resizing | Top up with a new order at the back; shrink the youngest order first (decrease on Kalshi, cancel and re-post on Polymarket) | Section 6 and the venues' order APIs |
+| Double fills | Cut the other ask back within a second of a fill | Sections 5–6: fills cluster within seconds |
+
+What the tape cannot settle, and a live test must:
+
+- **Queue position.** It is the largest lever in the replay: P&L grows several-fold from ρ = 1 to ρ = 0. Only live orders show how much of the displayed queue actually trades ahead of us.
+- **Latency and double fills.** How fast a fill can cut back the other ask, and how fast the guard can act inside Kalshi's 3–6 s lead.
+- **Live adverse selection.** Markouts of our own fills, against the replay's.
+- **Costs and capital.** Kalshi fees as billed, Polymarket settlement and merge timing, and the capital locked in Kalshi NO until settlement.
+
+## Next: a real-money test
+
+The next step is to run this outline with real orders, at small size. I am building the trading system for that test now. It will:
+
+- rest the three orders and apply the guard;
+- record both venues' full order books and every order event, with exchange and local timestamps.
+
+That recording lets the replay of section 6 be run on exactly the fixtures traded and compared with the live fills order by order. The first quantity the test has to pin down is the real queue position; after it come cancel latency, double fills and live markouts. The results will be published here, in a follow-up to this series, once enough fixtures have been traded to support a conclusion.
+
+## What is not measured
+
+- **Sections 1–5** use trade references, not quotes: a positive reference edge assumes both resting orders fill at those prices.
+- **Section 6** replays recorded books, but:
+  - our orders do not change the tape;
+  - cancellations ahead of us enter only through ρ;
+  - Polymarket snapshots arrive about every 3 s, so its quotes are sometimes stale, which is pessimistic for the Polymarket orders;
+  - latency is 1 s;
+  - residual inventory is marked at the last Kalshi mid, not at settlement;
+  - no rebates are assumed;
+  - draws are not replayed.
+- **Lead–lag** includes goals, which carry much of the covariance; timestamps are whole seconds.
+- **Uncertainty** is supplied only for the lead–lag and the replay (fixture bootstrap). Other comparisons are descriptive for this sample of the 2025/26 club season and the 2026 World Cup.
+
+## Data, methods and updates
+
+This is a dated static snapshot. The page contains **{{ chart_count }} interactive charts**, each with its plotted aggregates downloadable as CSV and Plotly JSON, and a [snapshot manifest](data/manifest.json) with source hashes. The [source notebook](source/02.2.1_maker_maker.ipynb) is available without outputs; it requires the local research modules, curated trades and recorded order books, so on its own it does not recreate the pipeline. The [publication notes](source/README.md) describe the build.
+
+Method notes:
+
+- **Sections 1–3** use the fresh-pair observations and group cutoffs of parts 1 and 2. Price buckets are YES-price deciles [lo, lo + 10) c.
+- **Fees** are the venues' published schedules applied to historical prints: Polymarket maker 0, Kalshi maker 1.75% × p(1 − p), rounded on a 100-contract lot.
+- **Lead–lag** uses per-second volume-weighted prints of Polymarket taker sells and Kalshi taker buys, 0–105 minutes after scheduled kickoff, lags −30 to +30 s.
+- **Waiting times** use strictly later trades, with forward-window censoring at the end of the in-play window.
+- **The replay** uses the order-book snapshot in force at the start of each second. Polymarket's NO-token books mirror its YES books and are not used separately. Matched pairs are counted first in, first out.

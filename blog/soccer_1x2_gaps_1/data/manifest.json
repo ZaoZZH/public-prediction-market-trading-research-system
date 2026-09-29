@@ -1,9 +1,8 @@
 {
-  "built_at_utc": "2026-09-22T02:50:46.996994+00:00",
+  "built_at_utc": "2026-09-29T06:24:52.979268+00:00",
   "part": "soccer_1x2_gaps_1",
+  "notebook": "02.1_cross_venue_gaps_by_competition.ipynb",
   "fixture_count": 1973,
-  "first_kickoff": "2025-09-12 18:45:00+00:00",
-  "last_kickoff": "2026-08-11 19:00:00+00:00",
   "notebook_sha256": "b2e28084b561ab577393207460d1cf3c874cc12025d64fcee4c0358c6e4aec07",
   "inputs": [
     {
@@ -114,5 +113,7 @@
       "notebook_cell": 18
     }
   ],
-  "note": "Trade-reference research. Public data contain chart aggregates only. Raw inputs remain local."
+  "note": "Trade-reference research. Public data contain chart aggregates only. Raw inputs remain local.",
+  "first_kickoff": "2025-09-12 18:45:00+00:00",
+  "last_kickoff": "2026-08-11 19:00:00+00:00"
 }

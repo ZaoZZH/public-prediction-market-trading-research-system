@@ -1,0 +1,117 @@
+{
+  "built_at_utc": "2026-09-29T06:28:11.828487+00:00",
+  "part": "soccer_1x2_gaps_3",
+  "notebook": "02.2.1_maker_maker.ipynb",
+  "fixture_count": 1973,
+  "notebook_sha256": "cc4dee367319c57dd2850c38026a7fe91b8b80654ac69adcdd2fd89d12932880",
+  "inputs": [
+    {
+      "file": "conditions.parquet",
+      "bytes": 55397295,
+      "sha256": "ec4363da03c838a0d4be427c217dfe64dd319c9012c8e4716f7aa4d107cb234f"
+    },
+    {
+      "file": "matches.parquet",
+      "bytes": 229600,
+      "sha256": "0c56659f8bcf487e6ae2b9d02e32a4ef0dd713fd4530f46e25797122c14e2dee"
+    },
+    {
+      "file": "gap_cents.csv",
+      "bytes": 8862704,
+      "sha256": "bd489bc119163f89f1889a2860b777e4c55201c0f79a0bcd4676ac95e3de3d46"
+    },
+    {
+      "file": "gap_cents_price.csv",
+      "bytes": 4415332,
+      "sha256": "3150be9046ebe8fa4f82c8f296f24b895daa7f10d286e139b95c0e7515a147f1"
+    },
+    {
+      "file": "fused_spread.csv",
+      "bytes": 786757,
+      "sha256": "c7ee2d1e1e9dd8a26ecd9e1e5f4a3fb3b51f035f863658ac09cfa1314b51c8bc"
+    },
+    {
+      "file": "pm_vs_cross.csv",
+      "bytes": 4622815,
+      "sha256": "49c0ffab9416e1deb8cd3157cd899e387bb744e3afdd6e5d90d54d7930a5ca7b"
+    },
+    {
+      "file": "hy_lead_lag.parquet",
+      "bytes": 2913052,
+      "sha256": "4fae993e819c73271e165a2a3347a5214a2bab0a484f210d034563cd0d2ab092"
+    },
+    {
+      "file": "leg_waits.parquet",
+      "bytes": 2831151,
+      "sha256": "a1937c9b59f464000f36d36b517e1eb2fe4febbaf89cc47d22ca96d0cfdb463b"
+    },
+    {
+      "file": "mm_sim_summary.parquet",
+      "bytes": 1857122,
+      "sha256": "925dbab4d94f2f756b9e6d39b7c8b285a418e34a7238efdc8b5f77f86d8e104a"
+    },
+    {
+      "file": "mm_sim_fills.parquet",
+      "bytes": 36965580,
+      "sha256": "ff0c75b6ee83fee2e9b386643b5481cdccd0acfd2f67da67d16a4d37f99c2cd5"
+    },
+    {
+      "file": "mm_sim_pairs.parquet",
+      "bytes": 34280078,
+      "sha256": "b199d7b5afede33978cb9408db2c77dbb0160bde82cd5206d43996ad7a08e0f7"
+    },
+    {
+      "file": "mm_sim_grid.csv",
+      "bytes": 194,
+      "sha256": "1484c053ebdf5f22a31d7c312bb1cfbf0e86bcdcbd4490d6e5a170963b488003"
+    }
+  ],
+  "charts": [
+    {
+      "id": "chart-03-0",
+      "rows": 144,
+      "notebook_cell": 3
+    },
+    {
+      "id": "chart-06-0",
+      "rows": 144,
+      "notebook_cell": 6
+    },
+    {
+      "id": "chart-09-0",
+      "rows": 144,
+      "notebook_cell": 9
+    },
+    {
+      "id": "chart-12-0",
+      "rows": 215,
+      "notebook_cell": 12
+    },
+    {
+      "id": "chart-15-0",
+      "rows": 128,
+      "notebook_cell": 15
+    },
+    {
+      "id": "chart-18-0",
+      "rows": 610,
+      "notebook_cell": 18
+    },
+    {
+      "id": "chart-21-0",
+      "rows": 1200,
+      "notebook_cell": 21
+    },
+    {
+      "id": "chart-24-0",
+      "rows": 32,
+      "notebook_cell": 24
+    },
+    {
+      "id": "chart-24-1",
+      "rows": 48,
+      "notebook_cell": 24
+    }
+  ],
+  "note": "Trade-reference research. Public data contain chart aggregates only. Raw inputs remain local."
+}

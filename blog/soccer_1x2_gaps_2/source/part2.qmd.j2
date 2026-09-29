@@ -6,7 +6,7 @@ date: "{{ date }}"
 description: "Part 2 of a trade-tape study of soccer 1X2 markets on Kalshi and Polymarket: fee-adjusted route screens on last-trade references, direction by outcome and matchup, the freshness sweep, price levels, frequency, and where to look first."
 ---
 
-[Part 1](../soccer_1x2_gaps_1/index.html) established where the two tapes can be compared and how far apart their last trades print: Polymarket prints below Kalshi except on draws, the sign follows the taker side each print came from, and the size of the gap does not depend on the freshness cutoff. This part asks what is left once each print is given a role and charged its venue's fee: which pairing of the two tapes screens positive, in which direction, at which price, and for how much of the clock. Part 3 will ask what the prices did next.
+[Part 1](../soccer_1x2_gaps_1/index.html) established where the two tapes can be compared and how far apart their last trades print: Polymarket prints below Kalshi except on draws, the sign follows the taker side each print came from, and the size of the gap does not depend on the freshness cutoff. This part asks what is left once each print is given a role and charged its venue's fee: which pairing of the two tapes screens positive, in which direction, at which price, and for how much of the clock. [Part 3](../soccer_1x2_gaps_3/index.html) asks what the prices did next.
 
 Like part 1, this is a backward look. Each observation compares two prints that had already happened; a positive number here is a property of reference prices, not a fill.
 
@@ -135,7 +135,7 @@ Parts 1 and 2 read together, as a ranking of what the tape supports most clearly
 - **Put the higher-priced leg on Polymarket's YES side.** The mid-price fee penalty is `K YES + PM NO`'s: it falls to {{ k.price.pl_2_mid }} at 30–70 c in the Premier League while `PM YES + K NO` holds {{ k.price.pl_1_mid }} there and {{ k.price.pl_1_high }} at 70–90 c (section 4).
 - **It is not rare.** A positive resting-side overlap stands for {{ k.freq.inplay_clock_lo }}–{{ k.freq.inplay_clock_hi }} of the in-play clock, in {{ k.freq.all_have }} fixture, with the ten busiest fixtures holding at most {{ k.freq.top10_max }} of positives (section 5).
 - **Club in play against the World Cup in play is a trade-off, not a ranking.** The club groups carry about twice the mean net edge per observation ({{ k.screen.mm_pl_all_1_net }} c against {{ k.screen.mm_wc_all_1_net }} c for `PM YES + K NO`) but need a 60 s cutoff to keep the clock comparable, which is the single-leg exposure of part 1 section 3.3; the World Cup is thinner and near-instant.
-- **Not known.** Whether either resting leg fills, what one leg alone costs when the other does not, and where the price goes after the observation. Part 3 measures these on the same observations.
+- **Not known.** Whether either resting leg fills, what one leg alone costs when the other does not, and where the price goes after the observation. [Part 3](../soccer_1x2_gaps_3/index.html) measures them with lead–lag, waiting times and an order-book replay.
 
 ## What is not measured
 
