@@ -1,0 +1,1943 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Zehao Zhou">
+<meta name="dcterms.date" content="2026-10-08">
+<meta name="description" content="System architecture of maker/maker, a three-order cross-venue market maker for soccer team-win markets on Kalshi and Polymarket: components, fixture discovery, order-book data flow, the decision and reconciliation loop, safety controls, recording and deployment.">
+
+<title>Building the maker/maker trading system – Zehao (Gerald) Zhou · Prediction Market Research</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-816253360dce6a4e3f30408ef63133a0.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-d0d81244e8ed40314a7a066e55328b5b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-816253360dce6a4e3f30408ef63133a0.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script src="site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+<script src="site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="diagrams.css">
+<meta property="og:title" content="Building the maker/maker trading system – Zehao (Gerald) Zhou · Prediction Market Research">
+<meta property="og:description" content="System architecture of maker/maker, a three-order cross-venue market maker for soccer team-win markets on Kalshi and Polymarket: components, fixture discovery, order-book data flow, the decision and reconciliation loop, safety controls, recording and deployment.">
+<meta property="og:image" content="assets/control_page.png">
+<meta property="og:site_name" content="Zehao (Gerald) Zhou · Prediction Market Research">
+<link rel="stylesheet" href="../../navigation.css">
+<script src="../../navigation.js"></script>
+</head>
+
+<body class="floating quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link active" data-scroll-target="#summary">Summary</a></li>
+  <li><a href="#from-replay-to-live-orders" id="toc-from-replay-to-live-orders" class="nav-link" data-scroll-target="#from-replay-to-live-orders">1. From replay to live orders</a></li>
+  <li><a href="#components-and-topology" id="toc-components-and-topology" class="nav-link" data-scroll-target="#components-and-topology">2. Components and topology</a></li>
+  <li><a href="#fixture-discovery-and-matching" id="toc-fixture-discovery-and-matching" class="nav-link" data-scroll-target="#fixture-discovery-and-matching">3. Fixture discovery and matching</a></li>
+  <li><a href="#order-books-from-venue-socket-to-decision" id="toc-order-books-from-venue-socket-to-decision" class="nav-link" data-scroll-target="#order-books-from-venue-socket-to-decision">4. Order books: from venue socket to decision</a></li>
+  <li><a href="#the-decision-core" id="toc-the-decision-core" class="nav-link" data-scroll-target="#the-decision-core">5. The decision core</a></li>
+  <li><a href="#fills-inventory-and-safety" id="toc-fills-inventory-and-safety" class="nav-link" data-scroll-target="#fills-inventory-and-safety">6. Fills, inventory and safety</a></li>
+  <li><a href="#the-trading-record" id="toc-the-trading-record" class="nav-link" data-scroll-target="#the-trading-record">7. The trading record</a></li>
+  <li><a href="#the-control-page" id="toc-the-control-page" class="nav-link" data-scroll-target="#the-control-page">8. The control page</a></li>
+  <li><a href="#deployment-and-operations" id="toc-deployment-and-operations" class="nav-link" data-scroll-target="#deployment-and-operations">9. Deployment and operations</a></li>
+  <li><a href="#design-decisions" id="toc-design-decisions" class="nav-link" data-scroll-target="#design-decisions">10. Design decisions</a></li>
+  <li><a href="#status-and-next-steps" id="toc-status-and-next-steps" class="nav-link" data-scroll-target="#status-and-next-steps">11. Status and next steps</a></li>
+  <li><a href="#about-this-article" id="toc-about-this-article" class="nav-link" data-scroll-target="#about-this-article">About this article</a></li>
+  </ul>
+</nav>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<nav aria-label="Site" style="padding: 1rem 5%;"><a href="../../index.html">← Zehao (Gerald) Zhou · Home</a></nav>
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Building the maker/maker trading system</h1>
+<p class="subtitle lead">The architecture behind the real-money test of the Kalshi vs Polymarket series: two venue engines, a single-threaded decision core, automatic fixture matching, book freshness, a trading record built for the replay comparison, and a small cloud deployment.</p>
+</div>
+
+<div>
+  <div class="description">
+    System architecture of maker/maker, a three-order cross-venue market maker for soccer team-win markets on Kalshi and Polymarket: components, fixture discovery, order-book data flow, the decision and reconciliation loop, safety controls, recording and deployment.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Zehao Zhou </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 8, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><a href="../soccer_1x2_gaps_3/index.html">Part 3</a> of the Kalshi vs Polymarket series ended with a strategy outline and a replay against recorded order books. Three resting orders per team-win outcome, a Polymarket YES bid, a Polymarket YES ask and a Kalshi YES ask, made money in the replay even at the back of every queue. This article describes the system built to run that outline with real orders.</p>
+<p>The first live test has a narrower job than the replay. At the test size of L = 10 contracts, the replay makes about $2.57 per club fixture (95% interval 2.17–3.01), loses on 31% of fixtures, and has a worst fixture of −$17. About 25–30 fixtures are needed before an interval excludes zero. That replay merges Polymarket pairs back into cash at once, which the first live version does not, so these figures are a guide rather than a forecast. The first fixtures are therefore a <strong>measurement</strong> of what the replay had to assume: queue position, double fills, latency and holding time. The system records those quantities as carefully as it trades.</p>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<div class="summary-list">
+<ol type="1">
+<li><strong>Four processes from one image.</strong> Two venue engines behind one gRPC contract, an execution host for the strategy, and a management service for the control page, linked by mutual TLS (section 2).</li>
+<li><strong>Fixtures are matched automatically; enabling one is the human check.</strong> Both venues’ moneyline listings in six club competitions are paired every 10 minutes (section 3).</li>
+<li><strong>A book is either fresh or pulled.</strong> Engines re-send every valid book once a second while its socket is provably alive; execution cancels an outcome’s three orders when either book is 3 s old (section 4).</li>
+<li><strong>The rules are a pure function; everything else is reconciliation.</strong> One strategy thread owns all state, computes the desired orders from books with its own orders removed, and issues the fewest writes to get there: an amend on Kalshi, a cancel and re-post on Polymarket (section 5).</li>
+<li><strong>Uncertainty stops quoting before it can change inventory.</strong> Unknown order states, stale books, unhealthy engines, missing heartbeats and a loss stop all pull orders, and every start reads inventory from the venues (section 6).</li>
+<li><strong>The record is built for the replay comparison.</strong> Decisions, order events, queue estimates, books, trades and fill windows go to one SQLite file per day, so the replay can be rerun on exactly the fixtures traded (section 7).</li>
+<li><strong>It runs for about $5 a week</strong> on four small Fly.io machines. The engines’ memory growth on the first deployment came from allocator arenas, not a leak (section 9).</li>
+</ol>
+</div>
+</section>
+<section id="from-replay-to-live-orders" class="level2">
+<h2 class="anchored" data-anchor-id="from-replay-to-live-orders">1. From replay to live orders</h2>
+<p>The replay of part 3 is a model with simplifications. Each simplification becomes a requirement of the live system:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Concern</th>
+<th>Replay (part 3, section 6)</th>
+<th>Live system</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Market data</td>
+<td>Recorded snapshots, always present</td>
+<td>Sockets can stall silently and lose messages; books carry an age and are pulled when stale (section 4)</td>
+</tr>
+<tr class="even">
+<td>Own orders</td>
+<td>Never in the book</td>
+<td>Shown in the book; prices are read with our own size removed (section 4)</td>
+</tr>
+<tr class="odd">
+<td>Order changes</td>
+<td>Take effect at the next second</td>
+<td>Round trips, requests in flight and unknown outcomes; a reconciler tracks the state of every order (section 5)</td>
+</tr>
+<tr class="even">
+<td>Fixtures</td>
+<td>A curated, matched list</td>
+<td>Matched live from both venues’ listings, re-checked every 10 minutes (section 3)</td>
+</tr>
+<tr class="odd">
+<td>Polymarket pairs</td>
+<td>A YES + NO pair merges back to $1 at once</td>
+<td>No merges in v1: pairs stay locked until settlement and count against the cash cap</td>
+</tr>
+<tr class="even">
+<td>Queue position</td>
+<td>An assumed share ρ of the displayed size</td>
+<td>Measured per order, and checked against Kalshi’s own queue positions (section 7)</td>
+</tr>
+<tr class="odd">
+<td>Inventory at start</td>
+<td>Zero</td>
+<td>Read from venue positions at every start and restart (section 6)</td>
+</tr>
+<tr class="even">
+<td>Failures</td>
+<td>None</td>
+<td>Stale books, engine restarts, lost fill streams, process death (section 6)</td>
+</tr>
+</tbody>
+</table>
+<section id="the-strategy-as-configured-for-the-test" class="level3">
+<h3 class="anchored" data-anchor-id="the-strategy-as-configured-for-the-test">The strategy, as configured for the test</h3>
+<p>Each team-win outcome of a fixture runs on its own. The only rule shared by the two outcomes is the cash cap.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Leg</th>
+<th>Order</th>
+<th>Price</th>
+<th>Size</th>
+<th>Rests only while</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>pm_yes</code></td>
+<td>Polymarket buy YES, post-only</td>
+<td>b, Polymarket best bid</td>
+<td>min(L − q, 3L)</td>
+<td>b &lt; Kalshi best ask (the guard)</td>
+</tr>
+<tr class="even">
+<td><code>pm_no</code></td>
+<td>Polymarket buy NO at 1 − a, post-only</td>
+<td>a, Polymarket best ask</td>
+<td>min(L + q, 3L)</td>
+<td>a &gt; Kalshi best bid (the guard)</td>
+</tr>
+<tr class="odd">
+<td><code>k_no</code></td>
+<td>Kalshi buy NO at 1 − a<sub>k</sub>, post-only</td>
+<td>a<sub>k</sub>, Kalshi best ask</td>
+<td>min(L + q, 3L)</td>
+<td>a<sub>k</sub> &gt; Kalshi best bid, and a<sub>k</sub> − b − Kalshi maker fee &gt; 0</td>
+</tr>
+</tbody>
+</table>
+<p>Inventory q is Polymarket YES held minus NO held on either venue, per outcome. All legs also need both books valid and fresh, a Polymarket mid of 5–95 c, and the in-play window from kickoff to 104 minutes. The v1 configuration is part 3’s best replay variant with L = 10, a cash cap of $300 per venue and fixture, and no guard buffer. Every value is a configuration field, changed one at a time, between fixtures.</p>
+</section>
+</section>
+<section id="components-and-topology" class="level2">
+<h2 class="anchored" data-anchor-id="components-and-topology">2. Components and topology</h2>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div id="fig-topology" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-topology-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div>
+<pre class="mermaid mermaid-js" data-label="fig-topology">flowchart TB
+  user(["Operator browser"])
+  subgraph fly["Fly.io private network"]
+    mgmt["management&lt;br/&gt;TypeScript · Ashburn"]
+    exec["execution&lt;br/&gt;C++ · Ashburn&lt;br/&gt;module: maker_maker"]
+    vol[("volume&lt;br/&gt;SQLite record, config")]
+    epm["engine-pm&lt;br/&gt;C++ · Stockholm"]
+    ek["engine-kalshi&lt;br/&gt;C++ · Ashburn"]
+  end
+  pm[("Polymarket&lt;br/&gt;CLOB REST and WebSocket,&lt;br/&gt;Gamma listings")]
+  ka[("Kalshi&lt;br/&gt;Trade API REST&lt;br/&gt;and WebSocket")]
+  live[("Kalshi live_data&lt;br/&gt;match state")]
+  user -- "HTTPS, password" --&gt; mgmt
+  mgmt -- "ExecutionControl&lt;br/&gt;state, config, enable, stop" --&gt; exec
+  exec -- "VenueEngine" --&gt; epm
+  exec -- "VenueEngine" --&gt; ek
+  exec --&gt; vol
+  exec -- "HTTP poll, 5 s" --&gt; live
+  epm --&gt; pm
+  ek --&gt; ka
+</pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-topology-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Runtime topology. Arrows point from client to server. Every gRPC hop is mutually authenticated TLS on Fly’s private network; only management is reachable from the internet.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The four processes are built from one container image; an environment variable selects which one starts. Each has one responsibility, and the boundaries are where the failure handling sits:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Process</th>
+<th>Owns</th>
+<th>Does not</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>engine-pm</code></td>
+<td>Polymarket market and user WebSockets, books, public trades and fills, EIP-712 order signing, orders, positions, the venue-side dead-man heartbeat, Gamma market listings</td>
+<td>Make trading decisions</td>
+</tr>
+<tr class="even">
+<td><code>engine-kalshi</code></td>
+<td>Kalshi WebSocket (books, trades, fills on one socket), RSA request signing, orders including amend, positions, queue positions, market listings</td>
+<td>Make trading decisions</td>
+</tr>
+<tr class="odd">
+<td><code>execution</code></td>
+<td>One compiled-in strategy module per process. maker_maker: fixture matching, decisions, order lifecycle, safety rules, the trading record</td>
+<td>Talk to a trading venue directly</td>
+</tr>
+<tr class="even">
+<td><code>management</code></td>
+<td>Login, the control page, configuration pass-through, a management heartbeat to execution every 15 s</td>
+<td>Hold trading state</td>
+</tr>
+</tbody>
+</table>
+<p>The engines implement one gRPC service, <code>VenueEngine</code>. Execution never handles venue identifiers. It registers internal instruments such as <code>&lt;fixture&gt;-home-pm-yes</code> and <code>&lt;fixture&gt;-home-k-no</code>, and each engine maps them to a Polymarket token or a Kalshi ticker and side. Prices, sizes and cash are fixed-point integers (price × 10⁴, contracts × 10⁶, USD × 10⁶), so no floating-point value reaches an order. maker_maker uses these calls:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Group</th>
+<th>Calls</th>
+<th>Used for</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Discovery</td>
+<td><code>ListSoccerMoneylineMarkets</code>, <code>RegisterInstruments</code></td>
+<td>Matching every 10 minutes; routes for enabled fixtures</td>
+</tr>
+<tr class="even">
+<td>Market data</td>
+<td><code>StreamOrderbook</code>, <code>StreamTrades</code>, <code>GetOrderbookSnapshots</code></td>
+<td>Trading books; queue counting and the record; display prices every 45 s</td>
+</tr>
+<tr class="odd">
+<td>Orders</td>
+<td><code>PlaceOrder</code>, <code>CancelOrder</code>, <code>AmendOrder</code> (Kalshi), <code>GetOpenOrders</code></td>
+<td>Quoting, resolving unknown orders, sweeps</td>
+</tr>
+<tr class="even">
+<td>Account</td>
+<td><code>StreamFills</code>, <code>GetPositions</code>, <code>GetBalance</code>, <code>GetQueuePositions</code> (Kalshi)</td>
+<td>Inventory, start-up state, queue measurement</td>
+</tr>
+<tr class="odd">
+<td>Safety</td>
+<td><code>HealthCheck</code>, <code>RefreshDeadManSwitch</code> (Polymarket)</td>
+<td>Engine health every 5 s; venue-side cancel when execution goes silent</td>
+</tr>
+</tbody>
+</table>
+<p><code>engine-pm</code> runs in Stockholm, outside the regions Polymarket geoblocks; the other three run in Ashburn, Virginia.</p>
+</section>
+<section id="fixture-discovery-and-matching" class="level2">
+<h2 class="anchored" data-anchor-id="fixture-discovery-and-matching">3. Fixture discovery and matching</h2>
+<p>The two venues list the same match under different names, at different times, with different market structures. Polymarket lists a match as an event with one Yes/No market per outcome (“Will Borussia Dortmund win?”); Kalshi lists an event with one market per outcome, identified by team codes in the ticker. Kalshi’s listed time for club soccer is the expected end of the match, kickoff + 3 h, for all 116 club fixtures checked on 2026-10-06, so the matcher subtracts 3 h before comparing.</p>
+<p>The matcher is a C++ port of the research matcher, without the parts that need a paid match-data API. It runs in execution at start-up and every 10 minutes; a failed round keeps the last fixture list.</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div id="fig-matching" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-matching-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div>
+<pre class="mermaid mermaid-js" data-label="fig-matching">flowchart TB
+  K["engine-kalshi listing&lt;br/&gt;listed time − 3 h = kickoff"] --&gt; S{"six club&lt;br/&gt;series?"}
+  P["engine-pm listing&lt;br/&gt;moneyline markets only"] --&gt; C
+  S -- "yes" --&gt; C["candidates: Polymarket events&lt;br/&gt;with kickoff within ±6 h"]
+  C --&gt; T{"teams above&lt;br/&gt;thresholds?"}
+  T -- "yes" --&gt; R{"runner-up&lt;br/&gt;within 0.015?"}
+  R -- "no" --&gt; O["map outcomes: Kalshi by ticker code,&lt;br/&gt;Polymarket by question text"]
+  R -- "same pair listed twice:&lt;br/&gt;keep the closest kickoff" --&gt; O
+  O --&gt; U["one Kalshi event per Polymarket event&lt;br/&gt;→ fixture table on the control page"]
+</pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-matching-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Fixture discovery. Both engines list soccer moneyline markets; execution filters, scores and maps them into fixtures shown on the control page. A Kalshi event that fails a check, or whose runner-up is a different pair of teams within 0.015, is skipped.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Rule</th>
+<th>Setting</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Competitions</td>
+<td>Premier League, La Liga, Bundesliga, Serie A, Ligue 1, Champions League: the six of the part 3 replay, filtered by Kalshi series (<code>KXEPLGAME</code>, …) only, since a fixture must be listed on both venues anyway</td>
+</tr>
+<tr class="even">
+<td>Kickoff window</td>
+<td>±6 h, after Kalshi’s 3 h correction</td>
+</tr>
+<tr class="odd">
+<td>Team score</td>
+<td>Best of token subset, Jaccard and sequence ratio after an alias table for the six leagues’ clubs; women, reserve and B-team qualifiers must agree; home and away straight or swapped</td>
+</tr>
+<tr class="even">
+<td>Accept</td>
+<td>Fixture score ≥ 0.86 with the weaker team ≥ 0.72; or kickoff within 4 h, score ≥ 0.79 and weaker team ≥ 0.64</td>
+</tr>
+<tr class="odd">
+<td>Ambiguity</td>
+<td>No match when the top two candidates score within 0.015, unless both are the same pair listed twice</td>
+</tr>
+<tr class="even">
+<td>Outcome mapping</td>
+<td>Kalshi by ticker suffix code; Polymarket by question similarity ≥ 0.6, with a NO token present</td>
+</tr>
+</tbody>
+</table>
+<p>There is no accept step. <strong>Enable is the human check.</strong> Before a fixture is enabled, its row shows both venues’ raw titles, the kickoff gap between them and both venues’ prices, so a mismatch is visible at a glance.</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div id="fig-lifecycle" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-lifecycle-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div>
+<pre class="mermaid mermaid-js" data-label="fig-lifecycle">stateDiagram-v2
+  [*] --&gt; Upcoming: matched
+  Upcoming --&gt; Scheduled: Enable
+  Scheduled --&gt; Upcoming: Disable
+  Scheduled --&gt; Starting: kickoff − 30 s
+  Starting --&gt; Quoting: orders swept, positions read
+  Starting --&gt; Scheduled: failed, retry in 10 s
+  Quoting --&gt; Starting: fill stream lost
+  Quoting --&gt; Upcoming: Disable or stop all
+  Quoting --&gt; Stopped: loss stop
+  Quoting --&gt; Ended: 104 min after kickoff
+  Ended --&gt; Finished: market closed
+  Stopped --&gt; Finished: market closed
+  Finished --&gt; [*]: 48 h later
+</pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-lifecycle-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Fixture lifecycle. Enabling registers the fixture’s instruments and subscribes its books at once, so they are warm at kickoff. Quoting runs on Polymarket’s scheduled kickoff.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The quoting clock is Polymarket’s scheduled start. The actual kickoff, half-time, goals and red cards are recorded from Kalshi’s free <code>live_data</code> feed, polled every 5 s from 15 minutes before kickoff. That feed runs about 53 s behind its own market at goals, which is fine for the record and is why it does not drive quoting.</p>
+</section>
+<section id="order-books-from-venue-socket-to-decision" class="level2">
+<h2 class="anchored" data-anchor-id="order-books-from-venue-socket-to-decision">4. Order books: from venue socket to decision</h2>
+<p>All the strategy reads from market data is, per outcome and venue, a best bid and a best ask with our own orders removed, and the age of the book they came from.</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div id="fig-books" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-books-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div>
+<pre class="mermaid mermaid-js" data-label="fig-books">flowchart TB
+  pws["Polymarket market WebSocket&lt;br/&gt;YES token only, client PING every 2 s"] --&gt; ps["engine-pm book store&lt;br/&gt;valid after a snapshot"]
+  kws["Kalshi WebSocket, orderbook_delta&lt;br/&gt;one sid, client ping every 2 s"] --&gt; ks["engine-kalshi book store&lt;br/&gt;valid after a snapshot, while seq has no gap"]
+  ps -- "StreamOrderbook: on change, re-sent every 1 s" --&gt; bt
+  ks -- "StreamOrderbook: on change, re-sent every 1 s" --&gt; bt
+  subgraph X["execution"]
+    bt["book stream threads&lt;br/&gt;stamp receive time"] --&gt; qq[["strategy queue"]] --&gt; xs["ex-self best bid and ask, book age"] --&gt; d["decide()"]
+  end
+</pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-books-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Order-book data flow. Engines keep one book per subscribed instrument and stream it to execution on every change and at least once a second while the book is valid and its socket alive.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<section id="one-book-per-venue-and-outcome" class="level3">
+<h3 class="anchored" data-anchor-id="one-book-per-venue-and-outcome">One book per venue and outcome</h3>
+<p>maker_maker subscribes to the YES instrument only. On Kalshi the YES market’s book already carries both sides. On Polymarket the NO token’s book mirrors the YES book (part 3), so subscribing to it would add traffic and a second book that can lag the first, with no new information. Orders still go to the NO instrument where a leg buys NO; their prices are read off the YES book, because a NO bid at x is a YES ask at 1 − x.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Leg</th>
+<th>Order sent to</th>
+<th>Order price</th>
+<th>Read from the YES book</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>pm_yes</code></td>
+<td>Polymarket YES token</td>
+<td>b</td>
+<td>Polymarket best bid, ex-self</td>
+</tr>
+<tr class="even">
+<td><code>pm_no</code></td>
+<td>Polymarket NO token</td>
+<td>1 − a</td>
+<td>Polymarket best ask, ex-self</td>
+</tr>
+<tr class="odd">
+<td><code>k_no</code></td>
+<td>Kalshi market, NO side</td>
+<td>1 − a<sub>k</sub></td>
+<td>Kalshi best ask, ex-self</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="freshness" class="level3">
+<h3 class="anchored" data-anchor-id="freshness">Freshness</h3>
+<p>A book changes only when someone acts, so silence is ambiguous: it can be half-time or a dead connection. The replay pulled orders when a snapshot was older than 10 s, but that number was the cadence of the historical recorder. The live rule is built in layers, so that silence downstream always means a problem:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Layer</th>
+<th>Rule</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Venue socket</td>
+<td>Client ping every 2 s (Polymarket text <code>PING</code>, Kalshi WebSocket ping); the socket is alive while any frame arrived in the last 5 s</td>
+<td>Proves liveness on a quiet book without waiting for Kalshi’s ~10 s server pings</td>
+</tr>
+<tr class="even">
+<td>Book validity</td>
+<td>A snapshot since the last connect; on Kalshi, no sequence gap since</td>
+<td>A book that may have lost a message is invalid, never silently wrong</td>
+</tr>
+<tr class="odd">
+<td>Engine re-send</td>
+<td>Every valid book is re-sent once a second while its socket is alive</td>
+<td>A quiet market still produces one message a second</td>
+</tr>
+<tr class="even">
+<td>Execution</td>
+<td>Book age on execution’s monotonic clock; when either book of an outcome is 3 s old, cancel all three legs</td>
+<td>Measures the whole venue → engine → execution path; 3 s sits inside Kalshi’s 3–6 s lead over Polymarket</td>
+</tr>
+<tr class="odd">
+<td>Venue backstop</td>
+<td>Polymarket’s heartbeat cancels all open orders 10–15 s after the last refresh; Kalshi has no equivalent</td>
+<td>Covers a dead execution process or network; on Kalshi, L = 10 bounds what can rest</td>
+</tr>
+</tbody>
+</table>
+<p>Cancelling all three legs on either stale book is deliberate: the Polymarket legs need Kalshi’s book for the guard, and <code>k_no</code> needs Polymarket’s bid for its edge check. A closed connection invalidates its books at once and they are pulled 3 s later. A silent stall takes up to 5 s to detect in the engine, then 3 s in execution.</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div id="fig-freshness" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-freshness-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div>
+<pre class="mermaid mermaid-js" data-label="fig-freshness">sequenceDiagram
+  participant V as Venue WebSocket
+  participant E as Engine
+  participant X as Execution
+  V-&gt;&gt;E: delta
+  E-&gt;&gt;X: book (changed)
+  Note over V,X: quiet market, socket answers pings
+  E-&gt;&gt;X: book (re-send, 1 s)
+  E-&gt;&gt;X: book (re-send, 1 s)
+  V--xE: socket stalls
+  Note over E: no frame for 5 s: socket dead, re-sends stop
+  Note over X: book age reaches 3 s
+  X-&gt;&gt;X: cancel pm_yes, pm_no, k_no
+  V-&gt;&gt;E: reconnect and snapshot
+  E-&gt;&gt;X: book
+  X-&gt;&gt;X: quote again
+</pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-freshness-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: A quiet book and a dead feed look different downstream. While the socket answers pings, the engine re-sends the book every second; once it goes silent, re-sends stop and execution pulls the outcome’s orders.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Kalshi numbers every message on a subscription with one sequence across all its markets, acknowledgements included, so a gap cannot be pinned to one market. A gap invalidates every book on the subscription and requests fresh snapshots in place, keeping the fill channel on the same socket up; a second gap within 5 s, a failed snapshot or a terminal error reconnects. Markets are also added and removed in place: in a regression probe, 30 of 30 books kept streaming through market-set changes, with a longest gap of 1.19 s.</p>
+</section>
+<section id="removing-our-own-orders" class="level3">
+<h3 class="anchored" data-anchor-id="removing-our-own-orders">Removing our own orders</h3>
+<p>The strategy joins the best price of everyone else. If it priced against a book that includes its own order, the order would peg to itself and stay behind when the rest of the market moves. Execution therefore subtracts its own resting size at each level before reading the top of the book. Our NO bids at 1 − p count as YES asks at p.</p>
+<p>The subtraction has a race: just after an order is placed, the venue may still send a book that does not show it. The rule is: others = displayed − own when displayed ≥ own, otherwise displayed. For a <code>pm_no</code> order resting as a YES ask of 10 contracts at 47 c:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Book at 47 c</th>
+<th>Displayed</th>
+<th>Ours</th>
+<th>Others</th>
+<th>Ex-self best ask</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Others also rest at 47 c</td>
+<td>300</td>
+<td>10</td>
+<td>290</td>
+<td>47 c</td>
+<td>Stay</td>
+</tr>
+<tr class="even">
+<td>Everyone else has left 47 c</td>
+<td>10</td>
+<td>10</td>
+<td>0</td>
+<td>48 c</td>
+<td>Move to 48 c</td>
+</tr>
+<tr class="odd">
+<td>Book not yet showing our order</td>
+<td>5</td>
+<td>10</td>
+<td>5</td>
+<td>47 c</td>
+<td>Stay; no false move</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="the-decision-core" class="level2">
+<h2 class="anchored" data-anchor-id="the-decision-core">5. The decision core</h2>
+<section id="one-thread-one-queue" class="level3">
+<h3 class="anchored" data-anchor-id="one-thread-one-queue">One thread, one queue</h3>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div id="fig-loop" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-loop-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div>
+<pre class="mermaid mermaid-js" data-label="fig-loop">flowchart TB
+  b["book streams ×2"] --&gt; Q
+  t["trade streams ×2"] --&gt; Q
+  f["fill streams ×2"] --&gt; Q
+  c["management commands"] --&gt; Q
+  Q[["event queue"]] --&gt; a
+  subgraph ST["strategy thread"]
+    a["apply events: books, fills, order states"] --&gt; tm["100 ms timer: matching, health, heartbeats, sweeps"] --&gt; dc["decide() per fixture"] --&gt; rc["reconcile per leg"]
+  end
+  rc --&gt; pmio["Polymarket I/O pool, 4 threads"]
+  rc --&gt; kio["Kalshi I/O pool, 4 threads"]
+  pmio -. "responses" .-&gt; Q
+  kio -. "responses" .-&gt; Q
+  rc --&gt; out["state snapshot to the page, ≤ 250 ms&lt;br/&gt;rows to the recorder queue"]
+</pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-loop-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: The strategy thread. Stream threads and I/O pools only post events; all trading state is read and written on one thread, so it needs no locks.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>One strategy thread owns all trading state and drains one queue. Blocking calls run on worker pools, so a place and a cancel can be in flight together, and their responses come back as events. Each batch ends with <code>decide</code> and reconciliation for every active fixture. Because state changes only on this thread and every decision is recorded, a fixture can later be replayed through the same code.</p>
+</section>
+<section id="decide-the-rules-as-a-pure-function" class="level3">
+<h3 class="anchored" data-anchor-id="decide-the-rules-as-a-pure-function"><code>decide</code>: the rules as a pure function</h3>
+<p><code>decide</code> is the port of the replay’s quoting step, and it stays pure: the same input gives the same targets. Its input is, per outcome, the two ex-self tops of book with their ages and q, plus cash spent per venue, time since kickoff and the configuration. Its output is, per outcome and leg, a price and size or a reason for not quoting. Reasons are checked in this order and recorded with every decision:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Scope</th>
+<th>Reason</th>
+<th>Condition</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Outcome</td>
+<td><code>disabled</code>, <code>before_kickoff</code>, <code>window_end</code></td>
+<td>Fixture not quoting; before scheduled kickoff; 104 minutes after it</td>
+</tr>
+<tr class="even">
+<td>Outcome</td>
+<td><code>stale_book</code></td>
+<td>Either book 3 s old or more</td>
+</tr>
+<tr class="odd">
+<td>Outcome</td>
+<td><code>invalid_book</code></td>
+<td>Either book missing a side, or crossed</td>
+</tr>
+<tr class="even">
+<td>Outcome</td>
+<td><code>price_band</code></td>
+<td>Polymarket mid outside 5–95 c</td>
+</tr>
+<tr class="odd">
+<td>Leg</td>
+<td><code>leg_off</code></td>
+<td>Switched off in the configuration</td>
+</tr>
+<tr class="even">
+<td><code>k_no</code></td>
+<td><code>not_post_only</code></td>
+<td>Kalshi ask at or below Kalshi bid</td>
+</tr>
+<tr class="odd">
+<td><code>k_no</code></td>
+<td><code>no_edge</code></td>
+<td>a<sub>k</sub> − b − Kalshi maker fee ≤ 0</td>
+</tr>
+<tr class="even">
+<td><code>pm_yes</code>, <code>pm_no</code></td>
+<td><code>guard</code></td>
+<td>b ≥ Kalshi ask, or a ≤ Kalshi bid (plus the buffer)</td>
+</tr>
+<tr class="odd">
+<td>Leg</td>
+<td><code>inventory</code></td>
+<td>Target size rounds to zero contracts</td>
+</tr>
+<tr class="even">
+<td>Leg</td>
+<td><code>cap</code></td>
+<td>Size reduced by the cash cap</td>
+</tr>
+</tbody>
+</table>
+<p>The cash cap is per venue and fixture, shared by both outcomes. Cash used is cash paid for positions plus collateral of resting orders, and without merges a Polymarket YES + NO pair stays locked until settlement. When the cap binds, orders that reduce an outcome’s |q| are funded first and the opening orders share what is left: the strategy stops opening before it stops hedging.</p>
+</section>
+<section id="the-reconciler" class="level3">
+<h3 class="anchored" data-anchor-id="the-reconciler">The reconciler</h3>
+<p>The touch is only one of the reasons orders change: fills change q and therefore sizes, and the guard, the cap and the window add or remove legs. Instead of one rule per trigger, the reconciler diffs the desired orders against the live ones after every event and issues the fewest writes. Each leg is a stack of up to four child orders at one price.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Situation</th>
+<th>Kalshi</th>
+<th>Polymarket</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Touch moved</td>
+<td>Amend the oldest child to the new price and size; cancel the others</td>
+<td>Cancel and re-post at once; the old order counts toward cash until its cancel is confirmed</td>
+</tr>
+<tr class="even">
+<td>Leg too large</td>
+<td>Amend the youngest child down; it keeps its queue priority</td>
+<td>Cancel the youngest children</td>
+</tr>
+<tr class="odd">
+<td>Leg too small</td>
+<td>New child at the back of the queue, at least 1 contract</td>
+<td>New child at the back, at least 5 contracts</td>
+</tr>
+<tr class="even">
+<td>Leg must not quote</td>
+<td>Cancel at once, unthrottled</td>
+<td>Cancel at once, unthrottled</td>
+</tr>
+</tbody>
+</table>
+<p>Writes are budgeted. A leg reprices at most once per 500 ms, a leg with a request in flight gets no second one, and a token bucket holds each venue under its write limit (15 writes/s on Polymarket, 8 on Kalshi, whose basic tier allows about 10); cancels always pass. Kalshi’s amend has no post-only flag, so an amend priced through the book would fill as a taker; the <code>not_post_only</code> check guards against it, and every fill records whether it was a taker.</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div id="fig-order-states" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-order-states-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div>
+<pre class="mermaid mermaid-js" data-label="fig-order-states">stateDiagram-v2
+  [*] --&gt; PendingNew: place
+  PendingNew --&gt; Live: ack
+  PendingNew --&gt; [*]: reject
+  PendingNew --&gt; Unknown: timeout
+  Live --&gt; PendingAmend: amend
+  PendingAmend --&gt; Live: done
+  PendingAmend --&gt; Unknown: timeout
+  Live --&gt; PendingCancel: cancel
+  PendingCancel --&gt; [*]: confirmed
+  PendingCancel --&gt; Live
+  Unknown --&gt; Live: open at venue
+  Unknown --&gt; [*]: not found
+  Live --&gt; [*]: filled or gone
+</pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-order-states-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7: States of one child order. A reject makes its leg wait 1 s; a failed cancel returns the order to Live, to be cancelled again after a backoff of 1 s, doubling to 10 s. An order whose outcome is unknown after a timeout or transport error freezes its leg until the venue’s open orders resolve it.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Unknown orders are resolved against the venue’s open orders every 2 s. Every 30 s all live orders are checked, which catches orders the venue cancelled on its own; orders on our instruments that execution does not track, seen in two sweeps in a row, are cancelled.</p>
+</section>
+</section>
+<section id="fills-inventory-and-safety" class="level2">
+<h2 class="anchored" data-anchor-id="fills-inventory-and-safety">6. Fills, inventory and safety</h2>
+<p>Fills arrive on each engine’s fill stream: Kalshi’s fill channel and Polymarket’s user channel. Execution deduplicates them by venue and fill id, updates the outcome’s holdings, q and cash, and the next <code>decide</code> resizes the legs. A fill also schedules a window of market data around it for the record (section 7).</p>
+<p>Inventory is never assumed. Thirty seconds before kickoff, a fixture registers its instruments again, cancels every open order on them and reads positions and balances from both venues, so a restart mid-match continues from the true inventory. A lost fill stream restarts every quoting fixture the same way, because fills may have been missed while it was down. P&amp;L counts fills since the fixture started, marked at Kalshi’s mid.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Trigger</th>
+<th>Scope</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Either book 3 s old</td>
+<td>Outcome</td>
+<td>Pull the three legs; quote again on the next fresh book</td>
+</tr>
+<tr class="even">
+<td>Guard</td>
+<td>Leg</td>
+<td>Pull the Polymarket leg</td>
+</tr>
+<tr class="odd">
+<td>104 minutes after kickoff</td>
+<td>Fixture</td>
+<td>Pull all legs</td>
+</tr>
+<tr class="even">
+<td>Inventory reaches L either way</td>
+<td>Leg</td>
+<td>Legs that would add to it size to zero; no order exceeds 3L</td>
+</tr>
+<tr class="odd">
+<td>Mark-to-market loss below −$40 (replay worst: −$17)</td>
+<td>Fixture</td>
+<td>Stop the fixture</td>
+</tr>
+<tr class="even">
+<td>Order outcome unknown</td>
+<td>Leg</td>
+<td>Freeze until resolved</td>
+</tr>
+<tr class="odd">
+<td>Fill stream lost</td>
+<td>Quoting fixtures</td>
+<td>Restart from venue positions</td>
+</tr>
+<tr class="even">
+<td>Engine unhealthy for 90 s (checked every 5 s)</td>
+<td>All</td>
+<td>Disable every fixture and cancel</td>
+</tr>
+<tr class="odd">
+<td>No management heartbeat for 120 s (sent every 15 s)</td>
+<td>All</td>
+<td>Disable every fixture and cancel</td>
+</tr>
+<tr class="even">
+<td>Two failed Polymarket heartbeats</td>
+<td>All</td>
+<td>Disable every fixture and cancel</td>
+</tr>
+<tr class="odd">
+<td>Kill switch</td>
+<td>All</td>
+<td>Disable every fixture and sweep every open order</td>
+</tr>
+<tr class="even">
+<td>Execution or network dies</td>
+<td>Venue</td>
+<td>Polymarket cancels within 10–15 s; Kalshi orders keep resting, at most L = 10 per leg</td>
+</tr>
+</tbody>
+</table>
+<p>Only the pulls at the top of the table resume by themselves. A stopped or disabled fixture trades again only when it is enabled again by hand. maker_maker is the only module trading its accounts.</p>
+</section>
+<section id="the-trading-record" class="level2">
+<h2 class="anchored" data-anchor-id="the-trading-record">7. The trading record</h2>
+<p>The record keeps only what the replay comparison needs and what cannot be downloaded later. It is one SQLite file per UTC day on the execution volume. The strategy thread enqueues rows and a single writer thread writes them, so trading never waits on disk, and a full disk drops rows without stopping trading.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Table</th>
+<th>One row per</th>
+<th>Answers</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>decisions</code></td>
+<td>Order action, with kind (new, top-up, shrink, cancel, re-post, amend) and reason</td>
+<td>Why each order changed</td>
+</tr>
+<tr class="even">
+<td><code>orders</code></td>
+<td>Request, ack or reject, cancel, amend and fill, with exchange, engine and execution times</td>
+<td>Latency, rejects, fills, fees, taker fills</td>
+</tr>
+<tr class="odd">
+<td><code>state</code></td>
+<td>Decision</td>
+<td>Both books, q, holdings, cash headroom, guard state and book ages at that moment</td>
+</tr>
+<tr class="even">
+<td><code>queue</code></td>
+<td>Resting order, when it ends</td>
+<td>Displayed size at our price on ack, volume traded there, shrink from cancels ahead: the realized queue share ρ</td>
+</tr>
+<tr class="odd">
+<td><code>kalshi_queue</code></td>
+<td>Kalshi order, every 5 s and 1 s after a trade at our price</td>
+<td>Kalshi’s own count of contracts ahead, to check <code>queue</code></td>
+</tr>
+<tr class="even">
+<td><code>books_1s</code></td>
+<td>Traded market and second, in play</td>
+<td>Best price plus four levels per side: the input of the replay</td>
+</tr>
+<tr class="odd">
+<td><code>trades</code></td>
+<td>Public print on a traded market</td>
+<td>Fill types and markouts</td>
+</tr>
+<tr class="even">
+<td><code>fill_windows</code></td>
+<td>Book message or trade from 5 s before to 30 s after each fill, both venues</td>
+<td>What happened around every fill</td>
+</tr>
+<tr class="odd">
+<td><code>match_events</code></td>
+<td>Change in Kalshi’s match state</td>
+<td>Actual kickoff, half-time, goals, red cards</td>
+</tr>
+<tr class="even">
+<td><code>fixtures</code></td>
+<td>Fixture start</td>
+<td>Configuration, code commit, balances</td>
+</tr>
+</tbody>
+</table>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div id="fig-record" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-record-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div>
+<pre class="mermaid mermaid-js" data-label="fig-record">flowchart TB
+  st["strategy thread"] -- "rows, non-blocking" --&gt; rq[["recorder queue"]] --&gt; w["writer thread"] --&gt; db[("SQLite, one file per day&lt;br/&gt;10 GB volume")]
+  db -- "after each batch of fixtures" --&gt; pq["export to Parquet"]
+  pq -- "books_1s, trades" --&gt; sim["replay on the recorded books"]
+  pq -- "orders, queue, fill_windows" --&gt; cmp["fixture by fixture, order by order:&lt;br/&gt;fills, fill types, ρ, markouts, P&amp;L"]
+  sim --&gt; cmp
+</pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-record-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;8: From the live record to the replay comparison.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The queue estimate turns the test into a measurement of ρ, the largest lever in the replay. Each order starts behind the displayed size at its price; trades at that price move it forward, and a level that shrinks below it means cancellations ahead. Every filled order then yields the share of the displayed queue that actually traded ahead of it, and on Kalshi the venue’s own queue position checks the estimate.</p>
+<p>Full ladders in <code>books_1s</code> and <code>fill_windows</code> cost about 120–220 MB per fixture, estimated from measured message rates (busiest market: 28 messages/s on Kalshi, 21 on Polymarket). The 10 GB volume holds 40 fixtures or more.</p>
+</section>
+<section id="the-control-page" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="the-control-page">8. The control page</h2>
+<div id="fig-control" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-control-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<a href="assets/control_page.png" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;9: The control page before the first live fixture. Dortmund vs Bremen is enabled and scheduled; the other fixtures are matched but disabled. Its expanded row shows the state per outcome: q per venue, the three legs’ targets and live orders, and book ages under one second before kickoff, thanks to the engines’ re-sends."><img src="assets/control_page.png" class="img-fluid figure-img column-page"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-control-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;9: The control page before the first live fixture. Dortmund vs Bremen is enabled and scheduled; the other fixtures are matched but disabled. Its expanded row shows the state per outcome: q per venue, the three legs’ targets and live orders, and book ages under one second before kickoff, thanks to the engines’ re-sends.
+</figcaption>
+</figure>
+</div>
+<p>The page is served by management and talks only to execution. Fixtures sit in three tables: Live (from kickoff until a venue closes the market), Upcoming (soonest first, with a divider after the next 24 h) and Finished (kept 48 h, with the fixture’s P&amp;L). Every row shows the league, the kickoff gap between venues, both venues’ titles with links, the match score from Kalshi’s feed, an Enable toggle, and for home and away the YES best bid and ask with size on each venue.</p>
+<p>Rows that are not traded take their prices from <code>GetOrderbookSnapshots</code> every 45 s, one batched REST read per venue. Display never drives the trading subscriptions: each engine keeps one market set and the latest request replaces it, so display rows would add and drop markets under the traded books.</p>
+</section>
+<section id="deployment-and-operations" class="level2">
+<h2 class="anchored" data-anchor-id="deployment-and-operations">9. Deployment and operations</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Service</th>
+<th>Region</th>
+<th>Machine</th>
+<th>Swap</th>
+<th>Volume</th>
+<th>Measured memory</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>engine-pm</code></td>
+<td>Stockholm</td>
+<td>shared CPU, 1 GB</td>
+<td>512 MB</td>
+<td>–</td>
+<td>100–570 MB</td>
+</tr>
+<tr class="even">
+<td><code>engine-kalshi</code></td>
+<td>Ashburn</td>
+<td>shared CPU, 512 MB</td>
+<td>512 MB</td>
+<td>–</td>
+<td>110–330 MB</td>
+</tr>
+<tr class="odd">
+<td><code>execution</code></td>
+<td>Ashburn</td>
+<td>shared CPU, 512 MB</td>
+<td>–</td>
+<td>10 GB</td>
+<td>peak 35 MB</td>
+</tr>
+<tr class="even">
+<td><code>management</code></td>
+<td>Ashburn</td>
+<td>shared CPU, 512 MB</td>
+<td>–</td>
+<td>–</td>
+<td>peak 80 MB</td>
+</tr>
+</tbody>
+</table>
+<p>Sizes come from a local load test: all four processes against the real venues for 16 minutes, 40 markets streamed per engine (8–10 times one fixture), and the control page polled every second. Seven days cost about $5: $4.10 compute, $0.35 for the volume, and cents of transfer.</p>
+<p>Logs go to standard output, where Fly keeps them searchable for 7 days. Every line starts with its level; notable events carry a fixed prefix (<code>mm fixture=&lt;id&gt; leg=&lt;leg&gt; &lt;event&gt;</code>), and engines log freshness as transitions only (<code>ws venue=kalshi event=dead silent_ms=...</code>), so a stale-book pull in execution lines up with one engine line. Routine quotes are in the record, not the logs. There is no alerting in v1: someone watches every enabled match.</p>
+<section id="two-problems-from-the-first-deployment" class="level3">
+<h3 class="anchored" data-anchor-id="two-problems-from-the-first-deployment">Two problems from the first deployment</h3>
+<p><strong>Listings that outgrew the machine.</strong> On the first Fly run, every Polymarket listing hit its deadline. The engine paged Gamma’s <code>/events/keyset</code>, which returns every derivative market of every soccer event. On a throttled shared CPU it ran past the 90 s deadline and kept working after the caller gave up, so calls piled up: 821 MB of memory, a load of 2.6, and engine health flapping.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Polymarket listing</th>
+<th><code>/events/keyset</code></th>
+<th><code>/markets/keyset</code>, moneyline filter</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Downloaded per call</td>
+<td>929 MB</td>
+<td>24 MB</td>
+</tr>
+<tr class="even">
+<td>Time per call</td>
+<td>Past the 90 s deadline on Fly</td>
+<td>About 10 s and 3 CPU-seconds, locally</td>
+</tr>
+<tr class="odd">
+<td>Moneyline markets found</td>
+<td>3,852</td>
+<td>3,852</td>
+</tr>
+</tbody>
+</table>
+<p>The listing also stops between pages once its call is cancelled, and the matcher now waits up to 300 s.</p>
+<p><strong>Memory that only went up.</strong></p>
+<div id="fig-memory" class="quarto-layout-panel">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-memory-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-memory" style="flex-basis: 100.0%;justify-content: flex-start;">
+<div id="fig-memory-kalshi" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-memory-kalshi-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="assets/memory_engine_kalshi.png" class="lightbox" data-gallery="fig-memory" title="Figure&nbsp;10&nbsp;(a): engine-kalshi, 512 MB machine"><img src="assets/memory_engine_kalshi.png" class="img-fluid figure-img" data-ref-parent="fig-memory"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-memory-kalshi-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) <code>engine-kalshi</code>, 512 MB machine
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-memory" style="flex-basis: 100.0%;justify-content: flex-start;">
+<div id="fig-memory-pm" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-fig figure">
+<div aria-describedby="fig-memory-pm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="assets/memory_engine_pm.png" class="lightbox" data-gallery="fig-memory" title="Figure&nbsp;10&nbsp;(b): engine-pm, 1 GB machine"><img src="assets/memory_engine_pm.png" class="img-fluid figure-img" data-ref-parent="fig-memory"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-memory-pm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(b) <code>engine-pm</code>, 1 GB machine
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-memory-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;10: Machine memory of both engines over one day on Fly. Both climb to the machine’s limit, drop at each restart, and flatten after the deploy at about 13:30 that added the trimmer. The flat tops before it are full machines spilling into swap, not plateaus.
+</figcaption>
+</figure>
+</div>
+<p>It was not a leak: <code>engine-kalshi</code> reached 356 MB resident plus 92 MB of swap after 4.5 hours while its memory in use stayed at 4–11 MB (Polymarket: 47–92 MB). Each market listing parses a large JSON catalog; glibc keeps freed memory in per-thread arenas (eight on a one-CPU machine), and the calls land on different gRPC threads, so every arena stays at its peak.</p>
+<p>The fix is one call: each engine runs <code>malloc_trim(0)</code> once a minute and logs resident, in-use and held memory every 10 minutes. In a local A/B replaying about 16 hours of Kalshi and 46 hours of Polymarket listing traffic in 30 minutes, the old builds rose to 533 MB and 805 MB and kept rising; the trimmed builds stayed in the ranges of the table above. On Fly, <code>engine-pm</code> has held about 220 MB since. <code>engine-kalshi</code>’s baseline still drifted from about 100 to 200 MB over ten hours, inside the measured range, and the <code>mem</code> log line is the check.</p>
+</section>
+</section>
+<section id="design-decisions" class="level2">
+<h2 class="anchored" data-anchor-id="design-decisions">10. Design decisions</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Decision</th>
+<th>Instead of</th>
+<th>Because</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Engine re-sends and a 3 s threshold</td>
+<td>Each leg’s age from venue messages, 10 s</td>
+<td>A quiet book is not a dead one, and Kalshi leads by 3–6 s</td>
+</tr>
+<tr class="even">
+<td>Kalshi amend for price and size</td>
+<td>Cancel and place; Kalshi’s decrease endpoint</td>
+<td>One atomic write under a ~10 writes/s limit; keeps priority on a size cut; the decrease endpoint leaves <code>reduce_to</code> undefined</td>
+</tr>
+<tr class="odd">
+<td>Desired-state reconciler</td>
+<td>One rule per trigger</td>
+<td>Fills, the guard, the cap and the window change orders too</td>
+</tr>
+<tr class="even">
+<td>Own C++ matcher</td>
+<td>Exact-name mapping; a paid match-data API</td>
+<td>Club names differ across venues; no Python in the live path</td>
+</tr>
+<tr class="odd">
+<td>Real orders from the first fixture</td>
+<td>A shadow mode</td>
+<td>Queue position and latency exist only for real orders; L = 10 bounds the cost</td>
+</tr>
+<tr class="even">
+<td>No Polymarket merges in v1</td>
+<td>Merging each pair at once</td>
+<td>Relayer support for the account’s wallet type is unverified; the Polymarket cap was raised to $300 instead</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="status-and-next-steps" class="level2">
+<h2 class="anchored" data-anchor-id="status-and-next-steps">11. Status and next steps</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Milestone</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1. Engine changes: amend, book snapshots, re-sends, pings, sequence-gap recovery, Polymarket heartbeat chaining</td>
+<td>Done. Probed against both venues on 2026-10-06, including a real 1 c post-only order on each, amended on Kalshi, then cancelled</td>
+</tr>
+<tr class="even">
+<td>2. maker_maker module, control page and record</td>
+<td>Done. Smoke-tested against fake engines; deployed 2026-10-07 with 116 club fixtures matched</td>
+</tr>
+<tr class="odd">
+<td>3. Live, one fixture at a time, L = 10</td>
+<td>Next. Two concurrent fixtures after about five clean ones</td>
+</tr>
+<tr class="even">
+<td>4. 25–30 club fixtures</td>
+<td>Rerun the replay on the recorded books after each batch and compare order by order; then choose L and the next single setting</td>
+</tr>
+</tbody>
+</table>
+<p>Known gaps in v1:</p>
+<ul>
+<li>No Kalshi order group yet, so there is no venue-side contract limit on Kalshi; L = 10 is the bound.</li>
+<li>A Polymarket trade that fails on chain is logged, but its fill is not reversed.</li>
+<li>Trades on Polymarket’s NO book are not streamed, so the queue estimate undercounts volume for <code>pm_no</code>; Kalshi’s queue position is exact.</li>
+<li>The page’s P&amp;L is marked at Kalshi’s mid, not at settlement, and settled Polymarket positions are redeemed by hand.</li>
+<li>Still to be seen on the first live fixture: no false staleness at half-time.</li>
+</ul>
+<p>Not in v1, because it is not replayed yet or not needed to measure: draws, pregame quoting, joint inventory across the two outcomes, taker flattening after a timeout, and Polymarket merges.</p>
+<p>The results will be published here once enough fixtures have been traded to compare the live fills with the replay.</p>
+</section>
+<section id="about-this-article" class="level2">
+<h2 class="anchored" data-anchor-id="about-this-article">About this article</h2>
+<p>This article describes the trading repository at commit <code>cda5eec</code> (2026-10-07). Replay figures come from the notebook behind part 3, the matching and freshness rules from the strategy’s plan and code, and resource figures from a local load test and the Fly metrics shown above. It describes the system before its first live fixture; no trading results are reported yet.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>Zehao Zhou · Trading system · Polymarket &amp; Kalshi</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>
