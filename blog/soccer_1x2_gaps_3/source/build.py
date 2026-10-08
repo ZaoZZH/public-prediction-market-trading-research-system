@@ -1,4 +1,4 @@
-"""Execute notebooks 02.1 (parts 1-2) and 02.2.1 (part 3) locally once each and render each published part
+"""Execute notebooks 02.1 (parts 1-2) and 02.2.1 (parts 3-4) locally once each and render each published part
 of the series as its own Quarto/Plotly snapshot.
 
     python public/blog/soccer_1x2_gaps/build.py [--parts soccer_1x2_gaps_3 ...]
@@ -26,6 +26,7 @@ from plotly.offline import get_plotlyjs
 
 from charts import F_ROBUST, F_SWEEP_MAX, FONT, cell_label, competition, price_levels, readable, views
 import part3
+import part4
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
@@ -43,21 +44,24 @@ NOTEBOOKS = {
                            24: 'MM_DIRS =', 26: 'cd = export', 28: 'plot_price_conditions()', 30: 'ph = screen_rates'},
                  plots={3: 1, 5: 1, 7: 3, 9: 1, 11: 1, 13: 1, 16: 2, 18: 2, 21: 1, 22: 1, 24: 1, 28: 1, 30: 1},   # 16/18: outcome, then matchup x role
                  sources=['charts.py']),
-    '02.2.1': dict(path=ANALYSIS / 'notebooks/02.2.1_maker_maker.ipynb', n_cells=27,
+    '02.2.1': dict(path=ANALYSIS / 'notebooks/02.2.1_maker_maker.ipynb', n_cells=45,
                    inputs=['conditions.parquet', 'matches.parquet', 'gap_cents.csv', 'gap_cents_price.csv', 'fused_spread.csv', 'pm_vs_cross.csv',
                            'hy_lead_lag.parquet', 'leg_waits.parquet', 'mm_sim_summary.parquet', 'mm_sim_fills.parquet',
-                           'mm_sim_pairs.parquet', 'mm_sim_grid.csv'],
+                           'mm_sim_pairs.parquet', 'mm_sim_grid.csv', 'mm_sim_capital.parquet', 'mm_sim_L50_capital.parquet', 'mm_sim_L20_summary.parquet', 'mm_sim_L20_fills.parquet', 'mm_sim_L20_pairs.parquet', 'mm_sim_L20_grid.csv', 'mm_sim_L20_capital.parquet', 'mm_sim_L15_summary.parquet', 'mm_sim_L15_capital.parquet', 'mm_sim_L15_grid.csv', 'mm_sim_L10_summary.parquet', 'mm_sim_L10_fills.parquet', 'mm_sim_L10_capital.parquet', 'mm_sim_L10_grid.csv', 'mm_sim_L10_cap200_300_summary.parquet', 'mm_sim_L10_cap200_300_fills.parquet', 'mm_sim_L10_cap200_300_capital.parquet', 'mm_sim_L10_cap200_300_grid.csv', 'mm_sim_L10_drivers.parquet', 'mm_sim_L10_jumps.parquet', 'mm_sim_L50_summary.parquet', 'mm_sim_L50_fills.parquet', 'mm_sim_L50_pairs.parquet', 'mm_sim_L50_grid.csv', 'mm_sim_legs_summary.parquet', 'mm_sim_legs_fills.parquet',
+                           'mm_sim_legs_pairs.parquet', 'mm_sim_legs_grid.csv', 'mm_sim_buffer_summary.parquet', 'mm_sim_buffer_fills.parquet',
+                           'mm_sim_buffer_pairs.parquet', 'mm_sim_buffer_grid.csv'],
                    expected={1: 'from pathlib import Path', 3: 'COLS =', 6: 'cents = pd.read_csv', 9: 'gp = pd.read_csv',
                              12: 'from matplotlib.patches', 15: 'pc = pd.read_csv', 18: 'hy = pd.read_parquet', 21: 'lw = pd.read_parquet',
                              24: 'sim = pd.read_parquet'},
-                   plots={3: 3, 6: 1, 9: 3, 12: 3, 15: 2, 18: 2, 21: 2, 24: 3},
-                   sources=['charts.py', 'part3.py']),
+                   plots={3: 3, 6: 1, 9: 3, 12: 3, 15: 2, 18: 2, 21: 2, 24: 3, 27: 1, 30: 1, 36: 2, 42: 2},   # part 4 redraws 27-42 (sections 7.1-7.6) its own way
+                   sources=['charts.py', 'part3.py', 'part4.py']),
 }
 # Published parts: hosted directory -> notebook, narrative template, the cells whose views it shows, and a fixed
 # page date (a rebuild must not re-date a published part).
 PARTS = {'soccer_1x2_gaps_1': {'notebook': '02.1', 'template': 'part1.qmd.j2', 'cells': [3, 5, 7, 9, 11, 13, 16, 18], 'date': '2026-09-22'},
          'soccer_1x2_gaps_2': {'notebook': '02.1', 'template': 'part2.qmd.j2', 'cells': [21, 22, 24, 28], 'date': '2026-09-22'},
-         'soccer_1x2_gaps_3': {'notebook': '02.2.1', 'template': 'part3.qmd.j2', 'cells': [3, 6, 9, 12, 15, 18, 21, 24], 'date': '2026-09-29'}}
+         'soccer_1x2_gaps_3': {'notebook': '02.2.1', 'template': 'part3.qmd.j2', 'cells': [3, 6, 9, 12, 15, 18, 21, 24], 'date': '2026-09-29'},
+         'soccer_1x2_gaps_4': {'notebook': '02.2.1', 'template': 'part4.qmd.j2', 'cells': [27, 30, 33, 36, 39, 42], 'date': '2026-10-08'}}
 D1, D2 = 'PM YES + K NO', 'K YES + PM NO'
 SMALL_BUCKET = 15_000   # price-level bars with fewer maker/maker observations are named in the text as the least precise
 PL, UCL, WC = 'Premier League 2025/26', 'UEFA Champions League 2025/26', 'World Cup 2026/27'
@@ -395,7 +399,8 @@ def run(key):
             cell.outputs, cell.execution_count = [], None
     if key == '02.1':
         return dict(nb=nb, views=lambda i: views(i, state), k=key_numbers(state), context=context_02_1(state), fixtures=state['m'])
-    return dict(nb=nb, views=lambda i: part3.views(i, snaps), k=part3.key_numbers(snaps), context=part3.tables(snaps), fixtures=state['m'])
+    return dict(nb=nb, views=lambda i: part3.views(i, snaps) + part4.views(i, snaps),
+                k={**part3.key_numbers(snaps), **part4.key_numbers(snaps)}, context={**part3.tables(snaps), **part4.tables(snaps)}, fixtures=state['m'])
 
 
 def build_part(slug, spec, run_, quarto):

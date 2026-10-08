@@ -1,0 +1,252 @@
+---
+title: "Starting small"
+subtitle: "Kalshi vs Polymarket in soccer 1X2 markets, part 4 of 4: which of the three resting orders earn their place, how tight the guard should be, how small an order and how much cash a first real-money test needs, and where its profits and losses come from."
+author: "Zehao Zhou"
+date: "{{ date }}"
+description: "Part 4 of a trade-tape study of soccer 1X2 markets on Kalshi and Polymarket: the maker/maker replay with fewer orders, a guard buffer, order sizes from 100 to 10 contracts, a cash cap per venue, a fixture-by-fixture decomposition of P&L, and strong against weak teams, leading to the configuration of a small real-money test."
+---
+
+[Part 3](../soccer_1x2_gaps_3/index.html) ended with a replay of three resting orders per team-win outcome, a Polymarket YES bid, a Polymarket YES ask and a Kalshi YES ask, against both venues' recorded order books. At 100 contracts per order, its best club configuration made {{ k.l.p100 }} per fixture at the back of every queue. It also had a standard deviation of {{ k.l.sd100 }} per fixture, a worst fixture of {{ k.l.worst100 }}, and, as section 3 shows, a busiest fixture that tied up {{ k.l.cash_max100 }} across the two venues.
+
+Before putting money behind it, the same replay was run again to answer the questions a first real-money test raises, above all one: **how small can the test be and still be informative?**
+
+- **Sections 1–2** ask whether all three orders and the cross-venue guard earn their place, or whether a simpler setup would do.
+- **Sections 3–4** shrink the order from 100 contracts to 10 and cap the cash each venue can tie up.
+- **Sections 5–6** look inside the small configuration: what separates good fixtures from bad ones, where the losses come from, and whether the favourite or the underdog is the better outcome to quote.
+
+Unless stated otherwise, every run is part 3's replay with its best club variant: team-win outcomes in play, the {{ k.c.of }} club fixtures of the six club competitions, the worst-case queue (ρ = 1), the Kalshi order at Kalshi's best ask, and the guard on. The World Cup appears where it behaves differently; that tournament is over.
+
+## Summary
+
+::: {.summary-list}
+
+1. **All three orders beat either pair.** In club play, three orders make {{ k.o.three_1 }} per fixture at ρ = 1, against {{ k.o.pmk_1 }} for the Polymarket bid with only the Kalshi ask and {{ k.o.pmpm_1 }} with only the Polymarket ask. Dropping either ask costs {{ k.o.drop }} per fixture. Kalshi adds value twice, as a signal for the guard and as an exit.
+
+2. **The guard's one-tick reactions are not noise.** Letting Kalshi cross the order by 1–3 ticks before pulling it leaves club P&L where it was ({{ k.g.club_spread }} across buffers and queues). It trades fewer cancels for more and worse bid fills. A 1-tick buffer is a robust default; it is not a profit lever.
+
+3. **Smaller orders keep more per contract.** At 10 contracts the replay makes {{ k.l.p10 }} per fixture: {{ k.l.pc10 }} per contract of order size against {{ k.l.pc100 }} at 100, with a worst fixture of {{ k.l.worst10 }} instead of {{ k.l.worst100 }}. The mean per unit of risk rises from {{ k.l.ms100 }} to {{ k.l.ms10 }}.
+
+4. **Cash, not losses, is what a small account runs out of.** Every pair completed across venues locks $1 until settlement, so the cash a fixture needs grows with how much it trades. At 10 contracts, a cap of $200 on Polymarket and $300 on Kalshi costs {{ k.c.cut_best }} of the P&L and leaves the losing side of the distribution unchanged.
+
+5. **Profit comes from a few busy fixtures; losses from inventory held into price jumps.** The median club fixture makes {{ k.c.median }}, and the top 10% of fixtures produce {{ k.c.top10 }} of the total. Edge is positive in every volume band; fixtures lose when a position is open as the price jumps, mostly short YES when that team scores.
+
+6. **Quote both team-win outcomes, favourite and underdog.** The two outcomes of a fixture do not offset each other, and the favourite's higher total comes from trading more, not from earning more per contract.
+
+:::
+
+The resulting first test runs 10 contracts per order on all three orders with the guard, a cash cap per venue, and both outcomes of every enabled club fixture. Section 7 lists the configuration and what is still unknown; the system built to run it is described in [Building the maker/maker trading system](../maker_maker_system/index.html).
+
+## Definitions added in this part
+
+The vocabulary of part 3 carries over: `pm_yes`, `pm_no` and `k_no` are the three orders, q is inventory (Polymarket YES held minus NO held on either venue), and ρ is the share of the displayed queue that trades ahead of an order.
+
+| Term | Meaning here |
+| --- | --- |
+| L | Order size and inventory scale, in contracts. The bid is sized L − q and each ask L + q, at most 3L. Part 3 used L = 100. |
+| Guard buffer | How far, in 1 c ticks, Kalshi's book may cross a Polymarket order before the guard pulls it. Buffer 0 is part 3's guard. |
+| Double fill | A fixture where both asks filled together, so that inventory exceeded L. |
+| Cash needed | Per venue and fixture, the peak during the match of cash paid for open positions plus the collateral of resting orders. |
+| Fixtures needed | The number of fixtures before a 95% interval on the mean P&L excludes zero, if the replay is right: (1.96 × SD ÷ mean)². |
+| Edge, inventory | P&L split into the value of each fill against Kalshi's mid at that second (net of the Kalshi fee), and the net position times later mid changes. |
+| Jump second | A second in which Kalshi's mid moves by 3 c or more: a stand-in for goals and other sudden repricings. |
+| Strong, weak team | The team priced higher, or lower, by both venues' pre-game prices averaged over the last 30 minutes before kickoff. |
+
+## 1. All three orders, or two?
+
+The replay was run with one of the two asks switched off, to see what each exit adds:
+
+| Setup | Resting orders | What it tests |
+| --- | --- | --- |
+| Three orders | `pm_yes` + `pm_no` + `k_no` | Part 3's design, the reference |
+| PM bid + Kalshi ask | `pm_yes` + `k_no` | One exit: no double fills, one venue to cancel on after a fill |
+| PM bid + PM ask | `pm_yes` + `pm_no` | A plain Polymarket market maker; with the guard on, Kalshi's book is still used as a signal |
+
+{{ chart('27:0') }}
+
+{{ orders_table }}
+
+**In club play, all three orders beat either pair in every run.** Dropping either ask costs {{ k.o.drop }} per fixture.
+
+**Kalshi adds value twice.** A plain Polymarket market maker without the guard, which uses nothing from Kalshi, makes {{ k.o.plain_1 }} at ρ = 1 and {{ k.o.plain_25 }} at ρ = 0.25.
+
+- **As a signal:** using Kalshi's book for the guard lifts it to {{ k.o.plain_guard_1 }} and {{ k.o.plain_guard_25 }}.
+- **As an exit:** adding the Kalshi order as well lifts it to {{ k.o.three_1 }} and {{ k.o.three_25 }}, {{ k.o.lift }} more than without Kalshi at all.
+
+**The double-fill risk is worth taking.** The pairs never double-fill; the three orders do, in {{ k.o.double }} of club fixtures. Yet the three orders earn more with similar downside: {{ k.o.losing }} of fixtures lose in each setup, and the 5th percentile is {{ k.o.p5_three }}, against {{ k.o.p5_pmk }} and {{ k.o.p5_pmpm }} for the pairs.
+
+**The two pairs differ.**
+
+- *PM bid + Kalshi ask* is the weakest club setup at ρ = 1. Without the guard its inventory result is negative ({{ k.o.pmk_inv_off }} per fixture), and it needs the most fixtures to prove itself: {{ k.o.pmk_n }}, against {{ k.o.three_n }} for three orders.
+- *PM bid + PM ask* is the steadiest, with a standard deviation of {{ k.o.pmpm_sd }} per fixture, and needs the fewest fixtures at ρ = 0.25 with the guard ({{ k.o.pmpm_n25 }}). But its pairs take the longest to complete: a median of {{ k.o.pmpm_pair }} s, against {{ k.o.three_pair }} s for three orders.
+
+**The World Cup is different.** Without the guard, PM bid + PM ask about matches three orders there: {{ k.o.wc_pmpm_1 }} against {{ k.o.wc_three_1 }} at ρ = 1, and {{ k.o.wc_pmpm_25 }} against {{ k.o.wc_three_25 }} at ρ = 0.25. In that faster market the Kalshi exit adds little.
+
+If a live system had to start simpler, PM bid + PM ask with the guard would be the fallback: one venue to trade, the lowest variance, the smallest sample at short queues. The test keeps all three orders, with a switch per order so the fallback is a setting, not a code change.
+
+## 2. How tight a guard?
+
+Part 3's guard pulls the Polymarket bid as soon as Kalshi's best ask reaches it. A goal moves Kalshi several ticks at once, while a move of one or two ticks may come back. The idea tested here is to let Kalshi cross the order by a **buffer** before pulling it:
+
+- rest `pm_yes` only while b < Kalshi best ask + buffer;
+- rest `pm_no` only while a > Kalshi best bid − buffer.
+
+A larger buffer keeps the order up through small Kalshi moves and still pulls it when a jump arrives.
+
+{{ chart('30:0') }}
+
+{{ buffer_table }}
+
+**In club play the buffer is neutral.** P&L barely moves across buffers 0–3, and every interval overlaps. What changes is the mix:
+
+- **fewer pulls:** {{ k.g.pulls }} guard cancels per fixture at buffers 0, 1, 2 and 3;
+- **more bid fills:** {{ k.g.bid_k_0 }} rising to {{ k.g.bid_k_3 }} contracts per fixture;
+- **each bid fill is worse:** its markout at the fill falls, buffer by buffer, through {{ k.g.mo }} c per contract;
+- **more double fills:** {{ k.g.double_0 }} of fixtures at buffer 0, {{ k.g.double_123 }} with a buffer.
+
+So the one-tick crosses that buffer 0 reacts to are not pure noise: the fills they avoid are worse ones. Keeping the order up wins back about as much in volume as it loses in quality.
+
+**At the World Cup the buffer removes the guard's cost.** Buffer 0 cost {{ k.g.wc_cost }} per fixture there ({{ k.g.wc_b0_1 }} against {{ k.g.wc_off_1 }} without the guard at ρ = 1). Buffer 1 recovers most of it ({{ k.g.wc_b1_1 }}), and buffers 2–3 are back at or above no guard ({{ k.g.wc_b23 }}). In that market small crosses were mostly noise.
+
+A 1-tick buffer is therefore a robust default: club P&L is unchanged ({{ k.g.b1_1 }} against {{ k.g.b0_1 }} at ρ = 1) with {{ k.g.pulls_cut }} fewer guard cancels. Fewer cancels matter more live than in the replay, which charges nothing for a cancel beyond lost queue position, while a live system also pays in rate limits and cancel latency.
+
+## 3. Smaller orders
+
+The replay was repeated at L = 50, 20, 15 and 10 contracts, with everything else unchanged except the minimum order: at 20 contracts and below, no Polymarket order or top-up under 5 contracts and no Kalshi order under 1, the venues' minimums.
+
+The cash a fixture needs is tracked each second, per venue and summed over both team-win outcomes (one account per venue):
+
+- **Polymarket:** cash paid for positions, with every Polymarket YES + NO pair merged back into $1 at once, plus the collateral of resting orders;
+- **Kalshi:** cash paid for NO, locked until settlement, plus the collateral of the resting NO bid.
+
+A fixture's requirement is the peak of that series.
+
+{{ chart('33:0') }}
+
+{{ size_table }}
+
+**Half the size keeps {{ k.l.keep50 }} of the P&L.** At L = 50 the replay makes {{ k.l.p50 }} per fixture against {{ k.l.p100 }} at L = 100, because fills fall only to {{ k.l.fills_ratio }}: a trade that reaches our price fills a larger share of a smaller order. P&L per contract of L rises with every step down, from {{ k.l.pc100 }} at L = 100 to {{ k.l.pc50 }} at 50 and {{ k.l.pc10 }} at 10. The gain slows at 10, partly because Polymarket's 5-contract minimum leaves small shortfalls unfilled.
+
+**Risk falls faster than P&L.** The standard deviation per fixture drops from {{ k.l.sd100 }} at L = 100 to {{ k.l.sd50 }} at 50 and {{ k.l.sd10 }} at 10, and the worst fixture from {{ k.l.worst100 }} to {{ k.l.worst10 }}. The ranking of the four variants of part 3 is the same at every size.
+
+**The sample a test needs barely changes.** A live test at L = 10 needs about {{ k.l.n10 }} club fixtures for a 95% interval that excludes zero, against {{ k.l.n100 }} at L = 100, if the replay is right, with a tenth of the money at risk. A smaller order also makes the replay's assumption that our orders do not change the tape more realistic.
+
+**Cash grows with turnover, not with L alone.** Every YES/NO pair completed across venues locks $1 until settlement: the YES on Polymarket, the NO on Kalshi. Busy fixtures stack up locked pairs through the match. The median fixture at L = 100 needs {{ k.l.cash_med100 }} per venue, but the tail is set by the busiest fixtures, and halving L cuts the 95th percentile to {{ k.l.cash_ratio50 }}. At L = 10, the 95th percentile is {{ k.l.pm_p95_10 }} on Polymarket and {{ k.l.k_p95_10 }} on Kalshi. Several fixtures played at the same time add up.
+
+## 4. A cash cap per venue
+
+At L = 10, {{ k.c.over_pct }} of club fixtures need more than $200 on Polymarket or $300 on Kalshi (section 3). This run caps the cash instead.
+
+**Rule: stop opening, keep hedging.** Each second, order sizes are cut to what the remaining cash can fund; remaining cash is the cap minus cash already paid for positions. Whichever order reduces |q| is funded first, and the order that opens new exposure gets what is left. Selling YES already held needs no cash. The replay runs each team-win outcome separately, so each gets half the budget; a live account shares it between the two outcomes, so this split is slightly conservative.
+
+{{ chart('36:0') }}
+
+{{ cap_table }}
+
+**The cap costs about a tenth of the P&L**: {{ k.c.cut_best }} for the best variant ({{ k.c.nocap }} to {{ k.c.capped }} per fixture), {{ k.c.cut_others }} for the other three, with their ranking unchanged. The cash peaks stay within the cap.
+
+**It binds on the fixtures that earn the most.** Only {{ k.c.over }} of {{ k.c.of }} club fixtures needed more than $200 / $300 without the cap, but they carried {{ k.c.share }} of the total P&L. Capped, they still earn {{ k.c.over_cap }} per fixture on average, against {{ k.c.over_nocap }} without the cap: the cash a fixture needs grows with the pairs it completes, and so does its P&L.
+
+**Hedging is not affected.** The largest inventory is {{ k.c.maxq }} contracts (3L) with or without the cap, and the worst fixture is the same. The priority rule keeps the reducing order funded. The World Cup, which trades far more per fixture, is cut by {{ k.c.wc_cut }}.
+
+**Most single fixtures are close to zero.** The histogram is the shape to expect from a live test:
+
+- the median club fixture makes {{ k.c.median }}, well below the mean of {{ k.c.mean }}, and losses stay small: 5th percentile {{ k.c.p5 }}, worst {{ k.c.min }};
+- the profit comes from a long right tail: the 95th percentile is {{ k.c.p95 }}, the 99th {{ k.c.p99 }}, and the top 10% of fixtures produce {{ k.c.top10 }} of the total;
+- the cap trims that right tail (95th percentile {{ k.c.p95_cap }}, 99th {{ k.c.p99_cap }}) and leaves the left one alone.
+
+A run of small losses at the start of a test is therefore expected, and is not evidence against the strategy; the edge shows only across many fixtures.
+
+## 5. Where the P&L comes from
+
+Why do fixtures differ, why do so many sit near zero, and where are the losses made? This section decomposes the L = 10 run without the cap. With m(t) the Kalshi mid at the start of second t, each outcome's P&L splits into:
+
+- **edge:** each fill's value against m at its second, net of the Kalshi fee, the spread captured;
+- **inventory:** Σ q(t) · (m(t + 1) − m(t)), the net position times the price change, of which the part in **jump seconds** stands in for goals; there are no goal timestamps in the replay.
+
+Edge plus inventory reproduces the replay's P&L to within about $1 per fixture.
+
+{{ chart('39:0') }}
+
+{{ decomposition_table }}
+
+**The spike just below zero is fixtures that barely traded.** {{ k.d.flat_n }} club fixtures end between −$0.50 and $0, and {{ k.d.flat_zero }} of them have no fill at all. Their markets did trade, but our orders were rarely live: a median of {{ k.d.flat_quoted }} quoted seconds across the three orders, against {{ k.d.top_quoted }} for fixtures above $1. A stale book, the 5–95 c price band, the guard or the back of the queue kept them off.
+
+**Volume separates fixtures; depth matters only given volume.**
+
+- Rank correlation with P&L: our fills {{ k.d.c_fills }}, quoted seconds {{ k.d.c_quoted }}, Kalshi taker volume {{ k.d.c_k }}, Polymarket taker volume {{ k.d.c_pm }}, depth at the touch alone {{ k.d.c_depth }}.
+- From the lowest to the highest taker-volume quintile, P&L rises from {{ k.d.q1 }} to {{ k.d.q5 }} per fixture. Nearly all of the rise is edge ({{ k.d.e1 }} to {{ k.d.e5 }}); inventory is {{ k.d.inv_q }} in every quintile.
+- Within a volume quintile, deeper books earn less, because at ρ = 1 the whole displayed queue must trade first. In the top quintile: {{ k.d.thin5 }} with thin books, {{ k.d.mid5 }} mid, {{ k.d.deep5 }} deep.
+
+**Losses come from carrying inventory into jumps, not from being filled at the jump.**
+
+- Over all fixtures, edge is {{ k.d.edge_all }} per fixture and inventory {{ k.d.inv_all }}, of which {{ k.d.jump_all }} falls in jump seconds: outside jumps, inventory nets to about zero.
+- Losing fixtures still have positive edge ({{ k.d.edge_lose }}); they lose {{ k.d.inv_lose }} on inventory, {{ k.d.jump_lose }} of it in jumps.
+- **Short YES as the price jumps up**, an ask filled and then that team scores, is the main loss: {{ k.d.short_up }} across the club fixtures. Of that, {{ k.d.short_up_held }} comes from positions held earlier and not yet paired; only {{ k.d.short_up_k }} from Kalshi asks filled in the 10 s before the jump.
+- **Long YES as the price drops** costs {{ k.d.long_down }}, and bids filled in the 10 s before the drop lose only {{ k.d.long_down_bid }}: the guard mostly prevents being hit just before a goal.
+- Jumps the other way pay back {{ k.d.payback }}. Net, jump seconds cost {{ k.d.net_jump }}, about a third of the total edge of {{ k.d.edge_total }}.
+
+**Why mostly short YES.** Two asks rest against one bid, each sized L + q, so the ask side fills more often and q is usually negative; a short YES loses when that team scores.
+
+The lever is how long inventory is held, not the guard. Two changes are worth a replay before they go live: size the two asks so that together, rather than each, they cover L + q; and close an unpaired position as a taker after a fixed time.
+
+## 6. Per outcome or per fixture, strong or weak team
+
+The replay runs each team-win outcome on its own and adds the two up per fixture, with no rule linking them. Because our orders do not change the tape, that sum is exactly what a joint run would give unless a rule used both outcomes, such as a shared cash cap or a joint inventory limit.
+
+{{ chart('42:0') }}
+
+**The two outcomes do not offset each other.** Their P&L within a fixture is positively correlated ({{ k.w.corr }} in the capped run). What they share is the fixture's volume: busy fixtures earn on both, quiet ones are near zero on both. Per fixture, the mean doubles against a single outcome ({{ k.w.fx_mean }} against {{ k.w.oc_mean }}), while the left tail barely moves: worst {{ k.w.fx_min }} against {{ k.w.oc_min }}. A shared cash cap is therefore likely to win back little, since both outcomes tend to need cash at the same time.
+
+**Strong against weak team** (no cap):
+
+{{ strength_table }}
+
+- Paired within the fixture, the strong team earns {{ k.w.diff }} more per outcome, 95% interval {{ k.w.diff_ci }}. With the cap the gap is {{ k.w.diff_cap }}, {{ k.w.diff_cap_ci }}: the cap trims the strong team's busiest fixtures.
+- **At equal fills the strong team is worse, not better.** Within each quintile of contracts filled, the weak team earns more and loses less often, until the busiest quintile ({{ k.w.f5_strong }} against {{ k.w.f5_weak }}). The strong team's higher total comes from trading more. A likely reason, not tested here, is section 5's short YES: the stronger team scores more often, which is the jump that hurts a short position.
+
+**For a small bankroll, the losing share matters less than it looks.** 100 fixtures drawn at random 2,000 times, fixtures independent and not overlapping:
+
+{{ bankroll_table }}
+
+A 95th-percentile drawdown of {{ k.w.dd95 }} is under 5% of a $200 + $300 budget: loss size is not what a small account runs out of; cash locked in open positions is (sections 3–4). Trading the weak team alone barely lowers the drawdown and gives up most of the P&L. Both outcomes stay in, with no filter on team strength.
+
+## 7. The first test
+
+| Setting | Value | Evidence |
+| --- | --- | --- |
+| Scope | Team-win outcomes of club fixtures, both outcomes, in play | Part 3; section 6 |
+| Orders | All three: `pm_yes`, `pm_no`, and `k_no` at Kalshi's best ask | Section 1; part 3 section 6 |
+| Order size | L = 10 contracts | Section 3: the most P&L per contract and per unit of risk, about the same sample needed |
+| Guard | On, buffer 0, as replayed; a 1-tick buffer is the first candidate change | Section 2 |
+| Cash cap | Per fixture, shared by both outcomes: $300 on Polymarket and $300 on Kalshi | Section 4. The replay capped Polymarket at $200 but merged pairs at once; the first live version does not merge, so pairs stay locked and the Polymarket cap is higher |
+| Sample | About {{ k.l.n10 }}–{{ k.c.n_cap }} club fixtures before a 95% interval can exclude zero | Sections 3–4, without and with the cap |
+| Changes | One setting at a time, between fixtures | |
+
+The first fixtures are a measurement more than an income: they have to pin down what the replay could only assume. The trading record therefore keeps, in full:
+
+- every decision with its reason, and every order event and fill with exchange and local timestamps;
+- the queue at each resting order (displayed size at our price on acknowledgement, volume traded there, cancellations ahead), which gives the realized ρ, and Kalshi's own queue position for each order;
+- for every fill, both venues' books and trades from 5 s before to 30 s after it;
+- one-second books on the traded markets, so the replay can be run on exactly the fixtures traded and compared order by order;
+- match events, balances, and the configuration and code version of each fixture.
+
+The architecture of that system is in [Building the maker/maker trading system](../maker_maker_system/index.html). Its results will be published once enough fixtures have been traded to compare the live fills with the replay.
+
+## What is not measured
+
+- **The replay's limits carry over from part 3:** our orders do not change the tape, cancellations ahead of us exist only through ρ, Polymarket books arrive about every 3 s, latency is 1 s, residual inventory is marked at the last Kalshi mid, and draws are not replayed.
+- **The cash model** assumes Polymarket pairs are merged at once; the first live version does not merge, so it ties up more Polymarket cash than modelled.
+- **The jump decomposition** uses moves of 3 c or more in one second as a stand-in for goals.
+- **Strong and weak teams** are labelled by pre-game prices, with no threshold; fixtures without a pre-game price are left out of that split.
+- **The bankroll draws** treat fixtures as independent and sequential; fixtures played at the same time add up in cash and drawdown.
+
+## Data, methods and updates
+
+This is a dated static snapshot. The page contains **{{ chart_count }} interactive charts**, each with its plotted aggregates downloadable as CSV and Plotly JSON, and a [snapshot manifest](data/manifest.json) with source hashes. The [source notebook](source/02.2.1_maker_maker.ipynb) is available without outputs (sections 7.1–7.6 are this part); it requires the local research modules, curated trades and recorded order books, so on its own it does not recreate the pipeline. The [publication notes](source/README.md) describe the build.
+
+Method notes:
+
+- **Runs:** sections 1–2 at L = 100 with ρ ∈ {1, 0.25}; sections 3–6 at ρ = 1. Intervals are 95% fixture-bootstrap intervals.
+- **Fees:** Kalshi maker 1.75% × p(1 − p) per the published schedule; Polymarket maker 0.
+- **Cash needed:** each fixture's peak, summarised across fixtures; the two venues peak at different times.
+- **Strong and weak teams:** both venues' pre-game volume-weighted prices over the last 30 minutes before kickoff, averaged, one venue when the other is missing.

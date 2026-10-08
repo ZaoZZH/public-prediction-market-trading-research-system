@@ -8,10 +8,11 @@ notebook, one hosted directory per part:
 | 1. Two tapes, one fixture | `part1.qmd.j2` | `blog/soccer_1x2_gaps_1/` | 02.1 §1–4 (cells 3–18) | 2026-09-22 |
 | 2. What survives fees | `part2.qmd.j2` | `blog/soccer_1x2_gaps_2/` | 02.1 §5–8 (cells 21–30) | 2026-09-22 |
 | 3. Resting on both venues | `part3.qmd.j2` | `blog/soccer_1x2_gaps_3/` | [02.2.1](../../../research/soccer_1x2_analysis/notebooks/02.2.1_maker_maker.ipynb) §1–7 (cells 3–24) | 2026-09-29 |
+| 4. Starting small | `part4.qmd.j2` | `blog/soccer_1x2_gaps_4/` | 02.2.1 §7.1–7.6 (cells 27–42) | 2026-10-08 |
 
 Page dates are fixed in `PARTS` (`build.py`), so rebuilding a part does not re-date it.
-`charts.py` holds the views of notebook 02.1; `part3.py` holds part 3's views, quoted numbers and
-tables. Part 3's views read the notebook namespace as it stood right after the cell they show,
+`charts.py` holds the views of notebook 02.1; `part3.py` and `part4.py` hold parts 3 and 4's views, quoted numbers and
+tables. Their views read the notebook namespace as it stood right after the cell they show,
 because notebook 02.2.1 reuses short names across sections. `--parts` rebuilds a subset:
 `python public/blog/soccer_1x2_gaps/build.py --parts soccer_1x2_gaps_3`.
 

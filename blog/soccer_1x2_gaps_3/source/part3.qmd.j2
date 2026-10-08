@@ -1,6 +1,6 @@
 ---
 title: "Resting on both venues"
-subtitle: "Kalshi vs Polymarket in soccer 1X2 markets, part 3 of 3: where the resting pair's edge sits, where each venue's book sits, which venue moves first, how soon the second order trades, and a replay of three resting orders against recorded order books."
+subtitle: "Kalshi vs Polymarket in soccer 1X2 markets, part 3 of 4: where the resting pair's edge sits, where each venue's book sits, which venue moves first, how soon the second order trades, and a replay of three resting orders against recorded order books."
 author: "Zehao Zhou"
 date: "{{ date }}"
 description: "Part 3 of a trade-tape study of soccer 1X2 markets on Kalshi and Polymarket: the maker/maker pair by price and outcome, same-side book offsets, one venue against two, Hayashi–Yoshida lead–lag, fill waiting times, an order-book replay, and a strategy outline for a real-money test."
@@ -287,14 +287,11 @@ What the tape cannot settle, and a live test must:
 - **Live adverse selection.** Markouts of our own fills, against the replay's.
 - **Costs and capital.** Kalshi fees as billed, Polymarket settlement and merge timing, and the capital locked in Kalshi NO until settlement.
 
-## Next: a real-money test
+## Next: a small real-money test
 
-The next step is to run this outline with real orders, at small size. I am building the trading system for that test now. It will:
+The next step is to run this outline with real orders, at small size. [Part 4](../soccer_1x2_gaps_4/index.html) reruns the replay to size that test: whether all three orders and the guard earn their place, how the result changes from 100 contracts per order down to 10, how much cash each venue needs, and where a small configuration makes and loses money. The system built to run it is described in [Building the maker/maker trading system](../maker_maker_system/index.html).
 
-- rest the three orders and apply the guard;
-- record both venues' full order books and every order event, with exchange and local timestamps.
-
-That recording lets the replay of section 6 be run on exactly the fixtures traded and compared with the live fills order by order. The first quantity the test has to pin down is the real queue position; after it come cancel latency, double fills and live markouts. The results will be published here, in a follow-up to this series, once enough fixtures have been traded to support a conclusion.
+The test records both venues' order books around every fill and every order event, with exchange and local timestamps, so the replay of section 6 can be run on exactly the fixtures traded and compared with the live fills order by order. The first quantity it has to pin down is the real queue position; after it come cancel latency, double fills and live markouts. The results will be published here once enough fixtures have been traded to support a conclusion.
 
 ## What is not measured
 

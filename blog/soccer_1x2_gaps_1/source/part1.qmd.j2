@@ -1,18 +1,19 @@
 ---
 title: "Two tapes, one fixture"
-subtitle: "Kalshi vs Polymarket in soccer 1X2 markets, part 1 of 3: where a same-time comparison of the two venues exists across {{ fixtures }} matched fixtures, and how far apart their last trades print."
+subtitle: "Kalshi vs Polymarket in soccer 1X2 markets, part 1 of 4: where a same-time comparison of the two venues exists across {{ fixtures }} matched fixtures, and how far apart their last trades print."
 author: "Zehao Zhou"
 date: "{{ date }}"
 description: "Part 1 of a trade-tape study of soccer 1X2 markets on Kalshi and Polymarket: how much of each tape is 1X2, when both venues are fresh, how soon one venue follows the other, and the signed gap between their last trades by outcome, matchup and taker side."
 ---
 
-My [previous post](https://zehao-zhou.hashnode.dev/soccer-1x2-markets-on-kalshi-and-polymarket-trade-counts-volume-and-timing) measured how much trading takes place in soccer 1X2 markets on Kalshi and Polymarket: counts, volume and timing, without looking at prices. This series looks at the prices, on the same matched regular-time markets (home win, draw, away win), in three parts:
+My [previous post](https://zehao-zhou.hashnode.dev/soccer-1x2-markets-on-kalshi-and-polymarket-trade-counts-volume-and-timing) measured how much trading takes place in soccer 1X2 markets on Kalshi and Polymarket: counts, volume and timing, without looking at prices. This series looks at the prices, on the same matched regular-time markets (home win, draw, away win), in four parts:
 
 - **Part 1 (this post).** Where the two tapes are active at the same time, and how far apart their latest trades sit: by competition, outcome, matchup, and the side of the market each trade came from.
 - **Part 2.** Fees and roles. Which way of pairing the two tapes, taking or resting on each venue, leaves anything after both fee curves; how that changes with the freshness cutoff and the price level; how often it stands. Then the same screens on other market types, events and sports.
 - **Part 3.** Resting on both venues. Where the resting pair's edge sits by price, where each venue's book sits, which venue moves first, how soon the second order trades once the first has filled, and a replay of resting orders against recorded order books.
+- **Part 4.** Starting small. Which of the resting orders earn their place, how tight the cross-venue guard should be, and how small an order and how much cash a first real-money test needs.
 
-Parts 1 and 2 look backward. Each comparison pairs a trade with the other venue's most recent trade: two prints that have already happened, seen after the fact, with nothing said about what followed. Part 3 looks forward: which venue moves first, how soon the other side trades, and what resting orders would have filled.
+Parts 1 and 2 look backward. Each comparison pairs a trade with the other venue's most recent trade: two prints that have already happened, seen after the fact, with nothing said about what followed. Parts 3 and 4 look forward: which venue moves first, how soon the other side trades, and what resting orders would have filled.
 
 The unit throughout is the **trade reference**. On each venue, fills within the same second on the same outcome and the same taker side are combined into one volume-weighted average price (VWAP) and treated as a single print. Nothing here uses order books.
 

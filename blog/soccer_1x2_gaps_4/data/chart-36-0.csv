@@ -1,0 +1,171 @@
+run,bin_mid_usd,fixtures
+no cap,-16.75,1
+no cap,-16.25,0
+no cap,-15.75,0
+no cap,-15.25,0
+no cap,-14.75,0
+no cap,-14.25,0
+no cap,-13.75,0
+no cap,-13.25,0
+no cap,-12.75,0
+no cap,-12.25,0
+no cap,-11.75,1
+no cap,-11.25,0
+no cap,-10.75,0
+no cap,-10.25,2
+no cap,-9.75,1
+no cap,-9.25,0
+no cap,-8.75,0
+no cap,-8.25,0
+no cap,-7.75,0
+no cap,-7.25,3
+no cap,-6.75,2
+no cap,-6.25,7
+no cap,-5.75,3
+no cap,-5.25,7
+no cap,-4.75,13
+no cap,-4.25,10
+no cap,-3.75,21
+no cap,-3.25,14
+no cap,-2.75,21
+no cap,-2.25,37
+no cap,-1.75,29
+no cap,-1.25,36
+no cap,-0.75,47
+no cap,-0.25,51
+no cap,0.25,131
+no cap,0.75,49
+no cap,1.25,46
+no cap,1.75,42
+no cap,2.25,45
+no cap,2.75,25
+no cap,3.25,38
+no cap,3.75,21
+no cap,4.25,24
+no cap,4.75,27
+no cap,5.25,22
+no cap,5.75,18
+no cap,6.25,20
+no cap,6.75,19
+no cap,7.25,12
+no cap,7.75,18
+no cap,8.25,18
+no cap,8.75,11
+no cap,9.25,7
+no cap,9.75,7
+no cap,10.25,12
+no cap,10.75,7
+no cap,11.25,6
+no cap,11.75,4
+no cap,12.25,0
+no cap,12.75,4
+no cap,13.25,3
+no cap,13.75,4
+no cap,14.25,5
+no cap,14.75,5
+no cap,15.25,1
+no cap,15.75,3
+no cap,16.25,3
+no cap,16.75,4
+no cap,17.25,0
+no cap,17.75,1
+no cap,18.25,1
+no cap,18.75,1
+no cap,19.25,2
+no cap,19.75,1
+no cap,20.25,2
+no cap,20.75,2
+no cap,21.25,4
+no cap,21.75,1
+no cap,22.25,0
+no cap,22.75,0
+no cap,23.25,0
+no cap,23.75,1
+no cap,24.25,0
+no cap,24.75,2
+no cap,25.25,11
+cap $200 Polymarket / $300 Kalshi,-16.75,1
+cap $200 Polymarket / $300 Kalshi,-16.25,0
+cap $200 Polymarket / $300 Kalshi,-15.75,0
+cap $200 Polymarket / $300 Kalshi,-15.25,0
+cap $200 Polymarket / $300 Kalshi,-14.75,0
+cap $200 Polymarket / $300 Kalshi,-14.25,0
+cap $200 Polymarket / $300 Kalshi,-13.75,0
+cap $200 Polymarket / $300 Kalshi,-13.25,0
+cap $200 Polymarket / $300 Kalshi,-12.75,0
+cap $200 Polymarket / $300 Kalshi,-12.25,0
+cap $200 Polymarket / $300 Kalshi,-11.75,1
+cap $200 Polymarket / $300 Kalshi,-11.25,0
+cap $200 Polymarket / $300 Kalshi,-10.75,0
+cap $200 Polymarket / $300 Kalshi,-10.25,2
+cap $200 Polymarket / $300 Kalshi,-9.75,1
+cap $200 Polymarket / $300 Kalshi,-9.25,0
+cap $200 Polymarket / $300 Kalshi,-8.75,0
+cap $200 Polymarket / $300 Kalshi,-8.25,0
+cap $200 Polymarket / $300 Kalshi,-7.75,0
+cap $200 Polymarket / $300 Kalshi,-7.25,3
+cap $200 Polymarket / $300 Kalshi,-6.75,2
+cap $200 Polymarket / $300 Kalshi,-6.25,7
+cap $200 Polymarket / $300 Kalshi,-5.75,3
+cap $200 Polymarket / $300 Kalshi,-5.25,7
+cap $200 Polymarket / $300 Kalshi,-4.75,13
+cap $200 Polymarket / $300 Kalshi,-4.25,11
+cap $200 Polymarket / $300 Kalshi,-3.75,20
+cap $200 Polymarket / $300 Kalshi,-3.25,14
+cap $200 Polymarket / $300 Kalshi,-2.75,21
+cap $200 Polymarket / $300 Kalshi,-2.25,39
+cap $200 Polymarket / $300 Kalshi,-1.75,30
+cap $200 Polymarket / $300 Kalshi,-1.25,37
+cap $200 Polymarket / $300 Kalshi,-0.75,48
+cap $200 Polymarket / $300 Kalshi,-0.25,51
+cap $200 Polymarket / $300 Kalshi,0.25,133
+cap $200 Polymarket / $300 Kalshi,0.75,51
+cap $200 Polymarket / $300 Kalshi,1.25,47
+cap $200 Polymarket / $300 Kalshi,1.75,40
+cap $200 Polymarket / $300 Kalshi,2.25,46
+cap $200 Polymarket / $300 Kalshi,2.75,24
+cap $200 Polymarket / $300 Kalshi,3.25,42
+cap $200 Polymarket / $300 Kalshi,3.75,22
+cap $200 Polymarket / $300 Kalshi,4.25,26
+cap $200 Polymarket / $300 Kalshi,4.75,20
+cap $200 Polymarket / $300 Kalshi,5.25,27
+cap $200 Polymarket / $300 Kalshi,5.75,21
+cap $200 Polymarket / $300 Kalshi,6.25,17
+cap $200 Polymarket / $300 Kalshi,6.75,20
+cap $200 Polymarket / $300 Kalshi,7.25,13
+cap $200 Polymarket / $300 Kalshi,7.75,21
+cap $200 Polymarket / $300 Kalshi,8.25,15
+cap $200 Polymarket / $300 Kalshi,8.75,14
+cap $200 Polymarket / $300 Kalshi,9.25,7
+cap $200 Polymarket / $300 Kalshi,9.75,7
+cap $200 Polymarket / $300 Kalshi,10.25,8
+cap $200 Polymarket / $300 Kalshi,10.75,6
+cap $200 Polymarket / $300 Kalshi,11.25,5
+cap $200 Polymarket / $300 Kalshi,11.75,4
+cap $200 Polymarket / $300 Kalshi,12.25,0
+cap $200 Polymarket / $300 Kalshi,12.75,4
+cap $200 Polymarket / $300 Kalshi,13.25,5
+cap $200 Polymarket / $300 Kalshi,13.75,4
+cap $200 Polymarket / $300 Kalshi,14.25,1
+cap $200 Polymarket / $300 Kalshi,14.75,4
+cap $200 Polymarket / $300 Kalshi,15.25,2
+cap $200 Polymarket / $300 Kalshi,15.75,0
+cap $200 Polymarket / $300 Kalshi,16.25,4
+cap $200 Polymarket / $300 Kalshi,16.75,2
+cap $200 Polymarket / $300 Kalshi,17.25,0
+cap $200 Polymarket / $300 Kalshi,17.75,2
+cap $200 Polymarket / $300 Kalshi,18.25,3
+cap $200 Polymarket / $300 Kalshi,18.75,0
+cap $200 Polymarket / $300 Kalshi,19.25,1
+cap $200 Polymarket / $300 Kalshi,19.75,1
+cap $200 Polymarket / $300 Kalshi,20.25,0
+cap $200 Polymarket / $300 Kalshi,20.75,1
+cap $200 Polymarket / $300 Kalshi,21.25,2
+cap $200 Polymarket / $300 Kalshi,21.75,1
+cap $200 Polymarket / $300 Kalshi,22.25,0
+cap $200 Polymarket / $300 Kalshi,22.75,0
+cap $200 Polymarket / $300 Kalshi,23.25,1
+cap $200 Polymarket / $300 Kalshi,23.75,0
+cap $200 Polymarket / $300 Kalshi,24.25,0
+cap $200 Polymarket / $300 Kalshi,24.75,2
+cap $200 Polymarket / $300 Kalshi,25.25,9

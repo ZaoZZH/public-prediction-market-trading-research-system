@@ -267,7 +267,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#after-one-order-fills" id="toc-after-one-order-fills" class="nav-link" data-scroll-target="#after-one-order-fills">5. After one order fills</a></li>
   <li><a href="#a-replay-against-recorded-order-books" id="toc-a-replay-against-recorded-order-books" class="nav-link" data-scroll-target="#a-replay-against-recorded-order-books">6. A replay against recorded order books</a></li>
   <li><a href="#what-a-strategy-could-look-like" id="toc-what-a-strategy-could-look-like" class="nav-link" data-scroll-target="#what-a-strategy-could-look-like">7. What a strategy could look like</a></li>
-  <li><a href="#next-a-real-money-test" id="toc-next-a-real-money-test" class="nav-link" data-scroll-target="#next-a-real-money-test">Next: a real-money test</a></li>
+  <li><a href="#next-a-small-real-money-test" id="toc-next-a-small-real-money-test" class="nav-link" data-scroll-target="#next-a-small-real-money-test">Next: a small real-money test</a></li>
   <li><a href="#what-is-not-measured" id="toc-what-is-not-measured" class="nav-link" data-scroll-target="#what-is-not-measured">What is not measured</a></li>
   <li><a href="#data-methods-and-updates" id="toc-data-methods-and-updates" class="nav-link" data-scroll-target="#data-methods-and-updates">Data, methods and updates</a></li>
   </ul>
@@ -285,7 +285,7 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">Resting on both venues</h1>
-<p class="subtitle lead">Kalshi vs Polymarket in soccer 1X2 markets, part 3 of 3: where the resting pair’s edge sits, where each venue’s book sits, which venue moves first, how soon the second order trades, and a replay of three resting orders against recorded order books.</p>
+<p class="subtitle lead">Kalshi vs Polymarket in soccer 1X2 markets, part 3 of 4: where the resting pair’s edge sits, where each venue’s book sits, which venue moves first, how soon the second order trades, and a replay of three resting orders against recorded order books.</p>
 </div>
 
 <div>
@@ -1390,14 +1390,10 @@ $33.9
 <li><strong>Costs and capital.</strong> Kalshi fees as billed, Polymarket settlement and merge timing, and the capital locked in Kalshi NO until settlement.</li>
 </ul>
 </section>
-<section id="next-a-real-money-test" class="level2">
-<h2 class="anchored" data-anchor-id="next-a-real-money-test">Next: a real-money test</h2>
-<p>The next step is to run this outline with real orders, at small size. I am building the trading system for that test now. It will:</p>
-<ul>
-<li>rest the three orders and apply the guard;</li>
-<li>record both venues’ full order books and every order event, with exchange and local timestamps.</li>
-</ul>
-<p>That recording lets the replay of section 6 be run on exactly the fixtures traded and compared with the live fills order by order. The first quantity the test has to pin down is the real queue position; after it come cancel latency, double fills and live markouts. The results will be published here, in a follow-up to this series, once enough fixtures have been traded to support a conclusion.</p>
+<section id="next-a-small-real-money-test" class="level2">
+<h2 class="anchored" data-anchor-id="next-a-small-real-money-test">Next: a small real-money test</h2>
+<p>The next step is to run this outline with real orders, at small size. <a href="../soccer_1x2_gaps_4/index.html">Part 4</a> reruns the replay to size that test: whether all three orders and the guard earn their place, how the result changes from 100 contracts per order down to 10, how much cash each venue needs, and where a small configuration makes and loses money. The system built to run it is described in <a href="../maker_maker_system/index.html">Building the maker/maker trading system</a>.</p>
+<p>The test records both venues’ order books around every fill and every order event, with exchange and local timestamps, so the replay of section 6 can be run on exactly the fixtures traded and compared with the live fills order by order. The first quantity it has to pin down is the real queue position; after it come cancel latency, double fills and live markouts. The results will be published here once enough fixtures have been traded to support a conclusion.</p>
 </section>
 <section id="what-is-not-measured" class="level2">
 <h2 class="anchored" data-anchor-id="what-is-not-measured">What is not measured</h2>

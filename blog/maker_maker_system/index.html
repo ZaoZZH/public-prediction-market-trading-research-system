@@ -326,8 +326,8 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p><a href="../soccer_1x2_gaps_3/index.html">Part 3</a> of the Kalshi vs Polymarket series ended with a strategy outline and a replay against recorded order books. Three resting orders per team-win outcome, a Polymarket YES bid, a Polymarket YES ask and a Kalshi YES ask, made money in the replay even at the back of every queue. This article describes the system built to run that outline with real orders.</p>
-<p>The first live test has a narrower job than the replay. At the test size of L = 10 contracts, the replay makes about $2.57 per club fixture (95% interval 2.17–3.01), loses on 31% of fixtures, and has a worst fixture of −$17. About 25–30 fixtures are needed before an interval excludes zero. That replay merges Polymarket pairs back into cash at once, which the first live version does not, so these figures are a guide rather than a forecast. The first fixtures are therefore a <strong>measurement</strong> of what the replay had to assume: queue position, double fills, latency and holding time. The system records those quantities as carefully as it trades.</p>
+<p><a href="../soccer_1x2_gaps_3/index.html">Part 3</a> of the Kalshi vs Polymarket series ended with a strategy outline and a replay against recorded order books. Three resting orders per team-win outcome, a Polymarket YES bid, a Polymarket YES ask and a Kalshi YES ask, made money in the replay even at the back of every queue. <a href="../soccer_1x2_gaps_4/index.html">Part 4</a> sized a first real-money test from the same replay. This article describes the system built to run it.</p>
+<p>The first live test has a narrower job than the replay. At the test size of L = 10 contracts with a cash cap, the replay makes about $2.57 per club fixture (95% interval 2.17–3.01), loses on 31% of fixtures, and has a worst fixture of −$17. About 25–30 fixtures are needed before an interval excludes zero. That replay merges Polymarket pairs back into cash at once, which the first live version does not, so these figures are a guide rather than a forecast. The first fixtures are therefore a <strong>measurement</strong> of what the replay had to assume: queue position, double fills, latency and holding time. The system records those quantities as carefully as it trades.</p>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>
 <div class="summary-list">
@@ -445,7 +445,7 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 </tbody>
 </table>
-<p>Inventory q is Polymarket YES held minus NO held on either venue, per outcome. All legs also need both books valid and fresh, a Polymarket mid of 5–95 c, and the in-play window from kickoff to 104 minutes. The v1 configuration is part 3’s best replay variant with L = 10, a cash cap of $300 per venue and fixture, and no guard buffer. Every value is a configuration field, changed one at a time, between fixtures.</p>
+<p>Inventory q is Polymarket YES held minus NO held on either venue, per outcome. All legs also need both books valid and fresh, a Polymarket mid of 5–95 c, and the in-play window from kickoff to 104 minutes. The v1 configuration is part 3’s best replay variant at the size part 4 chose: L = 10, a cash cap of $300 per venue and fixture, and no guard buffer. Every value is a configuration field, changed one at a time, between fixtures.</p>
 </section>
 </section>
 <section id="components-and-topology" class="level2">
@@ -1465,7 +1465,7 @@ Figure&nbsp;10: Machine memory of both engines over one day on Fly. Both climb t
 </section>
 <section id="about-this-article" class="level2">
 <h2 class="anchored" data-anchor-id="about-this-article">About this article</h2>
-<p>This article describes the trading repository at commit <code>cda5eec</code> (2026-10-07). Replay figures come from the notebook behind part 3, the matching and freshness rules from the strategy’s plan and code, and resource figures from a local load test and the Fly metrics shown above. It describes the system before its first live fixture; no trading results are reported yet.</p>
+<p>This article describes the trading repository at commit <code>cda5eec</code> (2026-10-07). Replay figures come from the notebook behind parts 3 and 4, the matching and freshness rules from the strategy’s plan and code, and resource figures from a local load test and the Fly metrics shown above. It describes the system before its first live fixture; no trading results are reported yet.</p>
 
 
 </section>

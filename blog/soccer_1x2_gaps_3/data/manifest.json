@@ -1,9 +1,9 @@
 {
-  "built_at_utc": "2026-09-29T06:28:11.828487+00:00",
+  "built_at_utc": "2026-10-08T05:18:16.456129+00:00",
   "part": "soccer_1x2_gaps_3",
   "notebook": "02.2.1_maker_maker.ipynb",
   "fixture_count": 1973,
-  "notebook_sha256": "cc4dee367319c57dd2850c38026a7fe91b8b80654ac69adcdd2fd89d12932880",
+  "notebook_sha256": "cb6f8f8027de2c5646310be19b3690c61f45288ba5b9cff8960112bdd1506f01",
   "inputs": [
     {
       "file": "conditions.parquet",
@@ -47,8 +47,8 @@
     },
     {
       "file": "mm_sim_summary.parquet",
-      "bytes": 1857122,
-      "sha256": "925dbab4d94f2f756b9e6d39b7c8b285a418e34a7238efdc8b5f77f86d8e104a"
+      "bytes": 2414043,
+      "sha256": "81c5cd3c142009e81ea7f30918fbc7d78a82eb135120d95b35f13e6876f140e8"
     },
     {
       "file": "mm_sim_fills.parquet",
@@ -62,8 +62,168 @@
     },
     {
       "file": "mm_sim_grid.csv",
-      "bytes": 194,
-      "sha256": "1484c053ebdf5f22a31d7c312bb1cfbf0e86bcdcbd4490d6e5a170963b488003"
+      "bytes": 231,
+      "sha256": "57cd367ff115f7da16e606ed41320c79c2041b58b3a993cec64289c904df5b54"
+    },
+    {
+      "file": "mm_sim_capital.parquet",
+      "bytes": 463110,
+      "sha256": "35a17c6fe940b56bdfc20955219c36d5ec0aad48edb622a7c83ad7b937307cc8"
+    },
+    {
+      "file": "mm_sim_L50_capital.parquet",
+      "bytes": 462578,
+      "sha256": "9bd62175f6a9fe27c2a738f3e8cf0d7f913d6cb515474610461c02874675d140"
+    },
+    {
+      "file": "mm_sim_L20_summary.parquet",
+      "bytes": 2310794,
+      "sha256": "0e798251dc65021caa6c0407ca21b10c6f6177fa7360407ee8f427959e0739e2"
+    },
+    {
+      "file": "mm_sim_L20_fills.parquet",
+      "bytes": 28841553,
+      "sha256": "e421c9f26cf27fbceef5f8c442050adbf9f3144c9f710d6471223165cee5b842"
+    },
+    {
+      "file": "mm_sim_L20_pairs.parquet",
+      "bytes": 27853805,
+      "sha256": "85917eda0ea486e189a458a556f2894f839a387c5ee1f67676de5391e423a86d"
+    },
+    {
+      "file": "mm_sim_L20_grid.csv",
+      "bytes": 316,
+      "sha256": "5fb6a5ce96b87594d25badee9dad604100f32576d41e1f530e08320fd406abfa"
+    },
+    {
+      "file": "mm_sim_L20_capital.parquet",
+      "bytes": 461528,
+      "sha256": "18e60a0638408508e12d737f5029de3915b967481717212ae33c3f8e3e98178a"
+    },
+    {
+      "file": "mm_sim_L15_summary.parquet",
+      "bytes": 2295400,
+      "sha256": "3cbb682d0b8665fb68b381f9b8393ff3ff065aa37e753aa5f0e329e4562a4cdf"
+    },
+    {
+      "file": "mm_sim_L15_capital.parquet",
+      "bytes": 460245,
+      "sha256": "1fb7c9e54f000ee90e214671ab7b935baa3520a74b27a472e675a6b3929700f2"
+    },
+    {
+      "file": "mm_sim_L15_grid.csv",
+      "bytes": 316,
+      "sha256": "fcc2c31a28359714a1b789f7890412b4ebd01c65587fd00b7de84b434e465fed"
+    },
+    {
+      "file": "mm_sim_L10_summary.parquet",
+      "bytes": 2234061,
+      "sha256": "9d7fe43623af5289068e7b2d8f8d4ba9daed3f5c28b223949b693b0fb6ba2e4a"
+    },
+    {
+      "file": "mm_sim_L10_fills.parquet",
+      "bytes": 24349601,
+      "sha256": "6323c14c2049032e2f3f21a2545633ab51266ec37477e41937599627472d0367"
+    },
+    {
+      "file": "mm_sim_L10_capital.parquet",
+      "bytes": 458468,
+      "sha256": "d4a1214879e605db7cd2e8ecf79a0f13cf05b923011c9e1bfc0886d086fc368c"
+    },
+    {
+      "file": "mm_sim_L10_grid.csv",
+      "bytes": 316,
+      "sha256": "d1c26c75e0d3048a546f0f7f681b7a4a4ff3eff22d0a497f9773b069ec4daabd"
+    },
+    {
+      "file": "mm_sim_L10_cap200_300_summary.parquet",
+      "bytes": 2197956,
+      "sha256": "90e11a8c831d7b0ec12f0220eb9b8c50aa0cdb5ad5521c0d1b5d6f38b1c6c55d"
+    },
+    {
+      "file": "mm_sim_L10_cap200_300_fills.parquet",
+      "bytes": 14578776,
+      "sha256": "6af6545050b595ab73b1ec5e9dfbaf309f1df531289b0ceec4e966fe8292f4ad"
+    },
+    {
+      "file": "mm_sim_L10_cap200_300_capital.parquet",
+      "bytes": 449693,
+      "sha256": "8621115eb96616290ce018535f1e56176a58cab4944dc92986fd3008a919ee94"
+    },
+    {
+      "file": "mm_sim_L10_cap200_300_grid.csv",
+      "bytes": 521,
+      "sha256": "11671ce119a733118dc53bb0a710e56e619f410aa9f4b2eba4a6e885cdd89373"
+    },
+    {
+      "file": "mm_sim_L10_drivers.parquet",
+      "bytes": 94937,
+      "sha256": "26e0f5b75f62c37f9def8a13c2737ef9969468df315b6bb225acffcc6881c063"
+    },
+    {
+      "file": "mm_sim_L10_jumps.parquet",
+      "bytes": 257399,
+      "sha256": "a06da1a50e83a826598f0420417a870de902f9d0f4af4e23730ca1e2a54c50ee"
+    },
+    {
+      "file": "mm_sim_L50_summary.parquet",
+      "bytes": 2372920,
+      "sha256": "0617c037fa65c7ee0445889f543a7bc2bf55d3249ad4bf1203c0733ca6b8fbc1"
+    },
+    {
+      "file": "mm_sim_L50_fills.parquet",
+      "bytes": 32920034,
+      "sha256": "9cbeeff9949f6a9ab03b88558bad236534792d2781535806c4b9748ea78d7f11"
+    },
+    {
+      "file": "mm_sim_L50_pairs.parquet",
+      "bytes": 31591635,
+      "sha256": "00d73860a611b2aca2d6c2f305bcca54dbda46725b2fb6e8a51736af2c6a4c35"
+    },
+    {
+      "file": "mm_sim_L50_grid.csv",
+      "bytes": 316,
+      "sha256": "3300a2dcc49030df67918e5239c4aca354ab00b86b7ab339bfd3c8904c4e5b08"
+    },
+    {
+      "file": "mm_sim_legs_summary.parquet",
+      "bytes": 1161518,
+      "sha256": "7f8497e6fb421bb5b38ce4ef337c8ddad05284d3e73e9ff3304f652b9fbba92f"
+    },
+    {
+      "file": "mm_sim_legs_fills.parquet",
+      "bytes": 9236361,
+      "sha256": "2c5985651e065942957135843be7a820f6abec18ebc7502007ef3c87b35f187e"
+    },
+    {
+      "file": "mm_sim_legs_pairs.parquet",
+      "bytes": 7564389,
+      "sha256": "dc1ff77aa4ef0723b227a2e8ad498a6d6546098e5c66d8e75774a0a48610dc36"
+    },
+    {
+      "file": "mm_sim_legs_grid.csv",
+      "bytes": 181,
+      "sha256": "49cf1837c538d47b19b38c9c9cf875a0724dfed5eeef6ce32214c39767192c23"
+    },
+    {
+      "file": "mm_sim_buffer_summary.parquet",
+      "bytes": 877720,
+      "sha256": "a1ed7c585d3f21a23e6829512f8cc801b8f7a7cedc97c1247d633418d1d4b72a"
+    },
+    {
+      "file": "mm_sim_buffer_fills.parquet",
+      "bytes": 8380336,
+      "sha256": "5b26abd23f78a653ea39aec9a37325448c1c932caaf51394b751ddfe22a5f142"
+    },
+    {
+      "file": "mm_sim_buffer_pairs.parquet",
+      "bytes": 6621540,
+      "sha256": "577499d1b665db4c3ab326154764bf5abdd6dedd9f48bc001f538c6e9ac3ab97"
+    },
+    {
+      "file": "mm_sim_buffer_grid.csv",
+      "bytes": 181,
+      "sha256": "8f69701317c6162c3cd86c15edbe068c1db532f279a31c71784ffe4dfad5128b"
     }
   ],
   "charts": [

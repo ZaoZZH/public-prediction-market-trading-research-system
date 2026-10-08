@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Zehao Zhou">
+<meta name="dcterms.date" content="2026-10-08">
+<meta name="description" content="Part 4 of a trade-tape study of soccer 1X2 markets on Kalshi and Polymarket: the maker/maker replay with fewer orders, a guard buffer, order sizes from 100 to 10 contracts, a cash cap per venue, a fixture-by-fixture decomposition of P&amp;L, and strong against weak teams, leading to the configuration of a small real-money test.">
+
+<title>Starting small – Zehao (Gerald) Zhou · Prediction Market Research</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-816253360dce6a4e3f30408ef63133a0.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-d0d81244e8ed40314a7a066e55328b5b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-816253360dce6a4e3f30408ef63133a0.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+<script defer="" src="assets/plotly.min.js"></script>
+<script defer="" src="assets/charts.js"></script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="Starting small – Zehao (Gerald) Zhou · Prediction Market Research">
+<meta property="og:description" content="Part 4 of a trade-tape study of soccer 1X2 markets on Kalshi and Polymarket: the maker/maker replay with fewer orders, a guard buffer, order sizes from 100 to 10 contracts, a cash cap per venue, a fixture-by-fixture decomposition of P&amp;L, and strong against weak teams, leading to the configuration of a small real-money test.">
+<meta property="og:site_name" content="Zehao (Gerald) Zhou · Prediction Market Research">
+<link rel="stylesheet" href="../../navigation.css">
+<script src="../../navigation.js"></script>
+</head>
+
+<body class="floating quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link active" data-scroll-target="#summary">Summary</a></li>
+  <li><a href="#definitions-added-in-this-part" id="toc-definitions-added-in-this-part" class="nav-link" data-scroll-target="#definitions-added-in-this-part">Definitions added in this part</a></li>
+  <li><a href="#all-three-orders-or-two" id="toc-all-three-orders-or-two" class="nav-link" data-scroll-target="#all-three-orders-or-two">1. All three orders, or two?</a></li>
+  <li><a href="#how-tight-a-guard" id="toc-how-tight-a-guard" class="nav-link" data-scroll-target="#how-tight-a-guard">2. How tight a guard?</a></li>
+  <li><a href="#smaller-orders" id="toc-smaller-orders" class="nav-link" data-scroll-target="#smaller-orders">3. Smaller orders</a></li>
+  <li><a href="#a-cash-cap-per-venue" id="toc-a-cash-cap-per-venue" class="nav-link" data-scroll-target="#a-cash-cap-per-venue">4. A cash cap per venue</a></li>
+  <li><a href="#where-the-pl-comes-from" id="toc-where-the-pl-comes-from" class="nav-link" data-scroll-target="#where-the-pl-comes-from">5. Where the P&amp;L comes from</a></li>
+  <li><a href="#per-outcome-or-per-fixture-strong-or-weak-team" id="toc-per-outcome-or-per-fixture-strong-or-weak-team" class="nav-link" data-scroll-target="#per-outcome-or-per-fixture-strong-or-weak-team">6. Per outcome or per fixture, strong or weak team</a></li>
+  <li><a href="#the-first-test" id="toc-the-first-test" class="nav-link" data-scroll-target="#the-first-test">7. The first test</a></li>
+  <li><a href="#what-is-not-measured" id="toc-what-is-not-measured" class="nav-link" data-scroll-target="#what-is-not-measured">What is not measured</a></li>
+  <li><a href="#data-methods-and-updates" id="toc-data-methods-and-updates" class="nav-link" data-scroll-target="#data-methods-and-updates">Data, methods and updates</a></li>
+  </ul>
+</nav>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<nav aria-label="Site" style="padding: 1rem 5%;"><a href="../../index.html">← Zehao (Gerald) Zhou · Home</a></nav>
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Starting small</h1>
+<p class="subtitle lead">Kalshi vs Polymarket in soccer 1X2 markets, part 4 of 4: which of the three resting orders earn their place, how tight the guard should be, how small an order and how much cash a first real-money test needs, and where its profits and losses come from.</p>
+</div>
+
+<div>
+  <div class="description">
+    Part 4 of a trade-tape study of soccer 1X2 markets on Kalshi and Polymarket: the maker/maker replay with fewer orders, a guard buffer, order sizes from 100 to 10 contracts, a cash cap per venue, a fixture-by-fixture decomposition of P&amp;L, and strong against weak teams, leading to the configuration of a small real-money test.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Zehao Zhou </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 8, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><a href="../soccer_1x2_gaps_3/index.html">Part 3</a> ended with a replay of three resting orders per team-win outcome, a Polymarket YES bid, a Polymarket YES ask and a Kalshi YES ask, against both venues’ recorded order books. At 100 contracts per order, its best club configuration made $14.9 per fixture at the back of every queue. It also had a standard deviation of $49 per fixture, a worst fixture of −$113, and, as section 3 shows, a busiest fixture that tied up $10,603 across the two venues.</p>
+<p>Before putting money behind it, the same replay was run again to answer the questions a first real-money test raises, above all one: <strong>how small can the test be and still be informative?</strong></p>
+<ul>
+<li><strong>Sections 1–2</strong> ask whether all three orders and the cross-venue guard earn their place, or whether a simpler setup would do.</li>
+<li><strong>Sections 3–4</strong> shrink the order from 100 contracts to 10 and cap the cash each venue can tie up.</li>
+<li><strong>Sections 5–6</strong> look inside the small configuration: what separates good fixtures from bad ones, where the losses come from, and whether the favourite or the underdog is the better outcome to quote.</li>
+</ul>
+<p>Unless stated otherwise, every run is part 3’s replay with its best club variant: team-win outcomes in play, the 996 club fixtures of the six club competitions, the worst-case queue (ρ = 1), the Kalshi order at Kalshi’s best ask, and the guard on. The World Cup appears where it behaves differently; that tournament is over.</p>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<div class="summary-list">
+<ol type="1">
+<li><p><strong>All three orders beat either pair.</strong> In club play, three orders make $14.9 per fixture at ρ = 1, against $10.5 for the Polymarket bid with only the Kalshi ask and $11.8 with only the Polymarket ask. Dropping either ask costs $3–8 per fixture. Kalshi adds value twice, as a signal for the guard and as an exit.</p></li>
+<li><p><strong>The guard’s one-tick reactions are not noise.</strong> Letting Kalshi cross the order by 1–3 ticks before pulling it leaves club P&amp;L where it was ($14.2–26.0 across buffers and queues). It trades fewer cancels for more and worse bid fills. A 1-tick buffer is a robust default; it is not a profit lever.</p></li>
+<li><p><strong>Smaller orders keep more per contract.</strong> At 10 contracts the replay makes $2.86 per fixture: 0.29 per contract of order size against 0.15 at 100, with a worst fixture of −$17 instead of −$113. The mean per unit of risk rises from 0.30 to 0.39.</p></li>
+<li><p><strong>Cash, not losses, is what a small account runs out of.</strong> Every pair completed across venues locks $1 until settlement, so the cash a fixture needs grows with how much it trades. At 10 contracts, a cap of $200 on Polymarket and $300 on Kalshi costs 10% of the P&amp;L and leaves the losing side of the distribution unchanged.</p></li>
+<li><p><strong>Profit comes from a few busy fixtures; losses from inventory held into price jumps.</strong> The median club fixture makes $1.11, and the top 10% of fixtures produce 63% of the total. Edge is positive in every volume band; fixtures lose when a position is open as the price jumps, mostly short YES when that team scores.</p></li>
+<li><p><strong>Quote both team-win outcomes, favourite and underdog.</strong> The two outcomes of a fixture do not offset each other, and the favourite’s higher total comes from trading more, not from earning more per contract.</p></li>
+</ol>
+</div>
+<p>The resulting first test runs 10 contracts per order on all three orders with the guard, a cash cap per venue, and both outcomes of every enabled club fixture. Section 7 lists the configuration and what is still unknown; the system built to run it is described in <a href="../maker_maker_system/index.html">Building the maker/maker trading system</a>.</p>
+</section>
+<section id="definitions-added-in-this-part" class="level2">
+<h2 class="anchored" data-anchor-id="definitions-added-in-this-part">Definitions added in this part</h2>
+<p>The vocabulary of part 3 carries over: <code>pm_yes</code>, <code>pm_no</code> and <code>k_no</code> are the three orders, q is inventory (Polymarket YES held minus NO held on either venue), and ρ is the share of the displayed queue that trades ahead of an order.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Term</th>
+<th>Meaning here</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>L</td>
+<td>Order size and inventory scale, in contracts. The bid is sized L − q and each ask L + q, at most 3L. Part 3 used L = 100.</td>
+</tr>
+<tr class="even">
+<td>Guard buffer</td>
+<td>How far, in 1 c ticks, Kalshi’s book may cross a Polymarket order before the guard pulls it. Buffer 0 is part 3’s guard.</td>
+</tr>
+<tr class="odd">
+<td>Double fill</td>
+<td>A fixture where both asks filled together, so that inventory exceeded L.</td>
+</tr>
+<tr class="even">
+<td>Cash needed</td>
+<td>Per venue and fixture, the peak during the match of cash paid for open positions plus the collateral of resting orders.</td>
+</tr>
+<tr class="odd">
+<td>Fixtures needed</td>
+<td>The number of fixtures before a 95% interval on the mean P&amp;L excludes zero, if the replay is right: (1.96 × SD ÷ mean)².</td>
+</tr>
+<tr class="even">
+<td>Edge, inventory</td>
+<td>P&amp;L split into the value of each fill against Kalshi’s mid at that second (net of the Kalshi fee), and the net position times later mid changes.</td>
+</tr>
+<tr class="odd">
+<td>Jump second</td>
+<td>A second in which Kalshi’s mid moves by 3 c or more: a stand-in for goals and other sudden repricings.</td>
+</tr>
+<tr class="even">
+<td>Strong, weak team</td>
+<td>The team priced higher, or lower, by both venues’ pre-game prices averaged over the last 30 minutes before kickoff.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="all-three-orders-or-two" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="all-three-orders-or-two">1. All three orders, or two?</h2>
+<p>The replay was run with one of the two asks switched off, to see what each exit adds:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Setup</th>
+<th>Resting orders</th>
+<th>What it tests</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Three orders</td>
+<td><code>pm_yes</code> + <code>pm_no</code> + <code>k_no</code></td>
+<td>Part 3’s design, the reference</td>
+</tr>
+<tr class="even">
+<td>PM bid + Kalshi ask</td>
+<td><code>pm_yes</code> + <code>k_no</code></td>
+<td>One exit: no double fills, one venue to cancel on after a fill</td>
+</tr>
+<tr class="odd">
+<td>PM bid + PM ask</td>
+<td><code>pm_yes</code> + <code>pm_no</code></td>
+<td>A plain Polymarket market maker; with the guard on, Kalshi’s book is still used as a signal</td>
+</tr>
+</tbody>
+</table>
+<div class="column-screen-inset-right chart-block">
+<div class="chart-frame"><div id="chart-27-0" class="research-chart" style="height:470px"></div></div>
+<script type="application/json" data-chart="chart-27-0">{"data":[{"customdata":[[10.22,16.11,10.98,38.25],[12.13,17.84,12.19,37.65],[19.7,27.31,21.68,34.34],[22.12,30.25,23.46,32.73]],"error_y":{"array":[3.11,2.95,3.89,4.31],"arrayminus":[2.78,2.76,3.72,3.82],"symmetric":false,"thickness":1,"type":"data","width":3},"hovertemplate":"%{x}: $%{y:.2f} per fixture [%{customdata[0]:.2f}, %{customdata[1]:.2f}]\u003cbr>realized $%{customdata[2]:.2f}; %{customdata[3]:.0f}% of fixtures lose\u003cextra>three orders\u003c/extra>","legendgroup":"three orders","legendrank":1000,"marker":{"color":"#8b5cf6","pattern":{"shape":""}},"name":"three orders","showlegend":true,"x":["\u03c1 = 1 \u00b7 guard off","\u03c1 = 1 \u00b7 guard on","\u03c1 = 0.25 \u00b7 guard off","\u03c1 = 0.25 \u00b7 guard on"],"y":[13.0,14.89,23.42,25.94],"type":"bar","xaxis":"x","yaxis":"y"},{"customdata":[[5.53,10.65,9.08,40.66],[7.67,13.19,9.91,39.26],[12.43,20.1,17.35,37.55],[15.94,24.18,19.42,35.64]],"error_y":{"array":[2.64,2.74,3.99,4.3],"arrayminus":[2.49,2.79,3.67,3.94],"symmetric":false,"thickness":1,"type":"data","width":3},"hovertemplate":"%{x}: $%{y:.2f} per fixture [%{customdata[0]:.2f}, %{customdata[1]:.2f}]\u003cbr>realized $%{customdata[2]:.2f}; %{customdata[3]:.0f}% of fixtures lose\u003cextra>PM bid + Kalshi ask\u003c/extra>","legendgroup":"PM bid + Kalshi ask","legendrank":1000,"marker":{"color":"#1a9e6b","pattern":{"shape":""}},"name":"PM bid + Kalshi ask","showlegend":true,"x":["\u03c1 = 1 \u00b7 guard off","\u03c1 = 1 \u00b7 guard on","\u03c1 = 0.25 \u00b7 guard off","\u03c1 = 0.25 \u00b7 guard on"],"y":[8.02,10.45,16.1,19.88],"type":"bar","xaxis":"x","yaxis":"y"},{"customdata":[[7.48,12.53,9.74,37.65],[9.36,14.22,9.13,37.15],[12.93,18.53,15.46,34.14],[15.51,21.32,15.75,32.23]],"error_y":{"array":[2.46,2.43,2.86,3.12],"arrayminus":[2.59,2.42,2.73,2.69],"symmetric":false,"thickness":1,"type":"data","width":3},"hovertemplate":"%{x}: $%{y:.2f} per fixture [%{customdata[0]:.2f}, %{customdata[1]:.2f}]\u003cbr>realized $%{customdata[2]:.2f}; %{customdata[3]:.0f}% of fixtures lose\u003cextra>PM bid + PM ask\u003c/extra>","legendgroup":"PM bid + PM ask","legendrank":1000,"marker":{"color":"#2f6fd6","pattern":{"shape":""}},"name":"PM bid + PM ask","showlegend":true,"x":["\u03c1 = 1 \u00b7 guard off","\u03c1 = 1 \u00b7 guard on","\u03c1 = 0.25 \u00b7 guard off","\u03c1 = 0.25 \u00b7 guard on"],"y":[10.07,11.79,15.67,18.2],"type":"bar","xaxis":"x","yaxis":"y"},{"customdata":[[30.28,53.78,40.75,16.35],[21.46,43.77,31.92,24.04],[53.96,86.27,67.59,8.65],[42.59,71.81,55.14,14.42]],"error_y":{"array":[12.43,11.73,17.47,16.07],"arrayminus":[11.07,10.59,14.84,13.14],"symmetric":false,"thickness":1,"type":"data","width":3},"hovertemplate":"%{x}: $%{y:.2f} per fixture [%{customdata[0]:.2f}, %{customdata[1]:.2f}]\u003cbr>realized $%{customdata[2]:.2f}; %{customdata[3]:.0f}% of fixtures lose\u003cextra>three orders\u003c/extra>","legendgroup":"three orders","legendrank":1000,"marker":{"color":"#8b5cf6","pattern":{"shape":""}},"name":"three orders","showlegend":false,"x":["\u03c1 = 1 \u00b7 guard off","\u03c1 = 1 \u00b7 guard on","\u03c1 = 0.25 \u00b7 guard off","\u03c1 = 0.25 \u00b7 guard on"],"y":[41.35,32.05,68.81,55.73],"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":[[0.73,15.82,8.59,44.23],[6.67,22.92,15.64,39.42],[16.37,36.51,25.45,29.81],[21.74,43.5,31.74,27.88]],"error_y":{"array":[7.96,7.99,10.9,11.09],"arrayminus":[7.12,8.26,9.24,10.67],"symmetric":false,"thickness":1,"type":"data","width":3},"hovertemplate":"%{x}: $%{y:.2f} per fixture [%{customdata[0]:.2f}, %{customdata[1]:.2f}]\u003cbr>realized $%{customdata[2]:.2f}; %{customdata[3]:.0f}% of fixtures lose\u003cextra>PM bid + Kalshi ask\u003c/extra>","legendgroup":"PM bid + Kalshi ask","legendrank":1000,"marker":{"color":"#1a9e6b","pattern":{"shape":""}},"name":"PM bid + Kalshi ask","showlegend":false,"x":["\u03c1 = 1 \u00b7 guard off","\u03c1 = 1 \u00b7 guard on","\u03c1 = 0.25 \u00b7 guard off","\u03c1 = 0.25 \u00b7 guard on"],"y":[7.85,14.93,25.61,32.42],"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":[[30.66,52.46,39.66,17.31],[18.86,33.59,24.1,21.15],[49.71,81.49,64.0,11.54],[30.04,46.57,36.58,20.19]],"error_y":{"array":[11.23,7.46,16.19,8.45],"arrayminus":[10.57,7.27,15.58,8.08],"symmetric":false,"thickness":1,"type":"data","width":3},"hovertemplate":"%{x}: $%{y:.2f} per fixture [%{customdata[0]:.2f}, %{customdata[1]:.2f}]\u003cbr>realized $%{customdata[2]:.2f}; %{customdata[3]:.0f}% of fixtures lose\u003cextra>PM bid + PM ask\u003c/extra>","legendgroup":"PM bid + PM ask","legendrank":1000,"marker":{"color":"#2f6fd6","pattern":{"shape":""}},"name":"PM bid + PM ask","showlegend":false,"x":["\u03c1 = 1 \u00b7 guard off","\u03c1 = 1 \u00b7 guard on","\u03c1 = 0.25 \u00b7 guard off","\u03c1 = 0.25 \u00b7 guard on"],"y":[41.23,26.13,65.3,38.12],"type":"bar","xaxis":"x2","yaxis":"y2"}],"layout":{"xaxis":{"anchor":"y","domain":[0.0,0.48]},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"P&L per fixture ($, L = 100, 95% CI)"}},"xaxis2":{"anchor":"y2","domain":[0.52,1.0]},"yaxis2":{"anchor":"x2","domain":[0.0,1.0]},"annotations":[{"font":{"size":12},"showarrow":false,"text":"Club competitions (996 fixtures)","x":0.24,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"World Cup 2026 (104 fixtures)","x":0.76,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"}],"margin":{"l":72,"r":24,"t":118,"b":64},"font":{"family":"\"Source Sans 3\", \"Segoe UI\", Helvetica, Arial, sans-serif","size":12},"legend":{"title":{"text":""},"font":{"size":12},"orientation":"h","x":0,"xanchor":"left","y":1.1805555555555556,"yanchor":"bottom"},"height":470,"hovermode":"closest","bargap":0.25,"barmode":"group"}}</script>
+<p class="chart-links">
+<a href="data/chart-27-0.csv" download="">Chart data (CSV)</a> · <a href="data/chart-27-0.json" download="">Figure (Plotly JSON)</a>
+</p>
+</div>
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+Clubs, L = 100
+</th>
+<th>
+three orders
+</th>
+<th>
+PM bid + Kalshi ask
+</th>
+<th>
+PM bid + PM ask
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+ρ = 1 · guard off
+</td>
+<td>
+$13.0
+</td>
+<td>
+$8.0
+</td>
+<td>
+$10.1
+</td>
+</tr>
+<tr>
+<td>
+ρ = 1 · guard on
+</td>
+<td>
+$14.9
+</td>
+<td>
+$10.5
+</td>
+<td>
+$11.8
+</td>
+</tr>
+<tr>
+<td>
+ρ = 0.25 · guard off
+</td>
+<td>
+$23.4
+</td>
+<td>
+$16.1
+</td>
+<td>
+$15.7
+</td>
+</tr>
+<tr>
+<td>
+ρ = 0.25 · guard on
+</td>
+<td>
+$25.9
+</td>
+<td>
+$19.9
+</td>
+<td>
+$18.2
+</td>
+</tr>
+<tr>
+<td>
+losing / 5th percentile / fixtures needed (ρ = 1, guard on)
+</td>
+<td>
+38% / −$42 / 42
+</td>
+<td>
+39% / −$47 / 74
+</td>
+<td>
+37% / −$44 / 47
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>In club play, all three orders beat either pair in every run.</strong> Dropping either ask costs $3–8 per fixture.</p>
+<p><strong>Kalshi adds value twice.</strong> A plain Polymarket market maker without the guard, which uses nothing from Kalshi, makes $10.1 at ρ = 1 and $15.7 at ρ = 0.25.</p>
+<ul>
+<li><strong>As a signal:</strong> using Kalshi’s book for the guard lifts it to $11.8 and $18.2.</li>
+<li><strong>As an exit:</strong> adding the Kalshi order as well lifts it to $14.9 and $25.9, 48–66% more than without Kalshi at all.</li>
+</ul>
+<p><strong>The double-fill risk is worth taking.</strong> The pairs never double-fill; the three orders do, in 9% of club fixtures. Yet the three orders earn more with similar downside: 37–39% of fixtures lose in each setup, and the 5th percentile is −$42, against −$47 and −$44 for the pairs.</p>
+<p><strong>The two pairs differ.</strong></p>
+<ul>
+<li><em>PM bid + Kalshi ask</em> is the weakest club setup at ρ = 1. Without the guard its inventory result is negative (−$1.2 to −$1.1 per fixture), and it needs the most fixtures to prove itself: 74, against 42 for three orders.</li>
+<li><em>PM bid + PM ask</em> is the steadiest, with a standard deviation of $40–45 per fixture, and needs the fewest fixtures at ρ = 0.25 with the guard (24). But its pairs take the longest to complete: a median of 212 s, against 106 s for three orders.</li>
+</ul>
+<p><strong>The World Cup is different.</strong> Without the guard, PM bid + PM ask about matches three orders there: $41.2 against $41.3 at ρ = 1, and $65.3 against $68.8 at ρ = 0.25. In that faster market the Kalshi exit adds little.</p>
+<p>If a live system had to start simpler, PM bid + PM ask with the guard would be the fallback: one venue to trade, the lowest variance, the smallest sample at short queues. The test keeps all three orders, with a switch per order so the fallback is a setting, not a code change.</p>
+</section>
+<section id="how-tight-a-guard" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="how-tight-a-guard">2. How tight a guard?</h2>
+<p>Part 3’s guard pulls the Polymarket bid as soon as Kalshi’s best ask reaches it. A goal moves Kalshi several ticks at once, while a move of one or two ticks may come back. The idea tested here is to let Kalshi cross the order by a <strong>buffer</strong> before pulling it:</p>
+<ul>
+<li>rest <code>pm_yes</code> only while b &lt; Kalshi best ask + buffer;</li>
+<li>rest <code>pm_no</code> only while a &gt; Kalshi best bid − buffer.</li>
+</ul>
+<p>A larger buffer keeps the order up through small Kalshi moves and still pulls it when a jump arrives.</p>
+<div class="column-screen-inset-right chart-block">
+<div class="chart-frame"><div id="chart-30-0" class="research-chart" style="height:450px"></div></div>
+<script type="application/json" data-chart="chart-30-0">{"data":[{"customdata":[[10.02,15.68,10.98,38.25],[12.13,17.94,12.19,37.65],[11.65,18.17,12.35,37.45],[11.22,17.46,12.02,37.75],[11.25,17.51,11.87,37.75]],"error_y":{"array":[2.68,3.06,3.47,3.13,3.28],"arrayminus":[2.98,2.76,3.04,3.11,2.98],"symmetric":false,"thickness":1,"type":"data","width":3},"hovertemplate":"%{x}: $%{y:.2f} per fixture [%{customdata[0]:.2f}, %{customdata[1]:.2f}]\u003cbr>realized $%{customdata[2]:.2f}; %{customdata[3]:.0f}% of fixtures lose\u003cextra>\u03c1 = 1\u003c/extra>","legendgroup":"\u03c1 = 1","legendrank":1000,"marker":{"color":"#5c6b7a","pattern":{"shape":""}},"name":"\u03c1 = 1","showlegend":true,"x":["guard off","buffer 0","buffer 1","buffer 2","buffer 3"],"y":[13.0,14.89,14.7,14.33,14.23],"type":"bar","xaxis":"x","yaxis":"y"},{"customdata":[[19.59,27.57,21.68,34.34],[21.83,30.2,23.46,32.73],[22.21,30.23,23.77,33.03],[21.5,30.1,23.28,33.63],[21.05,29.68,23.09,33.43]],"error_y":{"array":[4.15,4.26,4.19,4.48,4.27],"arrayminus":[3.83,4.11,3.83,4.12,4.36],"symmetric":false,"thickness":1,"type":"data","width":3},"hovertemplate":"%{x}: $%{y:.2f} per fixture [%{customdata[0]:.2f}, %{customdata[1]:.2f}]\u003cbr>realized $%{customdata[2]:.2f}; %{customdata[3]:.0f}% of fixtures lose\u003cextra>\u03c1 = 0.25\u003c/extra>","legendgroup":"\u03c1 = 0.25","legendrank":1000,"marker":{"color":"#e8a33d","pattern":{"shape":""}},"name":"\u03c1 = 0.25","showlegend":true,"x":["guard off","buffer 0","buffer 1","buffer 2","buffer 3"],"y":[23.42,25.94,26.04,25.62,25.41],"type":"bar","xaxis":"x","yaxis":"y"},{"customdata":[[30.04,53.92,40.75,16.35],[21.88,42.88,31.92,24.04],[27.73,51.41,39.38,21.15],[31.29,53.96,41.53,17.31],[30.58,54.84,41.98,17.31]],"error_y":{"array":[12.58,10.84,12.35,11.86,12.27],"arrayminus":[11.31,10.17,11.33,10.8,11.99],"symmetric":false,"thickness":1,"type":"data","width":3},"hovertemplate":"%{x}: $%{y:.2f} per fixture [%{customdata[0]:.2f}, %{customdata[1]:.2f}]\u003cbr>realized $%{customdata[2]:.2f}; %{customdata[3]:.0f}% of fixtures lose\u003cextra>\u03c1 = 1\u003c/extra>","legendgroup":"\u03c1 = 1","legendrank":1000,"marker":{"color":"#5c6b7a","pattern":{"shape":""}},"name":"\u03c1 = 1","showlegend":false,"x":["guard off","buffer 0","buffer 1","buffer 2","buffer 3"],"y":[41.35,32.05,39.06,42.1,42.57],"type":"bar","xaxis":"x2","yaxis":"y2"},{"customdata":[[53.53,85.45,67.59,8.65],[42.38,70.75,55.14,14.42],[53.39,84.84,68.47,9.62],[54.63,86.92,69.86,8.65],[54.94,88.36,69.33,9.62]],"error_y":{"array":[16.64,15.02,15.57,15.9,17.84],"arrayminus":[15.27,13.35,15.87,16.39,15.58],"symmetric":false,"thickness":1,"type":"data","width":3},"hovertemplate":"%{x}: $%{y:.2f} per fixture [%{customdata[0]:.2f}, %{customdata[1]:.2f}]\u003cbr>realized $%{customdata[2]:.2f}; %{customdata[3]:.0f}% of fixtures lose\u003cextra>\u03c1 = 0.25\u003c/extra>","legendgroup":"\u03c1 = 0.25","legendrank":1000,"marker":{"color":"#e8a33d","pattern":{"shape":""}},"name":"\u03c1 = 0.25","showlegend":false,"x":["guard off","buffer 0","buffer 1","buffer 2","buffer 3"],"y":[68.81,55.73,69.26,71.02,70.52],"type":"bar","xaxis":"x2","yaxis":"y2"}],"layout":{"xaxis":{"anchor":"y","domain":[0.0,0.48],"title":{"text":"guard: off, or on with a buffer of 0\u20133 ticks of 1 c"}},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"P&L per fixture ($, L = 100, 95% CI)"}},"xaxis2":{"anchor":"y2","domain":[0.52,1.0],"title":{"text":"guard: off, or on with a buffer of 0\u20133 ticks of 1 c"}},"yaxis2":{"anchor":"x2","domain":[0.0,1.0]},"annotations":[{"font":{"size":12},"showarrow":false,"text":"Club competitions","x":0.24,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"World Cup 2026","x":0.76,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"}],"margin":{"l":72,"r":24,"t":118,"b":64},"font":{"family":"\"Source Sans 3\", \"Segoe UI\", Helvetica, Arial, sans-serif","size":12},"legend":{"title":{"text":""},"font":{"size":12},"orientation":"h","x":0,"xanchor":"left","y":1.1940298507462686,"yanchor":"bottom"},"height":450,"hovermode":"closest","bargap":0.25,"barmode":"group"}}</script>
+<p class="chart-links">
+<a href="data/chart-30-0.csv" download="">Chart data (CSV)</a> · <a href="data/chart-30-0.json" download="">Figure (Plotly JSON)</a>
+</p>
+</div>
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+Clubs, ρ = 1
+</th>
+<th>
+P&amp;L per fixture
+</th>
+<th>
+Guard cancels per fixture
+</th>
+<th>
+Bid contracts filled
+</th>
+<th>
+Bid markout at the fill
+</th>
+<th>
+Double fills (fixtures)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+guard off
+</td>
+<td>
+$13.0
+</td>
+<td>
+0
+</td>
+<td>
+1,208
+</td>
+<td>
+0.41 c
+</td>
+<td>
+15%
+</td>
+</tr>
+<tr>
+<td>
+buffer 0
+</td>
+<td>
+$14.9
+</td>
+<td>
+35
+</td>
+<td>
+940
+</td>
+<td>
+1.53 c
+</td>
+<td>
+9%
+</td>
+</tr>
+<tr>
+<td>
+buffer 1
+</td>
+<td>
+$14.7
+</td>
+<td>
+10
+</td>
+<td>
+1,125
+</td>
+<td>
+1.15 c
+</td>
+<td>
+13%
+</td>
+</tr>
+<tr>
+<td>
+buffer 2
+</td>
+<td>
+$14.3
+</td>
+<td>
+4
+</td>
+<td>
+1,165
+</td>
+<td>
+1.04 c
+</td>
+<td>
+15%
+</td>
+</tr>
+<tr>
+<td>
+buffer 3
+</td>
+<td>
+$14.2
+</td>
+<td>
+2
+</td>
+<td>
+1,177
+</td>
+<td>
+0.98 c
+</td>
+<td>
+15%
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>In club play the buffer is neutral.</strong> P&amp;L barely moves across buffers 0–3, and every interval overlaps. What changes is the mix:</p>
+<ul>
+<li><strong>fewer pulls:</strong> 35, 10, 4, 2 guard cancels per fixture at buffers 0, 1, 2 and 3;</li>
+<li><strong>more bid fills:</strong> 0.94k rising to 1.18k contracts per fixture;</li>
+<li><strong>each bid fill is worse:</strong> its markout at the fill falls, buffer by buffer, through 1.53, 1.15, 1.04, 0.98 c per contract;</li>
+<li><strong>more double fills:</strong> 9% of fixtures at buffer 0, 13–15% with a buffer.</li>
+</ul>
+<p>So the one-tick crosses that buffer 0 reacts to are not pure noise: the fills they avoid are worse ones. Keeping the order up wins back about as much in volume as it loses in quality.</p>
+<p><strong>At the World Cup the buffer removes the guard’s cost.</strong> Buffer 0 cost $9–13 per fixture there ($32.0 against $41.3 without the guard at ρ = 1). Buffer 1 recovers most of it ($39.1), and buffers 2–3 are back at or above no guard ($42.1–42.6). In that market small crosses were mostly noise.</p>
+<p>A 1-tick buffer is therefore a robust default: club P&amp;L is unchanged ($14.7 against $14.9 at ρ = 1) with 71% fewer guard cancels. Fewer cancels matter more live than in the replay, which charges nothing for a cancel beyond lost queue position, while a live system also pays in rate limits and cancel latency.</p>
+</section>
+<section id="smaller-orders" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="smaller-orders">3. Smaller orders</h2>
+<p>The replay was repeated at L = 50, 20, 15 and 10 contracts, with everything else unchanged except the minimum order: at 20 contracts and below, no Polymarket order or top-up under 5 contracts and no Kalshi order under 1, the venues’ minimums.</p>
+<p>The cash a fixture needs is tracked each second, per venue and summed over both team-win outcomes (one account per venue):</p>
+<ul>
+<li><strong>Polymarket:</strong> cash paid for positions, with every Polymarket YES + NO pair merged back into $1 at once, plus the collateral of resting orders;</li>
+<li><strong>Kalshi:</strong> cash paid for NO, locked until settlement, plus the collateral of the resting NO bid.</li>
+</ul>
+<p>A fixture’s requirement is the peak of that series.</p>
+<div class="column-screen-inset-right chart-block">
+<div class="chart-frame"><div id="chart-33-0" class="research-chart" style="height:430px"></div></div>
+<script type="application/json" data-chart="chart-33-0">{"data":[{"error_y":{"array":[3.21,1.76,0.84,0.59,0.44],"arrayminus":[3.09,1.64,0.86,0.61,0.46],"symmetric":false,"thickness":1,"type":"data","width":3},"hovertemplate":"%{x}: $%{y:.2f} per fixture\u003cextra>\u003c/extra>","legendgroup":"P&L per fixture","legendrank":1000,"marker":{"color":"#8b5cf6"},"name":"P&L per fixture","showlegend":false,"x":["L = 100","L = 50","L = 20","L = 15","L = 10"],"y":[14.89,9.24,4.86,3.91,2.86],"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{x}: $%{y:.3f} per contract of L\u003cextra>\u003c/extra>","legendgroup":"per contract of L","legendrank":1000,"marker":{"color":"#5c6b7a"},"name":"per contract of L","showlegend":false,"x":["L = 100","L = 50","L = 20","L = 15","L = 10"],"y":[0.149,0.185,0.243,0.261,0.286],"type":"bar","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"%{x}: $%{y:,.0f}\u003cextra>Polymarket, 95th percentile\u003c/extra>","legendgroup":"Polymarket cash","legendrank":1000,"marker":{"color":"#2f6fd6"},"name":"Polymarket cash","showlegend":true,"x":["L = 100","L = 50","L = 20","L = 15","L = 10"],"y":[1269.0,731.0,344.0,274.0,195.0],"type":"bar","xaxis":"x3","yaxis":"y3"},{"hovertemplate":"%{x}: $%{y:,.0f}\u003cextra>Kalshi, 95th percentile\u003c/extra>","legendgroup":"Kalshi cash","legendrank":1000,"marker":{"color":"#1a9e6b"},"name":"Kalshi cash","showlegend":true,"x":["L = 100","L = 50","L = 20","L = 15","L = 10"],"y":[1519.0,918.0,450.0,358.0,254.0],"type":"bar","xaxis":"x3","yaxis":"y3"}],"layout":{"xaxis":{"anchor":"y","domain":[0.0,0.2866666666666667]},"yaxis":{"anchor":"x","domain":[0.0,1.0]},"xaxis2":{"anchor":"y2","domain":[0.3566666666666667,0.6433333333333333]},"yaxis2":{"anchor":"x2","domain":[0.0,1.0]},"xaxis3":{"anchor":"y3","domain":[0.7133333333333334,1.0]},"yaxis3":{"anchor":"x3","domain":[0.0,1.0]},"annotations":[{"font":{"size":12},"showarrow":false,"text":"P&L per fixture ($, 95% CI)","x":0.14333333333333334,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"P&L per contract of L ($)","x":0.5,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"Cash needed per fixture, 95th percentile ($)","x":0.8566666666666667,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"}],"margin":{"l":72,"r":24,"t":118,"b":64},"font":{"family":"\"Source Sans 3\", \"Segoe UI\", Helvetica, Arial, sans-serif","size":12},"legend":{"title":{"text":""},"font":{"size":12},"orientation":"h","x":0,"xanchor":"left","y":1.2096774193548387,"yanchor":"bottom"},"height":430,"hovermode":"closest","bargap":0.25,"barmode":"group"}}</script>
+<p class="chart-links">
+<a href="data/chart-33-0.csv" download="">Chart data (CSV)</a> · <a href="data/chart-33-0.json" download="">Figure (Plotly JSON)</a>
+</p>
+</div>
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+L
+</th>
+<th>
+P&amp;L per fixture
+</th>
+<th>
+Per contract of L
+</th>
+<th>
+Mean ÷ SD
+</th>
+<th>
+Losing
+</th>
+<th>
+5th pct / worst fixture
+</th>
+<th>
+Cash, 95th pct (PM / Kalshi)
+</th>
+<th>
+Cash, max (PM / Kalshi)
+</th>
+<th>
+Fixtures needed
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+100
+</td>
+<td>
+$14.89 [11.8, 18.1]
+</td>
+<td>
+0.15
+</td>
+<td>
+0.30
+</td>
+<td>
+38%
+</td>
+<td>
+−$42 / −$113
+</td>
+<td>
+$1,269 / $1,519
+</td>
+<td>
+$4,741 / $6,411
+</td>
+<td>
+42
+</td>
+</tr>
+<tr>
+<td>
+50
+</td>
+<td>
+$9.24 [7.6, 11.0]
+</td>
+<td>
+0.18
+</td>
+<td>
+0.33
+</td>
+<td>
+35%
+</td>
+<td>
+−$20 / −$53
+</td>
+<td>
+$731 / $918
+</td>
+<td>
+$2,535 / $3,721
+</td>
+<td>
+35
+</td>
+</tr>
+<tr>
+<td>
+20
+</td>
+<td>
+$4.86 [4.0, 5.7]
+</td>
+<td>
+0.24
+</td>
+<td>
+0.37
+</td>
+<td>
+33%
+</td>
+<td>
+−$8 / −$32
+</td>
+<td>
+$344 / $450
+</td>
+<td>
+$1,057 / $1,664
+</td>
+<td>
+29
+</td>
+</tr>
+<tr>
+<td>
+15
+</td>
+<td>
+$3.91 [3.3, 4.5]
+</td>
+<td>
+0.26
+</td>
+<td>
+0.38
+</td>
+<td>
+32%
+</td>
+<td>
+−$6 / −$25
+</td>
+<td>
+$274 / $358
+</td>
+<td>
+$812 / $1,290
+</td>
+<td>
+28
+</td>
+</tr>
+<tr>
+<td>
+10
+</td>
+<td>
+$2.86 [2.4, 3.3]
+</td>
+<td>
+0.29
+</td>
+<td>
+0.39
+</td>
+<td>
+31%
+</td>
+<td>
+−$4 / −$17
+</td>
+<td>
+$195 / $254
+</td>
+<td>
+$556 / $897
+</td>
+<td>
+26
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Half the size keeps 62% of the P&amp;L.</strong> At L = 50 the replay makes $9.2 per fixture against $14.9 at L = 100, because fills fall only to 61%: a trade that reaches our price fills a larger share of a smaller order. P&amp;L per contract of L rises with every step down, from 0.15 at L = 100 to 0.18 at 50 and 0.29 at 10. The gain slows at 10, partly because Polymarket’s 5-contract minimum leaves small shortfalls unfilled.</p>
+<p><strong>Risk falls faster than P&amp;L.</strong> The standard deviation per fixture drops from $49 at L = 100 to $28 at 50 and $7.3 at 10, and the worst fixture from −$113 to −$17. The ranking of the four variants of part 3 is the same at every size.</p>
+<p><strong>The sample a test needs barely changes.</strong> A live test at L = 10 needs about 26 club fixtures for a 95% interval that excludes zero, against 42 at L = 100, if the replay is right, with a tenth of the money at risk. A smaller order also makes the replay’s assumption that our orders do not change the tape more realistic.</p>
+<p><strong>Cash grows with turnover, not with L alone.</strong> Every YES/NO pair completed across venues locks $1 until settlement: the YES on Polymarket, the NO on Kalshi. Busy fixtures stack up locked pairs through the match. The median fixture at L = 100 needs $284–288 per venue, but the tail is set by the busiest fixtures, and halving L cuts the 95th percentile to 58–60%. At L = 10, the 95th percentile is $195 on Polymarket and $254 on Kalshi. Several fixtures played at the same time add up.</p>
+</section>
+<section id="a-cash-cap-per-venue" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="a-cash-cap-per-venue">4. A cash cap per venue</h2>
+<p>At L = 10, 6% of club fixtures need more than $200 on Polymarket or $300 on Kalshi (section 3). This run caps the cash instead.</p>
+<p><strong>Rule: stop opening, keep hedging.</strong> Each second, order sizes are cut to what the remaining cash can fund; remaining cash is the cap minus cash already paid for positions. Whichever order reduces |q| is funded first, and the order that opens new exposure gets what is left. Selling YES already held needs no cash. The replay runs each team-win outcome separately, so each gets half the budget; a live account shares it between the two outcomes, so this split is slightly conservative.</p>
+<div class="column-screen-inset-right chart-block">
+<div class="chart-frame"><div id="chart-36-0" class="research-chart" style="height:430px"></div></div>
+<script type="application/json" data-chart="chart-36-0">{"data":[{"hovertemplate":"$%{x:.2f} \u00b1 0.25: %{y} fixtures\u003cextra>no cap\u003c/extra>","legendgroup":"no cap: mean $2.86, median $1.11","legendrank":1000,"line":{"color":"#8b97a3","shape":"hvh","width":3},"mode":"lines","name":"no cap: mean $2.86, median $1.11","showlegend":true,"x":[-16.75,-16.25,-15.75,-15.25,-14.75,-14.25,-13.75,-13.25,-12.75,-12.25,-11.75,-11.25,-10.75,-10.25,-9.75,-9.25,-8.75,-8.25,-7.75,-7.25,-6.75,-6.25,-5.75,-5.25,-4.75,-4.25,-3.75,-3.25,-2.75,-2.25,-1.75,-1.25,-0.75,-0.25,0.25,0.75,1.25,1.75,2.25,2.75,3.25,3.75,4.25,4.75,5.25,5.75,6.25,6.75,7.25,7.75,8.25,8.75,9.25,9.75,10.25,10.75,11.25,11.75,12.25,12.75,13.25,13.75,14.25,14.75,15.25,15.75,16.25,16.75,17.25,17.75,18.25,18.75,19.25,19.75,20.25,20.75,21.25,21.75,22.25,22.75,23.25,23.75,24.25,24.75,25.25],"y":[1,0,0,0,0,0,0,0,0,0,1,0,0,2,1,0,0,0,0,3,2,7,3,7,13,10,21,14,21,37,29,36,47,51,131,49,46,42,45,25,38,21,24,27,22,18,20,19,12,18,18,11,7,7,12,7,6,4,0,4,3,4,5,5,1,3,3,4,0,1,1,1,2,1,2,2,4,1,0,0,0,1,0,2,11],"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"$%{x:.2f} \u00b1 0.25: %{y} fixtures\u003cextra>cap $200 Polymarket / $300 Kalshi\u003c/extra>","legendgroup":"cap $200 Polymarket / $300 Kalshi: mean $2.57, median $1.04","legendrank":1000,"line":{"color":"#e8a33d","shape":"hvh","width":1.6},"mode":"lines","name":"cap $200 Polymarket / $300 Kalshi: mean $2.57, median $1.04","showlegend":true,"x":[-16.75,-16.25,-15.75,-15.25,-14.75,-14.25,-13.75,-13.25,-12.75,-12.25,-11.75,-11.25,-10.75,-10.25,-9.75,-9.25,-8.75,-8.25,-7.75,-7.25,-6.75,-6.25,-5.75,-5.25,-4.75,-4.25,-3.75,-3.25,-2.75,-2.25,-1.75,-1.25,-0.75,-0.25,0.25,0.75,1.25,1.75,2.25,2.75,3.25,3.75,4.25,4.75,5.25,5.75,6.25,6.75,7.25,7.75,8.25,8.75,9.25,9.75,10.25,10.75,11.25,11.75,12.25,12.75,13.25,13.75,14.25,14.75,15.25,15.75,16.25,16.75,17.25,17.75,18.25,18.75,19.25,19.75,20.25,20.75,21.25,21.75,22.25,22.75,23.25,23.75,24.25,24.75,25.25],"y":[1,0,0,0,0,0,0,0,0,0,1,0,0,2,1,0,0,0,0,3,2,7,3,7,13,11,20,14,21,39,30,37,48,51,133,51,47,40,46,24,42,22,26,20,27,21,17,20,13,21,15,14,7,7,8,6,5,4,0,4,5,4,1,4,2,0,4,2,0,2,3,0,1,1,0,1,2,1,0,0,1,0,0,2,9],"type":"scatter","xaxis":"x","yaxis":"y"}],"layout":{"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"P&L per fixture ($), both team-win outcomes; $0.50 bins, fixtures above $25 in the last bin"},"range":[-17.0,25.5]},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"fixtures"}},"margin":{"l":72,"r":24,"t":118,"b":64},"font":{"family":"\"Source Sans 3\", \"Segoe UI\", Helvetica, Arial, sans-serif","size":12},"legend":{"title":{"text":""},"font":{"size":12},"orientation":"h","x":0,"xanchor":"left","y":1.2096774193548387,"yanchor":"bottom"},"height":430,"hovermode":"closest","bargap":0.25,"shapes":[{"line":{"color":"#8a929b","width":1},"type":"line","x0":0,"x1":0,"xref":"x","y0":0,"y1":1,"yref":"y domain"}]}}</script>
+<p class="chart-links">
+<a href="data/chart-36-0.csv" download="">Chart data (CSV)</a> · <a href="data/chart-36-0.json" download="">Figure (Plotly JSON)</a>
+</p>
+</div>
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+Clubs, L = 10
+</th>
+<th>
+P&amp;L per fixture
+</th>
+<th>
+Losing
+</th>
+<th>
+5th pct / worst
+</th>
+<th>
+SD
+</th>
+<th>
+PM cash, median / p90 / p95 / max
+</th>
+<th>
+Kalshi cash, median / p90 / p95 / max
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+no cap
+</td>
+<td>
+$2.86 [2.45, 3.33]
+</td>
+<td>
+31%
+</td>
+<td>
+−$4.0 / −$16.9
+</td>
+<td>
+$7.3
+</td>
+<td>
+$39 / $139 / $195 / $556
+</td>
+<td>
+$40 / $171 / $254 / $897
+</td>
+</tr>
+<tr>
+<td>
+cap $200 / $300
+</td>
+<td>
+$2.57 [2.16, 3.03]
+</td>
+<td>
+31%
+</td>
+<td>
+−$4.0 / −$16.9
+</td>
+<td>
+$6.9
+</td>
+<td>
+$39 / $110 / $122 / $200
+</td>
+<td>
+$40 / $156 / $197 / $300
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The cap costs about a tenth of the P&amp;L</strong>: 10% for the best variant ($2.86 to $2.57 per fixture), 10–11% for the other three, with their ranking unchanged. The cash peaks stay within the cap.</p>
+<p><strong>It binds on the fixtures that earn the most.</strong> Only 56 of 996 club fixtures needed more than $200 / $300 without the cap, but they carried 22% of the total P&amp;L. Capped, they still earn $7.3 per fixture on average, against $11.3 without the cap: the cash a fixture needs grows with the pairs it completes, and so does its P&amp;L.</p>
+<p><strong>Hedging is not affected.</strong> The largest inventory is 30 contracts (3L) with or without the cap, and the worst fixture is the same. The priority rule keeps the reducing order funded. The World Cup, which trades far more per fixture, is cut by 15–28%.</p>
+<p><strong>Most single fixtures are close to zero.</strong> The histogram is the shape to expect from a live test:</p>
+<ul>
+<li>the median club fixture makes $1.11, well below the mean of $2.86, and losses stay small: 5th percentile −$4.0, worst −$16.9;</li>
+<li>the profit comes from a long right tail: the 95th percentile is $13.9, the 99th $28.8, and the top 10% of fixtures produce 63% of the total;</li>
+<li>the cap trims that right tail (95th percentile $11.8, 99th $24.6) and leaves the left one alone.</li>
+</ul>
+<p>A run of small losses at the start of a test is therefore expected, and is not evidence against the strategy; the edge shows only across many fixtures.</p>
+</section>
+<section id="where-the-pl-comes-from" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="where-the-pl-comes-from">5. Where the P&amp;L comes from</h2>
+<p>Why do fixtures differ, why do so many sit near zero, and where are the losses made? This section decomposes the L = 10 run without the cap. With m(t) the Kalshi mid at the start of second t, each outcome’s P&amp;L splits into:</p>
+<ul>
+<li><strong>edge:</strong> each fill’s value against m at its second, net of the Kalshi fee, the spread captured;</li>
+<li><strong>inventory:</strong> Σ q(t) · (m(t + 1) − m(t)), the net position times the price change, of which the part in <strong>jump seconds</strong> stands in for goals; there are no goal timestamps in the replay.</li>
+</ul>
+<p>Edge plus inventory reproduces the replay’s P&amp;L to within about $1 per fixture.</p>
+<div class="column-screen-inset-right chart-block">
+<div class="chart-frame"><div id="chart-39-0" class="research-chart" style="height:450px"></div></div>
+<script type="application/json" data-chart="chart-39-0">{"data":[{"hovertemplate":"%{x}: edge $%{y:.2f}\u003cextra>\u003c/extra>","legendgroup":"edge (spread captured)","legendrank":1000,"marker":{"color":"#8b5cf6"},"name":"edge (spread captured)","showlegend":true,"x":["Q1 low","Q2","Q3","Q4","Q5 high"],"y":[2.41,2.84,3.31,6.19,7.2],"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{x}: inventory $%{y:.2f}\u003cextra>\u003c/extra>","legendgroup":"inventory","legendrank":1000,"marker":{"color":"#d64550"},"name":"inventory","showlegend":true,"x":["Q1 low","Q2","Q3","Q4","Q5 high"],"y":[-1.43,-1.31,-1.41,-1.33,-2.16],"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{x}: P&L $%{y:.2f}\u003cextra>\u003c/extra>","legendgroup":"P&L","legendrank":1000,"marker":{"color":"#e8a33d","size":11,"symbol":"diamond"},"mode":"markers","name":"P&L","showlegend":true,"x":["Q1 low","Q2","Q3","Q4","Q5 high"],"y":[0.98,1.54,1.9,4.86,5.04],"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{x}: $%{y:,.0f}\u003cextra>\u003c/extra>","legendgroup":"jump-second P&L","legendrank":1000,"marker":{"color":["#d64550","#d64550","#8b5cf6","#8b5cf6"]},"name":"jump-second P&L","showlegend":false,"x":["short YES\u003cbr>price up","long YES\u003cbr>price down","long YES\u003cbr>price up","short YES\u003cbr>price down"],"y":[-7899.0,-1868.0,1724.0,6527.0],"type":"bar","xaxis":"x2","yaxis":"y2"}],"layout":{"xaxis":{"anchor":"y","domain":[0.0,0.45],"title":{"text":"taker volume on both venues, quintiles"}},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"$ per fixture (L = 10)"}},"xaxis2":{"anchor":"y2","domain":[0.55,1.0]},"yaxis2":{"anchor":"x2","domain":[0.0,1.0],"title":{"text":"$ over 996 club fixtures"}},"annotations":[{"font":{"size":12},"showarrow":false,"text":"By taker-volume quintile (mean per fixture)","x":0.225,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"Jump seconds with a position (all club fixtures)","x":0.775,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"}],"margin":{"l":72,"r":24,"t":118,"b":64},"font":{"family":"\"Source Sans 3\", \"Segoe UI\", Helvetica, Arial, sans-serif","size":12},"legend":{"title":{"text":""},"font":{"size":12},"orientation":"h","x":0,"xanchor":"left","y":1.1940298507462686,"yanchor":"bottom"},"height":450,"hovermode":"closest","bargap":0.25,"barmode":"relative"}}</script>
+<p class="chart-links">
+<a href="data/chart-39-0.csv" download="">Chart data (CSV)</a> · <a href="data/chart-39-0.json" download="">Figure (Plotly JSON)</a>
+</p>
+</div>
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+Club fixtures
+</th>
+<th>
+Number
+</th>
+<th>
+P&amp;L
+</th>
+<th>
+Edge
+</th>
+<th>
+Inventory
+</th>
+<th>
+of which jump seconds
+</th>
+<th>
+of which other seconds
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+all
+</td>
+<td>
+996
+</td>
+<td>
+$2.86
+</td>
+<td>
+$4.39
+</td>
+<td>
+−$1.53
+</td>
+<td>
+−$1.52
+</td>
+<td>
+−$0.01
+</td>
+</tr>
+<tr>
+<td>
+losing
+</td>
+<td>
+306
+</td>
+<td>
+−$2.31
+</td>
+<td>
+$1.90
+</td>
+<td>
+−$4.21
+</td>
+<td>
+−$3.35
+</td>
+<td>
+−$0.86
+</td>
+</tr>
+<tr>
+<td>
+worst 5%
+</td>
+<td>
+50
+</td>
+<td>
+−$5.90
+</td>
+<td>
+$1.94
+</td>
+<td>
+−$7.85
+</td>
+<td>
+−$6.34
+</td>
+<td>
+−$1.51
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The spike just below zero is fixtures that barely traded.</strong> 117 club fixtures end between −$0.50 and $0, and 65 of them have no fill at all. Their markets did trade, but our orders were rarely live: a median of 154 quoted seconds across the three orders, against 3,886 for fixtures above $1. A stale book, the 5–95 c price band, the guard or the back of the queue kept them off.</p>
+<p><strong>Volume separates fixtures; depth matters only given volume.</strong></p>
+<ul>
+<li>Rank correlation with P&amp;L: our fills 0.46, quoted seconds 0.36, Kalshi taker volume 0.29, Polymarket taker volume 0.23, depth at the touch alone −0.05 to −0.02.</li>
+<li>From the lowest to the highest taker-volume quintile, P&amp;L rises from $1.0 to $5.0 per fixture. Nearly all of the rise is edge ($2.4 to $7.2); inventory is −$2.2 to −$1.3 in every quintile.</li>
+<li>Within a volume quintile, deeper books earn less, because at ρ = 1 the whole displayed queue must trade first. In the top quintile: $7.3 with thin books, $5.6 mid, $4.1 deep.</li>
+</ul>
+<p><strong>Losses come from carrying inventory into jumps, not from being filled at the jump.</strong></p>
+<ul>
+<li>Over all fixtures, edge is $4.39 per fixture and inventory −$1.53, of which −$1.52 falls in jump seconds: outside jumps, inventory nets to about zero.</li>
+<li>Losing fixtures still have positive edge ($1.90); they lose −$4.21 on inventory, −$3.35 of it in jumps.</li>
+<li><strong>Short YES as the price jumps up</strong>, an ask filled and then that team scores, is the main loss: −$7899 across the club fixtures. Of that, −$6866 comes from positions held earlier and not yet paired; only −$899 from Kalshi asks filled in the 10 s before the jump.</li>
+<li><strong>Long YES as the price drops</strong> costs −$1868, and bids filled in the 10 s before the drop lose only −$194: the guard mostly prevents being hit just before a goal.</li>
+<li>Jumps the other way pay back $8251. Net, jump seconds cost $1515, about a third of the total edge of $4373.</li>
+</ul>
+<p><strong>Why mostly short YES.</strong> Two asks rest against one bid, each sized L + q, so the ask side fills more often and q is usually negative; a short YES loses when that team scores.</p>
+<p>The lever is how long inventory is held, not the guard. Two changes are worth a replay before they go live: size the two asks so that together, rather than each, they cover L + q; and close an unpaired position as a taker after a fixed time.</p>
+</section>
+<section id="per-outcome-or-per-fixture-strong-or-weak-team" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="per-outcome-or-per-fixture-strong-or-weak-team">6. Per outcome or per fixture, strong or weak team</h2>
+<p>The replay runs each team-win outcome on its own and adds the two up per fixture, with no rule linking them. Because our orders do not change the tape, that sum is exactly what a joint run would give unless a rule used both outcomes, such as a shared cash cap or a joint inventory limit.</p>
+<div class="column-screen-inset-right chart-block">
+<div class="chart-frame"><div id="chart-42-0" class="research-chart" style="height:420px"></div></div>
+<script type="application/json" data-chart="chart-42-0">{"data":[{"hovertemplate":"%{x}: $%{y:.2f}\u003cextra>strong team\u003c/extra>","legendgroup":"strong team","legendrank":1000,"marker":{"color":"#d64550"},"name":"strong team","showlegend":true,"x":["F1 low\u003cbr>~3 fills","F2\u003cbr>~27 fills","F3\u003cbr>~86 fills","F4\u003cbr>~187 fills","F5 high\u003cbr>~545 fills"],"y":[0.15,0.0,0.5,1.11,5.06],"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{x}: %{y:.0f}% losing\u003cextra>strong team\u003c/extra>","legendgroup":"strong team","legendrank":1000,"marker":{"color":"#d64550"},"name":"strong team","showlegend":false,"x":["F1 low\u003cbr>~3 fills","F2\u003cbr>~27 fills","F3\u003cbr>~86 fills","F4\u003cbr>~187 fills","F5 high\u003cbr>~545 fills"],"y":[12.0,48.7,44.0,40.5,20.8],"type":"bar","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"%{x}: $%{y:.2f}\u003cextra>weak team\u003c/extra>","legendgroup":"weak team","legendrank":1000,"marker":{"color":"#5c6b7a"},"name":"weak team","showlegend":true,"x":["F1 low\u003cbr>~3 fills","F2\u003cbr>~27 fills","F3\u003cbr>~86 fills","F4\u003cbr>~187 fills","F5 high\u003cbr>~545 fills"],"y":[0.17,0.78,0.95,1.7,3.71],"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{x}: %{y:.0f}% losing\u003cextra>weak team\u003c/extra>","legendgroup":"weak team","legendrank":1000,"marker":{"color":"#5c6b7a"},"name":"weak team","showlegend":false,"x":["F1 low\u003cbr>~3 fills","F2\u003cbr>~27 fills","F3\u003cbr>~86 fills","F4\u003cbr>~187 fills","F5 high\u003cbr>~545 fills"],"y":[8.9,25.0,31.8,29.3,23.8],"type":"bar","xaxis":"x2","yaxis":"y2"}],"layout":{"xaxis":{"anchor":"y","domain":[0.0,0.46],"title":{"text":"contracts filled per outcome, quintiles"}},"yaxis":{"anchor":"x","domain":[0.0,1.0]},"xaxis2":{"anchor":"y2","domain":[0.54,1.0],"title":{"text":"contracts filled per outcome, quintiles"}},"yaxis2":{"anchor":"x2","domain":[0.0,1.0]},"annotations":[{"font":{"size":12},"showarrow":false,"text":"Mean P&L per outcome ($)","x":0.23,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":12},"showarrow":false,"text":"% of outcomes losing","x":0.77,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"}],"margin":{"l":72,"r":24,"t":118,"b":64},"font":{"family":"\"Source Sans 3\", \"Segoe UI\", Helvetica, Arial, sans-serif","size":12},"legend":{"title":{"text":""},"font":{"size":12},"orientation":"h","x":0,"xanchor":"left","y":1.2184873949579833,"yanchor":"bottom"},"height":420,"hovermode":"closest","bargap":0.25,"barmode":"group"}}</script>
+<p class="chart-links">
+<a href="data/chart-42-0.csv" download="">Chart data (CSV)</a> · <a href="data/chart-42-0.json" download="">Figure (Plotly JSON)</a>
+</p>
+</div>
+<p><strong>The two outcomes do not offset each other.</strong> Their P&amp;L within a fixture is positively correlated (+0.16 in the capped run). What they share is the fixture’s volume: busy fixtures earn on both, quiet ones are near zero on both. Per fixture, the mean doubles against a single outcome ($2.57 against $1.31), while the left tail barely moves: worst −$16.9 against −$15.8. A shared cash cap is therefore likely to win back little, since both outcomes tend to need cash at the same time.</p>
+<p><strong>Strong against weak team</strong> (no cap):</p>
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+No cap, per outcome
+</th>
+<th>
+Mean
+</th>
+<th>
+Median
+</th>
+<th>
+Losing
+</th>
+<th>
+Losing, if filled
+</th>
+<th>
+No fill
+</th>
+<th>
+Mean fills
+</th>
+<th>
+SD
+</th>
+<th>
+Worst
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+strong team
+</td>
+<td>
+$1.76
+</td>
+<td>
+$0.45
+</td>
+<td>
+33%
+</td>
+<td>
+36%
+</td>
+<td>
+10%
+</td>
+<td>
+215
+</td>
+<td>
+$5.5
+</td>
+<td>
+−$15.8
+</td>
+</tr>
+<tr>
+<td>
+weak team
+</td>
+<td>
+$1.19
+</td>
+<td>
+$0.51
+</td>
+<td>
+23%
+</td>
+<td>
+28%
+</td>
+<td>
+17%
+</td>
+<td>
+126
+</td>
+<td>
+$4.1
+</td>
+<td>
+−$11.7
+</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Paired within the fixture, the strong team earns $0.55 more per outcome, 95% interval [0.13, 0.95]. With the cap the gap is $0.35, [−0.02, 0.79]: the cap trims the strong team’s busiest fixtures.</li>
+<li><strong>At equal fills the strong team is worse, not better.</strong> Within each quintile of contracts filled, the weak team earns more and loses less often, until the busiest quintile ($5.06 against $3.71). The strong team’s higher total comes from trading more. A likely reason, not tested here, is section 5’s short YES: the stronger team scores more often, which is the jump that hurts a short position.</li>
+</ul>
+<p><strong>For a small bankroll, the losing share matters less than it looks.</strong> 100 fixtures drawn at random 2,000 times, fixtures independent and not overlapping:</p>
+<table class="dataframe table table-sm table-striped small">
+<thead>
+<tr>
+<th>
+Traded (no cap)
+</th>
+<th>
+Mean per fixture
+</th>
+<th>
+Mean ÷ SD
+</th>
+<th>
+P&amp;L after 100, median
+</th>
+<th>
+Max drawdown, median / 95th pct
+</th>
+<th>
+Behind after 100
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+strong only
+</td>
+<td>
+$1.76
+</td>
+<td>
+0.32
+</td>
+<td>
+$172
+</td>
+<td>
+$13 / $24
+</td>
+<td>
+0.00%
+</td>
+</tr>
+<tr>
+<td>
+weak only
+</td>
+<td>
+$1.19
+</td>
+<td>
+0.29
+</td>
+<td>
+$115
+</td>
+<td>
+$12 / $22
+</td>
+<td>
+0.05%
+</td>
+</tr>
+<tr>
+<td>
+both outcomes
+</td>
+<td>
+$2.86
+</td>
+<td>
+0.39
+</td>
+<td>
+$281
+</td>
+<td>
+$12 / $23
+</td>
+<td>
+0.00%
+</td>
+</tr>
+</tbody>
+</table>
+<p>A 95th-percentile drawdown of $23 is under 5% of a $200 + $300 budget: loss size is not what a small account runs out of; cash locked in open positions is (sections 3–4). Trading the weak team alone barely lowers the drawdown and gives up most of the P&amp;L. Both outcomes stay in, with no filter on team strength.</p>
+</section>
+<section id="the-first-test" class="level2">
+<h2 class="anchored" data-anchor-id="the-first-test">7. The first test</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Setting</th>
+<th>Value</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Scope</td>
+<td>Team-win outcomes of club fixtures, both outcomes, in play</td>
+<td>Part 3; section 6</td>
+</tr>
+<tr class="even">
+<td>Orders</td>
+<td>All three: <code>pm_yes</code>, <code>pm_no</code>, and <code>k_no</code> at Kalshi’s best ask</td>
+<td>Section 1; part 3 section 6</td>
+</tr>
+<tr class="odd">
+<td>Order size</td>
+<td>L = 10 contracts</td>
+<td>Section 3: the most P&amp;L per contract and per unit of risk, about the same sample needed</td>
+</tr>
+<tr class="even">
+<td>Guard</td>
+<td>On, buffer 0, as replayed; a 1-tick buffer is the first candidate change</td>
+<td>Section 2</td>
+</tr>
+<tr class="odd">
+<td>Cash cap</td>
+<td>Per fixture, shared by both outcomes: $300 on Polymarket and $300 on Kalshi</td>
+<td>Section 4. The replay capped Polymarket at $200 but merged pairs at once; the first live version does not merge, so pairs stay locked and the Polymarket cap is higher</td>
+</tr>
+<tr class="even">
+<td>Sample</td>
+<td>About 26–28 club fixtures before a 95% interval can exclude zero</td>
+<td>Sections 3–4, without and with the cap</td>
+</tr>
+<tr class="odd">
+<td>Changes</td>
+<td>One setting at a time, between fixtures</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>The first fixtures are a measurement more than an income: they have to pin down what the replay could only assume. The trading record therefore keeps, in full:</p>
+<ul>
+<li>every decision with its reason, and every order event and fill with exchange and local timestamps;</li>
+<li>the queue at each resting order (displayed size at our price on acknowledgement, volume traded there, cancellations ahead), which gives the realized ρ, and Kalshi’s own queue position for each order;</li>
+<li>for every fill, both venues’ books and trades from 5 s before to 30 s after it;</li>
+<li>one-second books on the traded markets, so the replay can be run on exactly the fixtures traded and compared order by order;</li>
+<li>match events, balances, and the configuration and code version of each fixture.</li>
+</ul>
+<p>The architecture of that system is in <a href="../maker_maker_system/index.html">Building the maker/maker trading system</a>. Its results will be published once enough fixtures have been traded to compare the live fills with the replay.</p>
+</section>
+<section id="what-is-not-measured" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-not-measured">What is not measured</h2>
+<ul>
+<li><strong>The replay’s limits carry over from part 3:</strong> our orders do not change the tape, cancellations ahead of us exist only through ρ, Polymarket books arrive about every 3 s, latency is 1 s, residual inventory is marked at the last Kalshi mid, and draws are not replayed.</li>
+<li><strong>The cash model</strong> assumes Polymarket pairs are merged at once; the first live version does not merge, so it ties up more Polymarket cash than modelled.</li>
+<li><strong>The jump decomposition</strong> uses moves of 3 c or more in one second as a stand-in for goals.</li>
+<li><strong>Strong and weak teams</strong> are labelled by pre-game prices, with no threshold; fixtures without a pre-game price are left out of that split.</li>
+<li><strong>The bankroll draws</strong> treat fixtures as independent and sequential; fixtures played at the same time add up in cash and drawdown.</li>
+</ul>
+</section>
+<section id="data-methods-and-updates" class="level2">
+<h2 class="anchored" data-anchor-id="data-methods-and-updates">Data, methods and updates</h2>
+<p>This is a dated static snapshot. The page contains <strong>6 interactive charts</strong>, each with its plotted aggregates downloadable as CSV and Plotly JSON, and a <a href="data/manifest.json">snapshot manifest</a> with source hashes. The <a href="source/02.2.1_maker_maker.ipynb">source notebook</a> is available without outputs (sections 7.1–7.6 are this part); it requires the local research modules, curated trades and recorded order books, so on its own it does not recreate the pipeline. The <a href="source/README.md">publication notes</a> describe the build.</p>
+<p>Method notes:</p>
+<ul>
+<li><strong>Runs:</strong> sections 1–2 at L = 100 with ρ ∈ {1, 0.25}; sections 3–6 at ρ = 1. Intervals are 95% fixture-bootstrap intervals.</li>
+<li><strong>Fees:</strong> Kalshi maker 1.75% × p(1 − p) per the published schedule; Polymarket maker 0.</li>
+<li><strong>Cash needed:</strong> each fixture’s peak, summarised across fixtures; the two venues peak at different times.</li>
+<li><strong>Strong and weak teams:</strong> both venues’ pre-game volume-weighted prices over the last 30 minutes before kickoff, averaged, one venue when the other is missing.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>Zehao Zhou · Historical trade research · Polymarket &amp; Kalshi</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>
