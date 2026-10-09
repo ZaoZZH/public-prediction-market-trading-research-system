@@ -115,7 +115,8 @@ def cap_view(s):
     p = Panels(fig)
     out = []
     for v, name, color, width in ((a, 'no cap', '#8b97a3', 3), (b, 'cap $200 Polymarket / $300 Kalshi', '#e8a33d', 1.6)):
-        counts, _ = np.histogram(v.clip(upper=25.25), bins=edges)
+        # right-closed bins, so fixtures at exactly $0 sit in (−0.5, 0] like the near-zero band quoted in §5
+        counts = pd.cut(v.clip(upper=25.25), edges, right=True, include_lowest=True).value_counts(sort=False).to_numpy()
         mids = (edges[:-1] + .25).round(2)
         p.add(go.Scatter(x=mids.tolist(), y=counts.tolist(), name=f'{name}: mean {usd(v.mean(), 2)}, median {usd(v.median(), 2)}',
                          mode='lines', line=dict(color=color, width=width, shape='hvh'),
@@ -144,7 +145,7 @@ def drivers_view(s):
     order = ['short YES, price up', 'long YES, price down', 'long YES, price up', 'short YES, price down']
     j = jmp.groupby('position and move').pnl.sum().reindex(order)
     p.add(go.Bar(x=[o.replace(', ', '<br>') for o in order], y=j.round(0).tolist(), name='jump-second P&L',
-                 marker_color=['#d64550', '#d64550', BOTH, BOTH], hovertemplate='%{x}: $%{y:,.0f}<extra></extra>'), 1, 2)
+                 marker_color='#8b97a3', hovertemplate='%{x}: $%{y:,.0f}<extra></extra>'), 1, 2)
     fig.data[-1].showlegend = False
     fig.update_xaxes(title_text='taker volume on both venues, quintiles', row=1, col=1)
     fig.update_yaxes(title_text='$ per fixture (L = 10)', row=1, col=1)
