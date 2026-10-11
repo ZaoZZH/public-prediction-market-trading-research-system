@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Zehao Zhou">
-<meta name="dcterms.date" content="2026-10-08">
+<meta name="dcterms.date" content="2026-10-11">
 <meta name="description" content="System architecture of maker/maker, a three-order cross-venue market maker for soccer team-win markets on Kalshi and Polymarket: components, fixture discovery, order-book data flow, the decision and reconciliation loop, safety controls, recording and deployment.">
 
 <title>Building the maker/maker trading system – Zehao (Gerald) Zhou · Prediction Market Research</title>
@@ -270,12 +270,13 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#fixture-discovery-and-matching" id="toc-fixture-discovery-and-matching" class="nav-link" data-scroll-target="#fixture-discovery-and-matching">3. Fixture discovery and matching</a></li>
   <li><a href="#order-books-from-venue-socket-to-decision" id="toc-order-books-from-venue-socket-to-decision" class="nav-link" data-scroll-target="#order-books-from-venue-socket-to-decision">4. Order books: from venue socket to decision</a></li>
   <li><a href="#the-decision-core" id="toc-the-decision-core" class="nav-link" data-scroll-target="#the-decision-core">5. The decision core</a></li>
-  <li><a href="#fills-inventory-and-safety" id="toc-fills-inventory-and-safety" class="nav-link" data-scroll-target="#fills-inventory-and-safety">6. Fills, inventory and safety</a></li>
-  <li><a href="#the-trading-record" id="toc-the-trading-record" class="nav-link" data-scroll-target="#the-trading-record">7. The trading record</a></li>
-  <li><a href="#the-control-page" id="toc-the-control-page" class="nav-link" data-scroll-target="#the-control-page">8. The control page</a></li>
-  <li><a href="#deployment-and-operations" id="toc-deployment-and-operations" class="nav-link" data-scroll-target="#deployment-and-operations">9. Deployment and operations</a></li>
-  <li><a href="#design-decisions" id="toc-design-decisions" class="nav-link" data-scroll-target="#design-decisions">10. Design decisions</a></li>
-  <li><a href="#status-and-next-steps" id="toc-status-and-next-steps" class="nav-link" data-scroll-target="#status-and-next-steps">11. Status and next steps</a></li>
+  <li><a href="#latency-what-the-one-second-replay-assumes" id="toc-latency-what-the-one-second-replay-assumes" class="nav-link" data-scroll-target="#latency-what-the-one-second-replay-assumes">6. Latency: what the one-second replay assumes</a></li>
+  <li><a href="#fills-inventory-and-safety" id="toc-fills-inventory-and-safety" class="nav-link" data-scroll-target="#fills-inventory-and-safety">7. Fills, inventory and safety</a></li>
+  <li><a href="#the-trading-record" id="toc-the-trading-record" class="nav-link" data-scroll-target="#the-trading-record">8. The trading record</a></li>
+  <li><a href="#the-control-page" id="toc-the-control-page" class="nav-link" data-scroll-target="#the-control-page">9. The control page</a></li>
+  <li><a href="#deployment-and-operations" id="toc-deployment-and-operations" class="nav-link" data-scroll-target="#deployment-and-operations">10. Deployment and operations</a></li>
+  <li><a href="#design-decisions" id="toc-design-decisions" class="nav-link" data-scroll-target="#design-decisions">11. Design decisions</a></li>
+  <li><a href="#status-and-next-steps" id="toc-status-and-next-steps" class="nav-link" data-scroll-target="#status-and-next-steps">12. Status and next steps</a></li>
   <li><a href="#about-this-article" id="toc-about-this-article" class="nav-link" data-scroll-target="#about-this-article">About this article</a></li>
   </ul>
 </nav>
@@ -314,7 +315,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">October 8, 2026</p>
+      <p class="date">October 11, 2026</p>
     </div>
   </div>
   
@@ -336,9 +337,10 @@ ul.task-list li input[type="checkbox"] {
 <li><strong>Fixtures are matched automatically; enabling one is the human check.</strong> Both venues’ moneyline listings in six club competitions are paired every 10 minutes (section 3).</li>
 <li><strong>A book is either fresh or pulled.</strong> Engines re-send every valid book once a second while its socket is provably alive; execution cancels an outcome’s three orders when either book is 3 s old (section 4).</li>
 <li><strong>The rules are a pure function; everything else is reconciliation.</strong> One strategy thread owns all state, computes the desired orders from books with its own orders removed, and issues the fewest writes to get there: an amend on Kalshi, a cancel and re-post on Polymarket (section 5).</li>
-<li><strong>Uncertainty stops quoting before it can change inventory.</strong> Unknown order states, stale books, unhealthy engines, missing heartbeats and a loss stop all pull orders, and every start reads inventory from the venues (section 6).</li>
-<li><strong>The record is built for the replay comparison.</strong> Decisions, order events, queue estimates, books, trades and fill windows go to one SQLite file per day, so the replay can be rerun on exactly the fixtures traded (section 7).</li>
-<li><strong>It runs for about $5 a week</strong> on four small Fly.io machines. The engines’ memory growth on the first deployment came from allocator arenas, not a leak (section 9).</li>
+<li><strong>One-second replay steps do not bound live latency.</strong> The replay groups trades into seconds and changes orders at the boundaries; feed, request and response delays still need measurement (section 6).</li>
+<li><strong>Uncertainty stops quoting before it can change inventory.</strong> Unknown order states, stale books, unhealthy engines, missing heartbeats and a loss stop all pull orders, and every start reads inventory from the venues (section 7).</li>
+<li><strong>The record is built for the replay comparison.</strong> Decisions, order events, queue estimates, books, trades and fill windows go to one SQLite file per day, so the replay can be rerun on exactly the fixtures traded (section 8).</li>
+<li><strong>It runs for about $5 a week</strong> on four small Fly.io machines. The engines’ memory growth on the first deployment came from allocator arenas, not a leak (section 10).</li>
 </ol>
 </div>
 </section>
@@ -371,8 +373,8 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="odd">
 <td>Order changes</td>
-<td>Take effect at the next second</td>
-<td>Round trips, requests in flight and unknown outcomes; a reconciler tracks the state of every order (section 5)</td>
+<td>Applied at second boundaries, without separate request or response delays</td>
+<td>Round trips, requests in flight and unknown outcomes; a reconciler tracks the state of every order (section 5); section 6 explains the timing assumption</td>
 </tr>
 <tr class="even">
 <td>Fixtures</td>
@@ -387,17 +389,17 @@ ul.task-list li input[type="checkbox"] {
 <tr class="even">
 <td>Queue position</td>
 <td>An assumed share ρ of the displayed size</td>
-<td>Measured per order, and checked against Kalshi’s own queue positions (section 7)</td>
+<td>Measured per order, and checked against Kalshi’s own queue positions (section 8)</td>
 </tr>
 <tr class="odd">
 <td>Inventory at start</td>
 <td>Zero</td>
-<td>Read from venue positions at every start and restart (section 6)</td>
+<td>Read from venue positions at every start and restart (section 7)</td>
 </tr>
 <tr class="even">
 <td>Failures</td>
 <td>None</td>
-<td>Stale books, engine restarts, lost fill streams, process death (section 6)</td>
+<td>Stale books, engine restarts, lost fill streams, process death (section 7)</td>
 </tr>
 </tbody>
 </table>
@@ -769,7 +771,7 @@ Figure&nbsp;4: Order-book data flow. Engines keep one book per subscribed instru
 <tr class="even">
 <td>Execution</td>
 <td>Book age on execution’s monotonic clock; when either book of an outcome is 3 s old, cancel all three legs</td>
-<td>Measures the whole venue → engine → execution path; 3 s sits inside Kalshi’s 3–6 s lead over Polymarket</td>
+<td>Detects missing downstream updates; the 3 s threshold is a liveness rule, not a measurement of venue-to-decision latency</td>
 </tr>
 <tr class="odd">
 <td>Venue backstop</td>
@@ -1045,9 +1047,71 @@ Figure&nbsp;7: States of one child order. A reject makes its leg wait 1 s; a fai
 <p>Unknown orders are resolved against the venue’s open orders every 2 s. Every 30 s all live orders are checked, which catches orders the venue cancelled on its own; orders on our instruments that execution does not track, seen in two sweeps in a row, are cancelled.</p>
 </section>
 </section>
+<section id="latency-what-the-one-second-replay-assumes" class="level2">
+<h2 class="anchored" data-anchor-id="latency-what-the-one-second-replay-assumes">6. Latency: what the one-second replay assumes</h2>
+<p><strong>A one-second state grid is not a one-second latency budget.</strong> Parts 3 and 4 summarize the replay’s latency as 1 s. More precisely, it is a once-per-second reaction model without separate feed, order-entry or response delays. That does not establish that those delays add up to nearly, or at most, one second.</p>
+<section id="what-happens-at-a-second-boundary" class="level3">
+<h3 class="anchored" data-anchor-id="what-happens-at-a-second-boundary">What happens at a second boundary</h3>
+<p>The replay in <code>mm_sim.py</code> first sends all trades in second s against the orders already resting. It then reads the latest recorded books at or before s + 1, applies cancellations, resizes and placements, and uses the resulting orders for trades in second s + 1. A book from time t is therefore used for the trade bucket beginning at t; there is no additional one-second transit delay after that book is read. Inventory changes from all fills in a bucket are known at its end, and a cancel and replacement can both take effect at the same boundary.</p>
+<p>An event between boundaries waits for the next decision. With ideal, immediately available data, that scheduling wait is between zero and one second; it is not necessarily close to one second. A live request still takes time after the decision: a 0.95 s scheduling wait followed by 0.20 s to make a cancellation effective is already 1.15 s, before any feed delay. These are illustrative numbers, not measurements of this system.</p>
+<p>The historical inputs add their own limits: Polymarket snapshots arrive about every 3 s, and the curated trade tape has one-second timestamps. The replay carries the latest snapshot forward and rejects books older than 10 s. A one-second grid does not make those snapshots one second old, or recover the ordering of a price move, a fill and a cancellation within a second.</p>
+</section>
+<section id="the-delays-that-matter-to-a-maker" class="level3">
+<h3 class="anchored" data-anchor-id="the-delays-that-matter-to-a-maker">The delays that matter to a maker</h3>
+<p><a href="https://hftbacktest.readthedocs.io/en/latest/latency_models.html">HftBacktest’s latency model</a> distinguishes feed latency, order-entry latency and order-response latency. The same distinction helps identify what this system must measure:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Delay</th>
+<th>Path in this system</th>
+<th>Trading consequence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Market data</td>
+<td>Venue event → engine WebSocket → gRPC → execution</td>
+<td>A decision can use an old price even on a healthy connection</td>
+</tr>
+<tr class="even">
+<td>Local reaction</td>
+<td>Execution’s event queue, decision, reconciliation and write throttles</td>
+<td>The 500 ms reprice limit or an in-flight request can postpone a new quote</td>
+</tr>
+<tr class="odd">
+<td>Place, amend or cancel becoming effective</td>
+<td>Execution → venue engine, signing and REST → venue processing</td>
+<td>A new order joins the queue later; an old order can still fill until its cancel takes effect</td>
+</tr>
+<tr class="even">
+<td>Acknowledgement and fill reports</td>
+<td>Venue → engine → execution</td>
+<td>Execution learns an order’s state or a fill later; both ask legs can fill before the first fill triggers a shrink</td>
+</tr>
+<tr class="odd">
+<td>Settlement and cash reuse</td>
+<td>Polymarket match → on-chain settlement; pairs → merge or redemption</td>
+<td>Capital can remain unavailable after a match; this is separate from quote reaction time</td>
+</tr>
+</tbody>
+</table>
+<p>For a price-driven pull, the relevant path is <strong>feed delay + local reaction + time until the venue applies the cancel</strong>. The returning acknowledgement determines when we know the result, rather than when the order stops being executable. Resizing after a fill starts with fill-report delay instead. These paths cannot be replaced by one sum of every delay in the table.</p>
+<p><a href="https://docs.polymarket.com/concepts/order-lifecycle">Polymarket’s order lifecycle</a> also distinguishes matching from on-chain confirmation, and describes configured sports matching delays for marketable orders. Our post-only placements rest or reject if they would cross; the sports delay is not a blanket delay to add to every maker placement or cancellation.</p>
+</section>
+<section id="what-the-live-record-can-establish" class="level3">
+<h3 class="anchored" data-anchor-id="what-the-live-record-can-establish">What the live record can establish</h3>
+<p>The engine’s one-second book re-send proves liveness, not delivery speed. It can give execution a recent receive timestamp while the last price change is older. Likewise, the 3 s stale-book threshold is a failure-detection rule, not a 3 s upper bound on feed latency. Kalshi’s observed 3–6 s lead over Polymarket is a market response difference, not a guaranteed window in which our cancels finish.</p>
+<p>The order record (section 8) stores request, engine send/receive, exchange and execution times where available. Request-to-response time measures a round trip; separating one-way components across machines requires aligned clocks and a clear meaning for each venue timestamp. The first comparison should report place, amend, cancel and fill-report delays separately, including their tails during jumps and bursts. An explicit delayed replay should leave old orders executable until their cancels take effect, admit new orders only when effective, and update the strategy’s known inventory when fill reports arrive, separately from the venue’s actual fills. The existing one-second replay cannot establish a sub-second latency bound or guarantee conservative P&amp;L.</p>
+</section>
+</section>
 <section id="fills-inventory-and-safety" class="level2">
-<h2 class="anchored" data-anchor-id="fills-inventory-and-safety">6. Fills, inventory and safety</h2>
-<p>Fills arrive on each engine’s fill stream: Kalshi’s fill channel and Polymarket’s user channel. Execution deduplicates them by venue and fill id, updates the outcome’s holdings, q and cash, and the next <code>decide</code> resizes the legs. A fill also schedules a window of market data around it for the record (section 7).</p>
+<h2 class="anchored" data-anchor-id="fills-inventory-and-safety">7. Fills, inventory and safety</h2>
+<p>Fills arrive on each engine’s fill stream: Kalshi’s fill channel and Polymarket’s user channel. Execution deduplicates them by venue and fill id, updates the outcome’s holdings, q and cash, and the next <code>decide</code> resizes the legs. A fill also schedules a window of market data around it for the record (section 8).</p>
 <p>Inventory is never assumed. Thirty seconds before kickoff, a fixture registers its instruments again, cancels every open order on them and reads positions and balances from both venues, so a restart mid-match continues from the true inventory. A lost fill stream restarts every quoting fixture the same way, because fills may have been missed while it was down. P&amp;L counts fills since the fixture started, marked at Kalshi’s mid.</p>
 <table class="caption-top table">
 <colgroup>
@@ -1128,7 +1192,7 @@ Figure&nbsp;7: States of one child order. A reject makes its leg wait 1 s; a fai
 <p>Only the pulls at the top of the table resume by themselves. A stopped or disabled fixture trades again only when it is enabled again by hand. maker_maker is the only module trading its accounts.</p>
 </section>
 <section id="the-trading-record" class="level2">
-<h2 class="anchored" data-anchor-id="the-trading-record">7. The trading record</h2>
+<h2 class="anchored" data-anchor-id="the-trading-record">8. The trading record</h2>
 <p>The record keeps only what the replay comparison needs and what cannot be downloaded later. It is one SQLite file per UTC day on the execution volume. The strategy thread enqueues rows and a single writer thread writes them, so trading never waits on disk, and a full disk drops rows without stopping trading.</p>
 <table class="caption-top table">
 <colgroup>
@@ -1222,7 +1286,7 @@ Figure&nbsp;8: From the live record to the replay comparison.
 <p>Full ladders in <code>books_1s</code> and <code>fill_windows</code> cost about 120–220 MB per fixture, estimated from measured message rates (busiest market: 28 messages/s on Kalshi, 21 on Polymarket). The 10 GB volume holds 40 fixtures or more.</p>
 </section>
 <section id="the-control-page" class="level2 page-columns page-full">
-<h2 class="anchored" data-anchor-id="the-control-page">8. The control page</h2>
+<h2 class="anchored" data-anchor-id="the-control-page">9. The control page</h2>
 <div id="fig-control" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <div aria-describedby="fig-control-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
@@ -1237,7 +1301,7 @@ Figure&nbsp;9: The control page before the first live fixture. Dortmund vs Breme
 <p>Rows that are not traded take their prices from <code>GetOrderbookSnapshots</code> every 45 s, one batched REST read per venue. Display never drives the trading subscriptions: each engine keeps one market set and the latest request replaces it, so display rows would add and drop markets under the traded books.</p>
 </section>
 <section id="deployment-and-operations" class="level2">
-<h2 class="anchored" data-anchor-id="deployment-and-operations">9. Deployment and operations</h2>
+<h2 class="anchored" data-anchor-id="deployment-and-operations">10. Deployment and operations</h2>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 16%">
@@ -1372,7 +1436,7 @@ Figure&nbsp;10: Machine memory of both engines over one day on Fly. Both climb t
 </section>
 </section>
 <section id="design-decisions" class="level2">
-<h2 class="anchored" data-anchor-id="design-decisions">10. Design decisions</h2>
+<h2 class="anchored" data-anchor-id="design-decisions">11. Design decisions</h2>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -1421,7 +1485,7 @@ Figure&nbsp;10: Machine memory of both engines over one day on Fly. Both climb t
 </table>
 </section>
 <section id="status-and-next-steps" class="level2">
-<h2 class="anchored" data-anchor-id="status-and-next-steps">11. Status and next steps</h2>
+<h2 class="anchored" data-anchor-id="status-and-next-steps">12. Status and next steps</h2>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 50%">
