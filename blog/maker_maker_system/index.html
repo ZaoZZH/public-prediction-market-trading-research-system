@@ -8,7 +8,7 @@
 
 <meta name="author" content="Zehao Zhou">
 <meta name="dcterms.date" content="2026-10-11">
-<meta name="description" content="System architecture of maker/maker, a three-order cross-venue market maker for soccer team-win markets on Kalshi and Polymarket: components, fixture discovery, order-book data flow, the decision and reconciliation loop, safety controls, recording and deployment.">
+<meta name="description" content="System architecture of maker/maker, a three-order cross-venue market maker for soccer team-win markets on Kalshi and Polymarket: components, fixture discovery, order-book data flow, the decision and reconciliation loop, latency, safety controls and recording.">
 
 <title>Building the maker/maker trading system – Zehao (Gerald) Zhou · Prediction Market Research</title>
 <style>
@@ -48,9 +48,6 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/bootstrap/bootstrap-816253360dce6a4e3f30408ef63133a0.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
 <link href="site_libs/bootstrap/bootstrap-dark-d0d81244e8ed40314a7a066e55328b5b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <link href="site_libs/bootstrap/bootstrap-816253360dce6a4e3f30408ef63133a0.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
-<script src="site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
-<link href="site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
-<link href="site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "language": {
     "search-no-results-text": "No results",
@@ -75,8 +72,7 @@ ul.task-list li input[type="checkbox"] {
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="diagrams.css">
 <meta property="og:title" content="Building the maker/maker trading system – Zehao (Gerald) Zhou · Prediction Market Research">
-<meta property="og:description" content="System architecture of maker/maker, a three-order cross-venue market maker for soccer team-win markets on Kalshi and Polymarket: components, fixture discovery, order-book data flow, the decision and reconciliation loop, safety controls, recording and deployment.">
-<meta property="og:image" content="assets/control_page.png">
+<meta property="og:description" content="System architecture of maker/maker, a three-order cross-venue market maker for soccer team-win markets on Kalshi and Polymarket: components, fixture discovery, order-book data flow, the decision and reconciliation loop, latency, safety controls and recording.">
 <meta property="og:site_name" content="Zehao (Gerald) Zhou · Prediction Market Research">
 <link rel="stylesheet" href="../../navigation.css">
 <script src="../../navigation.js"></script>
@@ -273,10 +269,6 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#latency-what-the-one-second-replay-assumes" id="toc-latency-what-the-one-second-replay-assumes" class="nav-link" data-scroll-target="#latency-what-the-one-second-replay-assumes">6. Latency: what the one-second replay assumes</a></li>
   <li><a href="#fills-inventory-and-safety" id="toc-fills-inventory-and-safety" class="nav-link" data-scroll-target="#fills-inventory-and-safety">7. Fills, inventory and safety</a></li>
   <li><a href="#the-trading-record" id="toc-the-trading-record" class="nav-link" data-scroll-target="#the-trading-record">8. The trading record</a></li>
-  <li><a href="#the-control-page" id="toc-the-control-page" class="nav-link" data-scroll-target="#the-control-page">9. The control page</a></li>
-  <li><a href="#deployment-and-operations" id="toc-deployment-and-operations" class="nav-link" data-scroll-target="#deployment-and-operations">10. Deployment and operations</a></li>
-  <li><a href="#design-decisions" id="toc-design-decisions" class="nav-link" data-scroll-target="#design-decisions">11. Design decisions</a></li>
-  <li><a href="#status-and-next-steps" id="toc-status-and-next-steps" class="nav-link" data-scroll-target="#status-and-next-steps">12. Status and next steps</a></li>
   <li><a href="#about-this-article" id="toc-about-this-article" class="nav-link" data-scroll-target="#about-this-article">About this article</a></li>
   </ul>
 </nav>
@@ -286,19 +278,19 @@ ul.task-list li input[type="checkbox"] {
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
     </div>
 <!-- main -->
-<main class="content page-columns page-full" id="quarto-document-content">
+<main class="content" id="quarto-document-content">
 
 <nav aria-label="Site" style="padding: 1rem 5%;"><a href="../../index.html">← Zehao (Gerald) Zhou · Home</a></nav>
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">Building the maker/maker trading system</h1>
-<p class="subtitle lead">The architecture behind the real-money test of the Kalshi vs Polymarket series: two venue engines, a single-threaded decision core, automatic fixture matching, book freshness, a trading record built for the replay comparison, and a small cloud deployment.</p>
+<p class="subtitle lead">The architecture behind the real-money test of the Kalshi vs Polymarket series: two venue engines, a single-threaded decision core, automatic fixture matching, book freshness, and a trading record built for the replay comparison.</p>
 </div>
 
 <div>
   <div class="description">
-    System architecture of maker/maker, a three-order cross-venue market maker for soccer team-win markets on Kalshi and Polymarket: components, fixture discovery, order-book data flow, the decision and reconciliation loop, safety controls, recording and deployment.
+    System architecture of maker/maker, a three-order cross-venue market maker for soccer team-win markets on Kalshi and Polymarket: components, fixture discovery, order-book data flow, the decision and reconciliation loop, latency, safety controls and recording.
   </div>
 </div>
 
@@ -328,19 +320,18 @@ ul.task-list li input[type="checkbox"] {
 
 
 <p><a href="../soccer_1x2_gaps_3/index.html">Part 3</a> of the Kalshi vs Polymarket series ended with a strategy outline and a replay against recorded order books. Three resting orders per team-win outcome, a Polymarket YES bid, a Polymarket YES ask and a Kalshi YES ask, made money in the replay even at the back of every queue. <a href="../soccer_1x2_gaps_4/index.html">Part 4</a> sized a first real-money test from the same replay. This article describes the system built to run it.</p>
-<p>The first live test has a narrower job than the replay. At the test size of L = 10 contracts with a cash cap, the replay makes about $2.57 per club fixture (95% interval 2.17–3.01), loses on 31% of fixtures, and has a worst fixture of −$17. About 25–30 fixtures are needed before an interval excludes zero. That replay merges Polymarket pairs back into cash at once, which the first live version does not, so these figures are a guide rather than a forecast. The first fixtures are therefore a <strong>measurement</strong> of what the replay had to assume: queue position, double fills, latency and holding time. The system records those quantities as carefully as it trades.</p>
+<p>The live fixtures measure what the replay had to assume: queue position, double fills, latency and holding time. The system records those quantities alongside its orders.</p>
 <section id="summary" class="level2">
 <h2 class="anchored" data-anchor-id="summary">Summary</h2>
 <div class="summary-list">
 <ol type="1">
 <li><strong>Four processes from one image.</strong> Two venue engines behind one gRPC contract, an execution host for the strategy, and a management service for the control page, linked by mutual TLS (section 2).</li>
-<li><strong>Fixtures are matched automatically; enabling one is the human check.</strong> Both venues’ moneyline listings in six club competitions are paired every 10 minutes (section 3).</li>
+<li><strong>Fixtures are matched automatically; enabling one is the human check.</strong> Both venues’ moneyline listings in six club competitions are paired automatically; matching pauses while a fixture is starting or trading (section 3).</li>
 <li><strong>A book is either fresh or pulled.</strong> Engines re-send every valid book once a second while its socket is provably alive; execution cancels an outcome’s three orders when either book is 3 s old (section 4).</li>
 <li><strong>The rules are a pure function; everything else is reconciliation.</strong> One strategy thread owns all state, computes the desired orders from books with its own orders removed, and issues the fewest writes to get there: an amend on Kalshi, a cancel and re-post on Polymarket (section 5).</li>
 <li><strong>One-second replay steps do not bound live latency.</strong> The replay groups trades into seconds and changes orders at the boundaries; feed, request and response delays still need measurement (section 6).</li>
-<li><strong>Uncertainty stops quoting before it can change inventory.</strong> Unknown order states, stale books, unhealthy engines, missing heartbeats and a loss stop all pull orders, and every start reads inventory from the venues (section 7).</li>
+<li><strong>Order uncertainty limits new quoting.</strong> Unknown orders pause their leg, outstanding cancels reserve room for possible fills, and every start reads inventory from the venues (section 7).</li>
 <li><strong>The record is built for the replay comparison.</strong> Decisions, order events, queue estimates, books, trades and fill windows go to one SQLite file per day, so the replay can be rerun on exactly the fixtures traded (section 8).</li>
-<li><strong>It runs for about $5 a week</strong> on four small Fly.io machines. The engines’ memory growth on the first deployment came from allocator arenas, not a leak (section 10).</li>
 </ol>
 </div>
 </section>
@@ -379,12 +370,12 @@ ul.task-list li input[type="checkbox"] {
 <tr class="even">
 <td>Fixtures</td>
 <td>A curated, matched list</td>
-<td>Matched live from both venues’ listings, re-checked every 10 minutes (section 3)</td>
+<td>Matched live from both venues’ listings; refreshed between trading sessions (section 3)</td>
 </tr>
 <tr class="odd">
 <td>Polymarket pairs</td>
 <td>A YES + NO pair merges back to $1 at once</td>
-<td>No merges in v1: pairs stay locked until settlement and count against the cash cap</td>
+<td>Merges are submitted after 60 s without a Polymarket fill, once at least L pairs are held; cash is released on confirmation</td>
 </tr>
 <tr class="even">
 <td>Queue position</td>
@@ -403,9 +394,9 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 </tbody>
 </table>
-<section id="the-strategy-as-configured-for-the-test" class="level3">
-<h3 class="anchored" data-anchor-id="the-strategy-as-configured-for-the-test">The strategy, as configured for the test</h3>
-<p>Each team-win outcome of a fixture runs on its own. The only rule shared by the two outcomes is the cash cap.</p>
+<section id="the-strategy-defaults" class="level3">
+<h3 class="anchored" data-anchor-id="the-strategy-defaults">The strategy defaults</h3>
+<p>The two team-win outcomes have separate inventories and share a per-venue cash cap.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 20%">
@@ -428,26 +419,26 @@ ul.task-list li input[type="checkbox"] {
 <td><code>pm_yes</code></td>
 <td>Polymarket buy YES, post-only</td>
 <td>b, Polymarket best bid</td>
-<td>min(L − q, 3L)</td>
+<td>max(0, min(L − q, 3L))</td>
 <td>b &lt; Kalshi best ask (the guard)</td>
 </tr>
 <tr class="even">
 <td><code>pm_no</code></td>
 <td>Polymarket buy NO at 1 − a, post-only</td>
 <td>a, Polymarket best ask</td>
-<td>min(L + q, 3L)</td>
+<td>max(0, min(L + q, 3L))</td>
 <td>a &gt; Kalshi best bid (the guard)</td>
 </tr>
 <tr class="odd">
 <td><code>k_no</code></td>
 <td>Kalshi buy NO at 1 − a<sub>k</sub>, post-only</td>
 <td>a<sub>k</sub>, Kalshi best ask</td>
-<td>min(L + q, 3L)</td>
+<td>max(0, min(L + q, 3L))</td>
 <td>a<sub>k</sub> &gt; Kalshi best bid, and a<sub>k</sub> − b − Kalshi maker fee &gt; 0</td>
 </tr>
 </tbody>
 </table>
-<p>Inventory q is Polymarket YES held minus NO held on either venue, per outcome. All legs also need both books valid and fresh, a Polymarket mid of 5–95 c, and the in-play window from kickoff to 104 minutes. The v1 configuration is part 3’s best replay variant at the size part 4 chose: L = 10, a cash cap of $300 per venue and fixture, and no guard buffer. Every value is a configuration field, changed one at a time, between fixtures.</p>
+<p>Inventory q is Polymarket YES held minus NO held on either venue, per outcome. All legs also need both books valid and fresh, a Polymarket mid of 5–95 c, and the in-play window from kickoff to 104 minutes. The defaults are L = 10, a cash cap of $300 per venue and fixture, and no guard buffer. The cap limits opening exposure; the hedging portion is exempt (section 5). Every value is a configuration field, changed one at a time, between fixtures.</p>
 </section>
 </section>
 <section id="components-and-topology" class="level2">
@@ -461,11 +452,11 @@ ul.task-list li input[type="checkbox"] {
 <pre class="mermaid mermaid-js" data-label="fig-topology">flowchart TB
   user(["Operator browser"])
   subgraph fly["Fly.io private network"]
-    mgmt["management&lt;br/&gt;TypeScript · Ashburn"]
-    exec["execution&lt;br/&gt;C++ · Ashburn&lt;br/&gt;module: maker_maker"]
+    mgmt["management&lt;br/&gt;TypeScript"]
+    exec["execution&lt;br/&gt;C++&lt;br/&gt;module: maker_maker"]
     vol[("volume&lt;br/&gt;SQLite record, config")]
-    epm["engine-pm&lt;br/&gt;C++ · Stockholm"]
-    ek["engine-kalshi&lt;br/&gt;C++ · Ashburn"]
+    epm["engine-pm&lt;br/&gt;C++"]
+    ek["engine-kalshi&lt;br/&gt;C++"]
   end
   pm[("Polymarket&lt;br/&gt;CLOB REST and WebSocket,&lt;br/&gt;Gamma listings")]
   ka[("Kalshi&lt;br/&gt;Trade API REST&lt;br/&gt;and WebSocket")]
@@ -516,7 +507,7 @@ Figure&nbsp;1: Runtime topology. Arrows point from client to server. Every gRPC 
 <tr class="odd">
 <td><code>execution</code></td>
 <td>One compiled-in strategy module per process. maker_maker: fixture matching, decisions, order lifecycle, safety rules, the trading record</td>
-<td>Talk to a trading venue directly</td>
+<td>Submit trading orders directly to a venue</td>
 </tr>
 <tr class="even">
 <td><code>management</code></td>
@@ -525,54 +516,10 @@ Figure&nbsp;1: Runtime topology. Arrows point from client to server. Every gRPC 
 </tr>
 </tbody>
 </table>
-<p>The engines implement one gRPC service, <code>VenueEngine</code>. Execution never handles venue identifiers. It registers internal instruments such as <code>&lt;fixture&gt;-home-pm-yes</code> and <code>&lt;fixture&gt;-home-k-no</code>, and each engine maps them to a Polymarket token or a Kalshi ticker and side. Prices, sizes and cash are fixed-point integers (price × 10⁴, contracts × 10⁶, USD × 10⁶), so no floating-point value reaches an order. maker_maker uses these calls:</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Group</th>
-<th>Calls</th>
-<th>Used for</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Discovery</td>
-<td><code>ListSoccerMoneylineMarkets</code>, <code>RegisterInstruments</code></td>
-<td>Matching every 10 minutes; routes for enabled fixtures</td>
-</tr>
-<tr class="even">
-<td>Market data</td>
-<td><code>StreamOrderbook</code>, <code>StreamTrades</code>, <code>GetOrderbookSnapshots</code></td>
-<td>Trading books; queue counting and the record; display prices every 45 s</td>
-</tr>
-<tr class="odd">
-<td>Orders</td>
-<td><code>PlaceOrder</code>, <code>CancelOrder</code>, <code>AmendOrder</code> (Kalshi), <code>GetOpenOrders</code></td>
-<td>Quoting, resolving unknown orders, sweeps</td>
-</tr>
-<tr class="even">
-<td>Account</td>
-<td><code>StreamFills</code>, <code>GetPositions</code>, <code>GetBalance</code>, <code>GetQueuePositions</code> (Kalshi)</td>
-<td>Inventory, start-up state, queue measurement</td>
-</tr>
-<tr class="odd">
-<td>Safety</td>
-<td><code>HealthCheck</code>, <code>RefreshDeadManSwitch</code> (Polymarket)</td>
-<td>Engine health every 5 s; venue-side cancel when execution goes silent</td>
-</tr>
-</tbody>
-</table>
-<p><code>engine-pm</code> runs in Stockholm, outside the regions Polymarket geoblocks; the other three run in Ashburn, Virginia.</p>
+<p>The engines implement one gRPC service, <code>VenueEngine</code>. Execution registers internal instruments such as <code>&lt;fixture&gt;-home-pm-yes</code> and <code>&lt;fixture&gt;-home-k-no</code>, and each engine maps them to a Polymarket token or a Kalshi ticker and side. Prices, sizes and cash are fixed-point integers (price × 10⁴, contracts × 10⁶, USD × 10⁶), and the order RPCs use those integer units.</p>
 </section>
 <section id="fixture-discovery-and-matching" class="level2">
 <h2 class="anchored" data-anchor-id="fixture-discovery-and-matching">3. Fixture discovery and matching</h2>
-<p>The two venues list the same match under different names, at different times, with different market structures. Polymarket lists a match as an event with one Yes/No market per outcome (“Will Borussia Dortmund win?”); Kalshi lists an event with one market per outcome, identified by team codes in the ticker. Kalshi’s listed time for club soccer is the expected end of the match, kickoff + 3 h, for all 116 club fixtures checked on 2026-10-06, so the matcher subtracts 3 h before comparing.</p>
-<p>The matcher is a C++ port of the research matcher, without the parts that need a paid match-data API. It runs in execution at start-up and every 10 minutes; a failed round keeps the last fixture list.</p>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div id="fig-matching" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -585,7 +532,7 @@ Figure&nbsp;1: Runtime topology. Arrows point from client to server. Every gRPC 
   S -- "yes" --&gt; C["candidates: Polymarket events&lt;br/&gt;with kickoff within ±6 h"]
   C --&gt; T{"teams above&lt;br/&gt;thresholds?"}
   T -- "yes" --&gt; R{"runner-up&lt;br/&gt;within 0.015?"}
-  R -- "no" --&gt; O["map outcomes: Kalshi by ticker code,&lt;br/&gt;Polymarket by question text"]
+  R -- "no" --&gt; O["map outcomes: Kalshi by label or ticker code,&lt;br/&gt;Polymarket by outcome label"]
   R -- "same pair listed twice:&lt;br/&gt;keep the closest kickoff" --&gt; O
   O --&gt; U["one Kalshi event per Polymarket event&lt;br/&gt;→ fixture table on the control page"]
 </pre>
@@ -632,7 +579,7 @@ Figure&nbsp;2: Fixture discovery. Both engines list soccer moneyline markets; ex
 </tr>
 <tr class="even">
 <td>Outcome mapping</td>
-<td>Kalshi by ticker suffix code; Polymarket by question similarity ≥ 0.6, with a NO token present</td>
+<td>Kalshi by outcome label or ticker suffix code; Polymarket by outcome-label similarity ≥ 0.6, with a NO token present</td>
 </tr>
 </tbody>
 </table>
@@ -667,7 +614,7 @@ Figure&nbsp;3: Fixture lifecycle. Enabling registers the fixture’s instruments
 </div>
 </div>
 </div>
-<p>The quoting clock is Polymarket’s scheduled start. The actual kickoff, half-time, goals and red cards are recorded from Kalshi’s free <code>live_data</code> feed, polled every 5 s from 15 minutes before kickoff. That feed runs about 53 s behind its own market at goals, which is fine for the record and is why it does not drive quoting.</p>
+<p>The quoting clock is Polymarket’s scheduled start. Match state and significant events are recorded from Kalshi’s <code>live_data</code> feed, polled every 5 s from 15 minutes before kickoff. This feed is used for the record and display, rather than quoting.</p>
 </section>
 <section id="order-books-from-venue-socket-to-decision" class="level2">
 <h2 class="anchored" data-anchor-id="order-books-from-venue-socket-to-decision">4. Order books: from venue socket to decision</h2>
@@ -698,7 +645,7 @@ Figure&nbsp;4: Order-book data flow. Engines keep one book per subscribed instru
 </div>
 <section id="one-book-per-venue-and-outcome" class="level3">
 <h3 class="anchored" data-anchor-id="one-book-per-venue-and-outcome">One book per venue and outcome</h3>
-<p>maker_maker subscribes to the YES instrument only. On Kalshi the YES market’s book already carries both sides. On Polymarket the NO token’s book mirrors the YES book (part 3), so subscribing to it would add traffic and a second book that can lag the first, with no new information. Orders still go to the NO instrument where a leg buys NO; their prices are read off the YES book, because a NO bid at x is a YES ask at 1 − x.</p>
+<p>maker_maker subscribes to the YES instrument only. On Kalshi the YES market’s book already carries both sides. Orders still go to the NO instrument where a leg buys NO; their prices are read off the YES book, because a NO bid at x is a YES ask at 1 − x.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 25%">
@@ -738,49 +685,8 @@ Figure&nbsp;4: Order-book data flow. Engines keep one book per subscribed instru
 </section>
 <section id="freshness" class="level3">
 <h3 class="anchored" data-anchor-id="freshness">Freshness</h3>
-<p>A book changes only when someone acts, so silence is ambiguous: it can be half-time or a dead connection. The replay pulled orders when a snapshot was older than 10 s, but that number was the cadence of the historical recorder. The live rule is built in layers, so that silence downstream always means a problem:</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Layer</th>
-<th>Rule</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Venue socket</td>
-<td>Client ping every 2 s (Polymarket text <code>PING</code>, Kalshi WebSocket ping); the socket is alive while any frame arrived in the last 5 s</td>
-<td>Proves liveness on a quiet book without waiting for Kalshi’s ~10 s server pings</td>
-</tr>
-<tr class="even">
-<td>Book validity</td>
-<td>A snapshot since the last connect; on Kalshi, no sequence gap since</td>
-<td>A book that may have lost a message is invalid, never silently wrong</td>
-</tr>
-<tr class="odd">
-<td>Engine re-send</td>
-<td>Every valid book is re-sent once a second while its socket is alive</td>
-<td>A quiet market still produces one message a second</td>
-</tr>
-<tr class="even">
-<td>Execution</td>
-<td>Book age on execution’s monotonic clock; when either book of an outcome is 3 s old, cancel all three legs</td>
-<td>Detects missing downstream updates; the 3 s threshold is a liveness rule, not a measurement of venue-to-decision latency</td>
-</tr>
-<tr class="odd">
-<td>Venue backstop</td>
-<td>Polymarket’s heartbeat cancels all open orders 10–15 s after the last refresh; Kalshi has no equivalent</td>
-<td>Covers a dead execution process or network; on Kalshi, L = 10 bounds what can rest</td>
-</tr>
-</tbody>
-</table>
-<p>Cancelling all three legs on either stale book is deliberate: the Polymarket legs need Kalshi’s book for the guard, and <code>k_no</code> needs Polymarket’s bid for its edge check. A closed connection invalidates its books at once and they are pulled 3 s later. A silent stall takes up to 5 s to detect in the engine, then 3 s in execution.</p>
+<p>A quiet book can be healthy. Engines re-send valid books once a second while the socket is alive; if either venue’s book reaches 3 s without an update in execution, the outcome’s three legs are pulled.</p>
+<p>Cancelling all three legs on either stale book is deliberate: the Polymarket legs need Kalshi’s book for the guard, and <code>k_no</code> needs Polymarket’s bid for its edge check. A closed connection invalidates its books and stops their re-sends. A silent stall first has to be detected by the engine before execution’s stale-book rule can act.</p>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div id="fig-freshness" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -813,58 +719,11 @@ Figure&nbsp;5: A quiet book and a dead feed look different downstream. While the
 </div>
 </div>
 </div>
-<p>Kalshi numbers every message on a subscription with one sequence across all its markets, acknowledgements included, so a gap cannot be pinned to one market. A gap invalidates every book on the subscription and requests fresh snapshots in place, keeping the fill channel on the same socket up; a second gap within 5 s, a failed snapshot or a terminal error reconnects. Markets are also added and removed in place: in a regression probe, 30 of 30 books kept streaming through market-set changes, with a longest gap of 1.19 s.</p>
 </section>
 <section id="removing-our-own-orders" class="level3">
 <h3 class="anchored" data-anchor-id="removing-our-own-orders">Removing our own orders</h3>
 <p>The strategy joins the best price of everyone else. If it priced against a book that includes its own order, the order would peg to itself and stay behind when the rest of the market moves. Execution therefore subtracts its own resting size at each level before reading the top of the book. Our NO bids at 1 − p count as YES asks at p.</p>
-<p>The subtraction has a race: just after an order is placed, the venue may still send a book that does not show it. The rule is: others = displayed − own when displayed ≥ own, otherwise displayed. For a <code>pm_no</code> order resting as a YES ask of 10 contracts at 47 c:</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Book at 47 c</th>
-<th>Displayed</th>
-<th>Ours</th>
-<th>Others</th>
-<th>Ex-self best ask</th>
-<th>Result</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Others also rest at 47 c</td>
-<td>300</td>
-<td>10</td>
-<td>290</td>
-<td>47 c</td>
-<td>Stay</td>
-</tr>
-<tr class="even">
-<td>Everyone else has left 47 c</td>
-<td>10</td>
-<td>10</td>
-<td>0</td>
-<td>48 c</td>
-<td>Move to 48 c</td>
-</tr>
-<tr class="odd">
-<td>Book not yet showing our order</td>
-<td>5</td>
-<td>10</td>
-<td>5</td>
-<td>47 c</td>
-<td>Stay; no false move</td>
-</tr>
-</tbody>
-</table>
+<p>The subtraction has a race: just after an order is placed, the venue may still send a book that does not show it. The rule is: others = displayed − own when displayed ≥ own, otherwise displayed.</p>
 </section>
 </section>
 <section id="the-decision-core" class="level2">
@@ -901,78 +760,12 @@ Figure&nbsp;6: The strategy thread. Stream threads and I/O pools only post event
 </div>
 </div>
 </div>
-<p>One strategy thread owns all trading state and drains one queue. Blocking calls run on worker pools, so a place and a cancel can be in flight together, and their responses come back as events. Each batch ends with <code>decide</code> and reconciliation for every active fixture. Because state changes only on this thread and every decision is recorded, a fixture can later be replayed through the same code.</p>
+<p>One strategy thread owns all trading state and drains one queue. Blocking calls run on worker pools, so a place and a cancel can be in flight together, and their responses come back as events. Each batch ends with <code>decide</code> and reconciliation for every active fixture.</p>
 </section>
 <section id="decide-the-rules-as-a-pure-function" class="level3">
 <h3 class="anchored" data-anchor-id="decide-the-rules-as-a-pure-function"><code>decide</code>: the rules as a pure function</h3>
-<p><code>decide</code> is the port of the replay’s quoting step, and it stays pure: the same input gives the same targets. Its input is, per outcome, the two ex-self tops of book with their ages and q, plus cash spent per venue, time since kickoff and the configuration. Its output is, per outcome and leg, a price and size or a reason for not quoting. Reasons are checked in this order and recorded with every decision:</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Scope</th>
-<th>Reason</th>
-<th>Condition</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Outcome</td>
-<td><code>disabled</code>, <code>before_kickoff</code>, <code>window_end</code></td>
-<td>Fixture not quoting; before scheduled kickoff; 104 minutes after it</td>
-</tr>
-<tr class="even">
-<td>Outcome</td>
-<td><code>stale_book</code></td>
-<td>Either book 3 s old or more</td>
-</tr>
-<tr class="odd">
-<td>Outcome</td>
-<td><code>invalid_book</code></td>
-<td>Either book missing a side, or crossed</td>
-</tr>
-<tr class="even">
-<td>Outcome</td>
-<td><code>price_band</code></td>
-<td>Polymarket mid outside 5–95 c</td>
-</tr>
-<tr class="odd">
-<td>Leg</td>
-<td><code>leg_off</code></td>
-<td>Switched off in the configuration</td>
-</tr>
-<tr class="even">
-<td><code>k_no</code></td>
-<td><code>not_post_only</code></td>
-<td>Kalshi ask at or below Kalshi bid</td>
-</tr>
-<tr class="odd">
-<td><code>k_no</code></td>
-<td><code>no_edge</code></td>
-<td>a<sub>k</sub> − b − Kalshi maker fee ≤ 0</td>
-</tr>
-<tr class="even">
-<td><code>pm_yes</code>, <code>pm_no</code></td>
-<td><code>guard</code></td>
-<td>b ≥ Kalshi ask, or a ≤ Kalshi bid (plus the buffer)</td>
-</tr>
-<tr class="odd">
-<td>Leg</td>
-<td><code>inventory</code></td>
-<td>Target size rounds to zero contracts</td>
-</tr>
-<tr class="even">
-<td>Leg</td>
-<td><code>cap</code></td>
-<td>Size reduced by the cash cap</td>
-</tr>
-</tbody>
-</table>
-<p>The cash cap is per venue and fixture, shared by both outcomes. Cash used is cash paid for positions plus collateral of resting orders, and without merges a Polymarket YES + NO pair stays locked until settlement. When the cap binds, orders that reduce an outcome’s |q| are funded first and the opening orders share what is left: the strategy stops opening before it stops hedging.</p>
+<p><code>decide</code> is based on the replay’s quoting step, and it stays pure: the same input gives the same targets. Its input is, per outcome, the two ex-self tops of book with their ages and q, plus cash spent per venue, time since kickoff and the configuration. Its output is, per outcome and leg, a price and size or a reason for not quoting.</p>
+<p>The cash cap is per venue and fixture, shared by both outcomes. Cash used includes positions and outstanding orders, including orders being cancelled. The portion of a leg that reduces |q|, up to |q| contracts, is exempt from the cap; only opening contracts share the remaining room. This can take cash used above the configured cap, and still requires sufficient venue balance. Confirmed Polymarket merges release cash.</p>
 </section>
 <section id="the-reconciler" class="level3">
 <h3 class="anchored" data-anchor-id="the-reconciler">The reconciler</h3>
@@ -993,8 +786,8 @@ Figure&nbsp;6: The strategy thread. Stream threads and I/O pools only post event
 <tbody>
 <tr class="odd">
 <td>Touch moved</td>
-<td>Amend the oldest child to the new price and size; cancel the others</td>
-<td>Cancel and re-post at once; the old order counts toward cash until its cancel is confirmed</td>
+<td>Amend the oldest child to the new price and size, less possible fills from departing children; cancel the others</td>
+<td>Cancel old children; post only the size left after counting their possible fills, then top up as cancellations resolve</td>
 </tr>
 <tr class="even">
 <td>Leg too large</td>
@@ -1013,7 +806,7 @@ Figure&nbsp;6: The strategy thread. Stream threads and I/O pools only post event
 </tr>
 </tbody>
 </table>
-<p>Writes are budgeted. A leg reprices at most once per 500 ms, a leg with a request in flight gets no second one, and a token bucket holds each venue under its write limit (15 writes/s on Polymarket, 8 on Kalshi, whose basic tier allows about 10); cancels always pass. Kalshi’s amend has no post-only flag, so an amend priced through the book would fill as a taker; the <code>not_post_only</code> check guards against it, and every fill records whether it was a taker.</p>
+<p>Repricing is limited to once per 500 ms per leg, with overlapping requests restricted by the reconciler. Token buckets budget 15 writes/s on Polymarket and 8 on Kalshi; cancels bypass the buckets. Kalshi’s amend has no post-only flag: the local price check cannot prevent the book from moving before the amend arrives, so an amend can fill as a taker. Every fill records whether it was a taker.</p>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div id="fig-order-states" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -1030,7 +823,10 @@ Figure&nbsp;6: The strategy thread. Stream threads and I/O pools only post event
   PendingAmend --&gt; Unknown: timeout
   Live --&gt; PendingCancel: cancel
   PendingCancel --&gt; [*]: confirmed
-  PendingCancel --&gt; Live
+  PendingCancel --&gt; Live: failed, retry
+  PendingCancel --&gt; MaybeFilled: not found or possible unreported fill
+  PendingAmend --&gt; MaybeFilled: not found
+  MaybeFilled --&gt; [*]: fills received or 10 s elapsed
   Unknown --&gt; Live: open at venue
   Unknown --&gt; [*]: not found
   Live --&gt; [*]: filled or gone
@@ -1038,13 +834,13 @@ Figure&nbsp;6: The strategy thread. Stream threads and I/O pools only post event
 </div>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-order-states-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;7: States of one child order. A reject makes its leg wait 1 s; a failed cancel returns the order to Live, to be cancelled again after a backoff of 1 s, doubling to 10 s. An order whose outcome is unknown after a timeout or transport error freezes its leg until the venue’s open orders resolve it.
+Figure&nbsp;7: States of one child order. A reject makes its leg wait 1 s; a failed cancel returns the order to Live, to be cancelled again after a backoff of 1 s, doubling to 10 s. An unknown order pauses its leg until resolved. A possibly filled order reserves room for late fill reports for up to 10 s.
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>Unknown orders are resolved against the venue’s open orders every 2 s. Every 30 s all live orders are checked, which catches orders the venue cancelled on its own; orders on our instruments that execution does not track, seen in two sweeps in a row, are cancelled.</p>
+<p>Unknown orders are resolved against the venue’s open orders every 2 s. Every 30 s live orders are checked; an order missing from the list is cancelled rather than simply forgotten. Orders on our instruments that execution does not track, seen in two sweeps in a row, are cancelled.</p>
 </section>
 </section>
 <section id="latency-what-the-one-second-replay-assumes" class="level2">
@@ -1053,65 +849,46 @@ Figure&nbsp;7: States of one child order. A reject makes its leg wait 1 s; a fai
 <section id="what-happens-at-a-second-boundary" class="level3">
 <h3 class="anchored" data-anchor-id="what-happens-at-a-second-boundary">What happens at a second boundary</h3>
 <p>The replay in <code>mm_sim.py</code> first sends all trades in second s against the orders already resting. It then reads the latest recorded books at or before s + 1, applies cancellations, resizes and placements, and uses the resulting orders for trades in second s + 1. A book from time t is therefore used for the trade bucket beginning at t; there is no additional one-second transit delay after that book is read. Inventory changes from all fills in a bucket are known at its end, and a cancel and replacement can both take effect at the same boundary.</p>
-<p>An event between boundaries waits for the next decision. With ideal, immediately available data, that scheduling wait is between zero and one second; it is not necessarily close to one second. A live request still takes time after the decision: a 0.95 s scheduling wait followed by 0.20 s to make a cancellation effective is already 1.15 s, before any feed delay. These are illustrative numbers, not measurements of this system.</p>
-<p>The historical inputs add their own limits: Polymarket snapshots arrive about every 3 s, and the curated trade tape has one-second timestamps. The replay carries the latest snapshot forward and rejects books older than 10 s. A one-second grid does not make those snapshots one second old, or recover the ordering of a price move, a fill and a cancellation within a second.</p>
+<p>An event between boundaries waits for the next decision. With ideal, immediately available data, that scheduling wait is between zero and one second; it is not necessarily close to one second.</p>
 </section>
 <section id="the-delays-that-matter-to-a-maker" class="level3">
 <h3 class="anchored" data-anchor-id="the-delays-that-matter-to-a-maker">The delays that matter to a maker</h3>
 <p><a href="https://hftbacktest.readthedocs.io/en/latest/latency_models.html">HftBacktest’s latency model</a> distinguishes feed latency, order-entry latency and order-response latency. The same distinction helps identify what this system must measure:</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
+<col style="width: 50%">
+<col style="width: 50%">
 </colgroup>
 <thead>
 <tr class="header">
 <th>Delay</th>
 <th>Path in this system</th>
-<th>Trading consequence</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Market data</td>
 <td>Venue event → engine WebSocket → gRPC → execution</td>
-<td>A decision can use an old price even on a healthy connection</td>
 </tr>
 <tr class="even">
 <td>Local reaction</td>
 <td>Execution’s event queue, decision, reconciliation and write throttles</td>
-<td>The 500 ms reprice limit or an in-flight request can postpone a new quote</td>
 </tr>
 <tr class="odd">
 <td>Place, amend or cancel becoming effective</td>
 <td>Execution → venue engine, signing and REST → venue processing</td>
-<td>A new order joins the queue later; an old order can still fill until its cancel takes effect</td>
 </tr>
 <tr class="even">
 <td>Acknowledgement and fill reports</td>
 <td>Venue → engine → execution</td>
-<td>Execution learns an order’s state or a fill later; both ask legs can fill before the first fill triggers a shrink</td>
-</tr>
-<tr class="odd">
-<td>Settlement and cash reuse</td>
-<td>Polymarket match → on-chain settlement; pairs → merge or redemption</td>
-<td>Capital can remain unavailable after a match; this is separate from quote reaction time</td>
 </tr>
 </tbody>
 </table>
-<p>For a price-driven pull, the relevant path is <strong>feed delay + local reaction + time until the venue applies the cancel</strong>. The returning acknowledgement determines when we know the result, rather than when the order stops being executable. Resizing after a fill starts with fill-report delay instead. These paths cannot be replaced by one sum of every delay in the table.</p>
-<p><a href="https://docs.polymarket.com/concepts/order-lifecycle">Polymarket’s order lifecycle</a> also distinguishes matching from on-chain confirmation, and describes configured sports matching delays for marketable orders. Our post-only placements rest or reject if they would cross; the sports delay is not a blanket delay to add to every maker placement or cancellation.</p>
-</section>
-<section id="what-the-live-record-can-establish" class="level3">
-<h3 class="anchored" data-anchor-id="what-the-live-record-can-establish">What the live record can establish</h3>
-<p>The engine’s one-second book re-send proves liveness, not delivery speed. It can give execution a recent receive timestamp while the last price change is older. Likewise, the 3 s stale-book threshold is a failure-detection rule, not a 3 s upper bound on feed latency. Kalshi’s observed 3–6 s lead over Polymarket is a market response difference, not a guaranteed window in which our cancels finish.</p>
-<p>The order record (section 8) stores request, engine send/receive, exchange and execution times where available. Request-to-response time measures a round trip; separating one-way components across machines requires aligned clocks and a clear meaning for each venue timestamp. The first comparison should report place, amend, cancel and fill-report delays separately, including their tails during jumps and bursts. An explicit delayed replay should leave old orders executable until their cancels take effect, admit new orders only when effective, and update the strategy’s known inventory when fill reports arrive, separately from the venue’s actual fills. The existing one-second replay cannot establish a sub-second latency bound or guarantee conservative P&amp;L.</p>
 </section>
 </section>
 <section id="fills-inventory-and-safety" class="level2">
 <h2 class="anchored" data-anchor-id="fills-inventory-and-safety">7. Fills, inventory and safety</h2>
-<p>Fills arrive on each engine’s fill stream: Kalshi’s fill channel and Polymarket’s user channel. Execution deduplicates them by venue and fill id, updates the outcome’s holdings, q and cash, and the next <code>decide</code> resizes the legs. A fill also schedules a window of market data around it for the record (section 8).</p>
+<p>Fills arrive on each engine’s fill stream: Kalshi’s fill channel and Polymarket’s user channel. Execution deduplicates them by venue and fill id, updates the outcome’s holdings, q and cash, and the next <code>decide</code> resizes the legs.</p>
 <p>Inventory is never assumed. Thirty seconds before kickoff, a fixture registers its instruments again, cancels every open order on them and reads positions and balances from both venues, so a restart mid-match continues from the true inventory. A lost fill stream restarts every quoting fixture the same way, because fills may have been missed while it was down. P&amp;L counts fills since the fixture started, marked at Kalshi’s mid.</p>
 <table class="caption-top table">
 <colgroup>
@@ -1138,58 +915,13 @@ Figure&nbsp;7: States of one child order. A reject makes its leg wait 1 s; a fai
 <td>Pull the Polymarket leg</td>
 </tr>
 <tr class="odd">
-<td>104 minutes after kickoff</td>
-<td>Fixture</td>
-<td>Pull all legs</td>
-</tr>
-<tr class="even">
-<td>Inventory reaches L either way</td>
-<td>Leg</td>
-<td>Legs that would add to it size to zero; no order exceeds 3L</td>
-</tr>
-<tr class="odd">
-<td>Mark-to-market loss below −$40 (replay worst: −$17)</td>
-<td>Fixture</td>
-<td>Stop the fixture</td>
-</tr>
-<tr class="even">
-<td>Order outcome unknown</td>
-<td>Leg</td>
-<td>Freeze until resolved</td>
-</tr>
-<tr class="odd">
-<td>Fill stream lost</td>
-<td>Quoting fixtures</td>
-<td>Restart from venue positions</td>
-</tr>
-<tr class="even">
-<td>Engine unhealthy for 90 s (checked every 5 s)</td>
-<td>All</td>
-<td>Disable every fixture and cancel</td>
-</tr>
-<tr class="odd">
-<td>No management heartbeat for 120 s (sent every 15 s)</td>
-<td>All</td>
-<td>Disable every fixture and cancel</td>
-</tr>
-<tr class="even">
-<td>Two failed Polymarket heartbeats</td>
-<td>All</td>
-<td>Disable every fixture and cancel</td>
-</tr>
-<tr class="odd">
 <td>Kill switch</td>
 <td>All</td>
 <td>Disable every fixture and sweep every open order</td>
 </tr>
-<tr class="even">
-<td>Execution or network dies</td>
-<td>Venue</td>
-<td>Polymarket cancels within 10–15 s; Kalshi orders keep resting, at most L = 10 per leg</td>
-</tr>
 </tbody>
 </table>
-<p>Only the pulls at the top of the table resume by themselves. A stopped or disabled fixture trades again only when it is enabled again by hand. maker_maker is the only module trading its accounts.</p>
+<p>maker_maker is the only module trading its accounts.</p>
 </section>
 <section id="the-trading-record" class="level2">
 <h2 class="anchored" data-anchor-id="the-trading-record">8. The trading record</h2>
@@ -1236,7 +968,7 @@ Figure&nbsp;7: States of one child order. A reject makes its leg wait 1 s; a fai
 <tr class="even">
 <td><code>books_1s</code></td>
 <td>Traded market and second, in play</td>
-<td>Best price plus four levels per side: the input of the replay</td>
+<td>Full recorded ladder; the replay extracts the levels it needs</td>
 </tr>
 <tr class="odd">
 <td><code>trades</code></td>
@@ -1250,13 +982,13 @@ Figure&nbsp;7: States of one child order. A reject makes its leg wait 1 s; a fai
 </tr>
 <tr class="odd">
 <td><code>match_events</code></td>
-<td>Change in Kalshi’s match state</td>
-<td>Actual kickoff, half-time, goals, red cards</td>
+<td>Match-state change or significant event</td>
+<td>Scores, half, status and reported significant events</td>
 </tr>
 <tr class="even">
 <td><code>fixtures</code></td>
-<td>Fixture start</td>
-<td>Configuration, code commit, balances</td>
+<td>Fixture start or merge result</td>
+<td>Configuration, code commit, balances, merge outcomes</td>
 </tr>
 </tbody>
 </table>
@@ -1282,254 +1014,10 @@ Figure&nbsp;8: From the live record to the replay comparison.
 </div>
 </div>
 </div>
-<p>The queue estimate turns the test into a measurement of ρ, the largest lever in the replay. Each order starts behind the displayed size at its price; trades at that price move it forward, and a level that shrinks below it means cancellations ahead. Every filled order then yields the share of the displayed queue that actually traded ahead of it, and on Kalshi the venue’s own queue position checks the estimate.</p>
-<p>Full ladders in <code>books_1s</code> and <code>fill_windows</code> cost about 120–220 MB per fixture, estimated from measured message rates (busiest market: 28 messages/s on Kalshi, 21 on Polymarket). The 10 GB volume holds 40 fixtures or more.</p>
-</section>
-<section id="the-control-page" class="level2 page-columns page-full">
-<h2 class="anchored" data-anchor-id="the-control-page">9. The control page</h2>
-<div id="fig-control" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
-<figure class="quarto-float quarto-float-fig figure page-columns page-full">
-<div aria-describedby="fig-control-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<a href="assets/control_page.png" class="lightbox page-columns page-full" data-gallery="quarto-lightbox-gallery-1" title="Figure&nbsp;9: The control page before the first live fixture. Dortmund vs Bremen is enabled and scheduled; the other fixtures are matched but disabled. Its expanded row shows the state per outcome: q per venue, the three legs’ targets and live orders, and book ages under one second before kickoff, thanks to the engines’ re-sends."><img src="assets/control_page.png" class="img-fluid figure-img column-page"></a>
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-control-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;9: The control page before the first live fixture. Dortmund vs Bremen is enabled and scheduled; the other fixtures are matched but disabled. Its expanded row shows the state per outcome: q per venue, the three legs’ targets and live orders, and book ages under one second before kickoff, thanks to the engines’ re-sends.
-</figcaption>
-</figure>
-</div>
-<p>The page is served by management and talks only to execution. Fixtures sit in three tables: Live (from kickoff until a venue closes the market), Upcoming (soonest first, with a divider after the next 24 h) and Finished (kept 48 h, with the fixture’s P&amp;L). Every row shows the league, the kickoff gap between venues, both venues’ titles with links, the match score from Kalshi’s feed, an Enable toggle, and for home and away the YES best bid and ask with size on each venue.</p>
-<p>Rows that are not traded take their prices from <code>GetOrderbookSnapshots</code> every 45 s, one batched REST read per venue. Display never drives the trading subscriptions: each engine keeps one market set and the latest request replaces it, so display rows would add and drop markets under the traded books.</p>
-</section>
-<section id="deployment-and-operations" class="level2">
-<h2 class="anchored" data-anchor-id="deployment-and-operations">10. Deployment and operations</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Service</th>
-<th>Region</th>
-<th>Machine</th>
-<th>Swap</th>
-<th>Volume</th>
-<th>Measured memory</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>engine-pm</code></td>
-<td>Stockholm</td>
-<td>shared CPU, 1 GB</td>
-<td>512 MB</td>
-<td>–</td>
-<td>100–570 MB</td>
-</tr>
-<tr class="even">
-<td><code>engine-kalshi</code></td>
-<td>Ashburn</td>
-<td>shared CPU, 512 MB</td>
-<td>512 MB</td>
-<td>–</td>
-<td>110–330 MB</td>
-</tr>
-<tr class="odd">
-<td><code>execution</code></td>
-<td>Ashburn</td>
-<td>shared CPU, 512 MB</td>
-<td>–</td>
-<td>10 GB</td>
-<td>peak 35 MB</td>
-</tr>
-<tr class="even">
-<td><code>management</code></td>
-<td>Ashburn</td>
-<td>shared CPU, 512 MB</td>
-<td>–</td>
-<td>–</td>
-<td>peak 80 MB</td>
-</tr>
-</tbody>
-</table>
-<p>Sizes come from a local load test: all four processes against the real venues for 16 minutes, 40 markets streamed per engine (8–10 times one fixture), and the control page polled every second. Seven days cost about $5: $4.10 compute, $0.35 for the volume, and cents of transfer.</p>
-<p>Logs go to standard output, where Fly keeps them searchable for 7 days. Every line starts with its level; notable events carry a fixed prefix (<code>mm fixture=&lt;id&gt; leg=&lt;leg&gt; &lt;event&gt;</code>), and engines log freshness as transitions only (<code>ws venue=kalshi event=dead silent_ms=...</code>), so a stale-book pull in execution lines up with one engine line. Routine quotes are in the record, not the logs. There is no alerting in v1: someone watches every enabled match.</p>
-<section id="two-problems-from-the-first-deployment" class="level3">
-<h3 class="anchored" data-anchor-id="two-problems-from-the-first-deployment">Two problems from the first deployment</h3>
-<p><strong>Listings that outgrew the machine.</strong> On the first Fly run, every Polymarket listing hit its deadline. The engine paged Gamma’s <code>/events/keyset</code>, which returns every derivative market of every soccer event. On a throttled shared CPU it ran past the 90 s deadline and kept working after the caller gave up, so calls piled up: 821 MB of memory, a load of 2.6, and engine health flapping.</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Polymarket listing</th>
-<th><code>/events/keyset</code></th>
-<th><code>/markets/keyset</code>, moneyline filter</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Downloaded per call</td>
-<td>929 MB</td>
-<td>24 MB</td>
-</tr>
-<tr class="even">
-<td>Time per call</td>
-<td>Past the 90 s deadline on Fly</td>
-<td>About 10 s and 3 CPU-seconds, locally</td>
-</tr>
-<tr class="odd">
-<td>Moneyline markets found</td>
-<td>3,852</td>
-<td>3,852</td>
-</tr>
-</tbody>
-</table>
-<p>The listing also stops between pages once its call is cancelled, and the matcher now waits up to 300 s.</p>
-<p><strong>Memory that only went up.</strong></p>
-<div id="fig-memory" class="quarto-layout-panel">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-memory-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="quarto-layout-row">
-<div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-memory" style="flex-basis: 100.0%;justify-content: flex-start;">
-<div id="fig-memory-kalshi" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-subfloat-fig figure">
-<div aria-describedby="fig-memory-kalshi-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="assets/memory_engine_kalshi.png" class="lightbox" data-gallery="fig-memory" title="Figure&nbsp;10&nbsp;(a): engine-kalshi, 512 MB machine"><img src="assets/memory_engine_kalshi.png" class="img-fluid figure-img" data-ref-parent="fig-memory"></a>
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-memory-kalshi-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-(a) <code>engine-kalshi</code>, 512 MB machine
-</figcaption>
-</figure>
-</div>
-</div>
-</div>
-<div class="quarto-layout-row">
-<div class="quarto-layout-cell-subref quarto-layout-cell" data-ref-parent="fig-memory" style="flex-basis: 100.0%;justify-content: flex-start;">
-<div id="fig-memory-pm" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-subfloat-fig figure">
-<div aria-describedby="fig-memory-pm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="assets/memory_engine_pm.png" class="lightbox" data-gallery="fig-memory" title="Figure&nbsp;10&nbsp;(b): engine-pm, 1 GB machine"><img src="assets/memory_engine_pm.png" class="img-fluid figure-img" data-ref-parent="fig-memory"></a>
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-subfloat-caption quarto-subfloat-fig" id="fig-memory-pm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-(b) <code>engine-pm</code>, 1 GB machine
-</figcaption>
-</figure>
-</div>
-</div>
-</div>
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-memory-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;10: Machine memory of both engines over one day on Fly. Both climb to the machine’s limit, drop at each restart, and flatten after the deploy at about 13:30 that added the trimmer. The flat tops before it are full machines spilling into swap, not plateaus.
-</figcaption>
-</figure>
-</div>
-<p>It was not a leak: <code>engine-kalshi</code> reached 356 MB resident plus 92 MB of swap after 4.5 hours while its memory in use stayed at 4–11 MB (Polymarket: 47–92 MB). Each market listing parses a large JSON catalog; glibc keeps freed memory in per-thread arenas (eight on a one-CPU machine), and the calls land on different gRPC threads, so every arena stays at its peak.</p>
-<p>The fix is one call: each engine runs <code>malloc_trim(0)</code> once a minute and logs resident, in-use and held memory every 10 minutes. In a local A/B replaying about 16 hours of Kalshi and 46 hours of Polymarket listing traffic in 30 minutes, the old builds rose to 533 MB and 805 MB and kept rising; the trimmed builds stayed in the ranges of the table above. On Fly, <code>engine-pm</code> has held about 220 MB since. <code>engine-kalshi</code>’s baseline still drifted from about 100 to 200 MB over ten hours, inside the measured range, and the <code>mem</code> log line is the check.</p>
-</section>
-</section>
-<section id="design-decisions" class="level2">
-<h2 class="anchored" data-anchor-id="design-decisions">11. Design decisions</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Decision</th>
-<th>Instead of</th>
-<th>Because</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Engine re-sends and a 3 s threshold</td>
-<td>Each leg’s age from venue messages, 10 s</td>
-<td>A quiet book is not a dead one, and Kalshi leads by 3–6 s</td>
-</tr>
-<tr class="even">
-<td>Kalshi amend for price and size</td>
-<td>Cancel and place; Kalshi’s decrease endpoint</td>
-<td>One atomic write under a ~10 writes/s limit; keeps priority on a size cut; the decrease endpoint leaves <code>reduce_to</code> undefined</td>
-</tr>
-<tr class="odd">
-<td>Desired-state reconciler</td>
-<td>One rule per trigger</td>
-<td>Fills, the guard, the cap and the window change orders too</td>
-</tr>
-<tr class="even">
-<td>Own C++ matcher</td>
-<td>Exact-name mapping; a paid match-data API</td>
-<td>Club names differ across venues; no Python in the live path</td>
-</tr>
-<tr class="odd">
-<td>Real orders from the first fixture</td>
-<td>A shadow mode</td>
-<td>Queue position and latency exist only for real orders; L = 10 bounds the cost</td>
-</tr>
-<tr class="even">
-<td>No Polymarket merges in v1</td>
-<td>Merging each pair at once</td>
-<td>Relayer support for the account’s wallet type is unverified; the Polymarket cap was raised to $300 instead</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="status-and-next-steps" class="level2">
-<h2 class="anchored" data-anchor-id="status-and-next-steps">12. Status and next steps</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Milestone</th>
-<th>Status</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>1. Engine changes: amend, book snapshots, re-sends, pings, sequence-gap recovery, Polymarket heartbeat chaining</td>
-<td>Done. Probed against both venues on 2026-10-06, including a real 1 c post-only order on each, amended on Kalshi, then cancelled</td>
-</tr>
-<tr class="even">
-<td>2. maker_maker module, control page and record</td>
-<td>Done. Smoke-tested against fake engines; deployed 2026-10-07 with 116 club fixtures matched</td>
-</tr>
-<tr class="odd">
-<td>3. Live, one fixture at a time, L = 10</td>
-<td>Next. Two concurrent fixtures after about five clean ones</td>
-</tr>
-<tr class="even">
-<td>4. 25–30 club fixtures</td>
-<td>Rerun the replay on the recorded books after each batch and compare order by order; then choose L and the next single setting</td>
-</tr>
-</tbody>
-</table>
-<p>Known gaps in v1:</p>
-<ul>
-<li>No Kalshi order group yet, so there is no venue-side contract limit on Kalshi; L = 10 is the bound.</li>
-<li>A Polymarket trade that fails on chain is logged, but its fill is not reversed.</li>
-<li>Trades on Polymarket’s NO book are not streamed, so the queue estimate undercounts volume for <code>pm_no</code>; Kalshi’s queue position is exact.</li>
-<li>The page’s P&amp;L is marked at Kalshi’s mid, not at settlement, and settled Polymarket positions are redeemed by hand.</li>
-<li>Still to be seen on the first live fixture: no false staleness at half-time.</li>
-</ul>
-<p>Not in v1, because it is not replayed yet or not needed to measure: draws, pregame quoting, joint inventory across the two outcomes, taker flattening after a timeout, and Polymarket merges.</p>
-<p>The results will be published here once enough fixtures have been traded to compare the live fills with the replay.</p>
 </section>
 <section id="about-this-article" class="level2">
 <h2 class="anchored" data-anchor-id="about-this-article">About this article</h2>
-<p>This article describes the trading repository at commit <code>cda5eec</code> (2026-10-07). Replay figures come from the notebook behind parts 3 and 4, the matching and freshness rules from the strategy’s plan and code, and resource figures from a local load test and the Fly metrics shown above. It describes the system before its first live fixture; no trading results are reported yet.</p>
+<p>This article describes the current implementation reviewed on 2026-10-12: commit <code>43f9cfe</code> plus the working-tree changes to matching and order-book handling. Replay assumptions come from parts 3 and 4; the live behavior is checked against the strategy and engine code. Live performance results are outside this article.</p>
 
 
 </section>
@@ -1967,38 +1455,6 @@ Figure&nbsp;10: Machine memory of both engines over one day on Fly. Both climb t
     </div>
   </div>
 </footer>
-<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
-(function() {
-  let previousOnload = window.onload;
-  window.onload = () => {
-    if (previousOnload) {
-      previousOnload();
-    }
-    lightboxQuarto.on('slide_before_load', (data) => {
-      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
-      const href = trigger.getAttribute('href');
-      if (href !== null) {
-        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
-        if (imgEl !== null) {
-          const srcAttr = imgEl.getAttribute("src");
-          if (srcAttr && srcAttr.startsWith("data:")) {
-            slideConfig.href = srcAttr;
-          }
-        }
-      } 
-    });
-  
-    lightboxQuarto.on('slide_after_load', (data) => {
-      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
-      if (window.Quarto?.typesetMath) {
-        window.Quarto.typesetMath(slideNode);
-      }
-    });
-  
-  };
-  
-})();
-          </script>
 
 
 
